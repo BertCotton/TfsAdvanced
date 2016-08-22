@@ -1,0 +1,29 @@
+﻿<div class="container" ng-controller="BuildsController">
+    <div id="Loading" ng-if="IsLoading">
+        <div class="loader"></div>
+    </div>
+    <div class="row" ng-if="!IsLoading">
+        <table datatable="" dt-options="dtOptions" class="table table-striped" id="buildsTable">
+            <thead>
+            <tr>
+                <th>Build Id</th>
+                <th>Repository Name</th>
+                <th>Build Definition Name</th>
+                <th>Latest Change</th>
+                <th>Result</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="build in builds">
+                <td><a href="{{build.buildUrl}}" target="_blank">{{build.id}}</a></td>
+                <td>{{build.project.name}}</td>
+                <td>{{build.definition.name}}</td>
+                <td>{{build.lastChangedDate | date : "MM/dd/yyyy 'at' h:mm a" }}</td>
+                <td ng-bind-html="build | buildResult"></td>
+                <td ng-bind-html="build.status | buildStatus"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

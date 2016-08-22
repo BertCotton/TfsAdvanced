@@ -1,0 +1,33 @@
+﻿<!doctype html>
+<html data-ng-app="TFS.Advanced">
+<head>
+    <meta charset="utf-8">
+    <title>TFS Advanced</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="/css/site.min.css" />
+</head>
+<body>
+<nav class="navbar navbar-default" ng-controller="NavController">
+    <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+            <li ng-class="{active : isActive('/')}">
+                <a href="/" >Pull Requests</a>
+            </li>
+            <li ng-class="{active : isActive('/buildDefinitions')}">
+                <a href="#/buildDefinitions" >Build Definitions</a>
+            </li>
+            <li ng-class="{active : isActive('/builds')}">
+                <a href="#/builds">Builds</a>
+            </li>
+            <li ng-class="{active : isActive('/workItems')}">
+                <a href="#/workItems">Work Items</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div ui-view=""></div>
+    <div class="updater" ng-controller="UpdaterController"></div>
+<script src="/js/app.min.js"></script>
+</body>
+</html>

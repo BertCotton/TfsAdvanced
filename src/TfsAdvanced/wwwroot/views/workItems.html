@@ -1,0 +1,28 @@
+﻿<div class="container" ng-controller="WorkItemsController">
+    <div class="row">
+        <table datatable="ng" dt-options="dtOptions" class="table table-striped" id="definitionsTable">
+            <thead>
+            <tr>
+                <th>Link</th>
+                <th>Sprint</th>
+                <th>Title</th>
+                <th>State</th>
+                <th>Last Changed By</th>
+                <th>Last Changed Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="workItem in workItems">
+                <td>
+                    <a href="{{workItem.url}}" target="_blank">{{workItem.id}}</a>
+                </td>
+                <td>{{workItem.fields["System.IterationPath"]}}</td>
+                <td>{{workItem.fields["System.Title"]}}</td>
+                <td>{{workItem.fields["System.State"]}}</td>
+                <td>{{workItem.fields["System.ChangedBy"]}}</td>
+                <td>{{workItem.fields["System.ChangedDate"] | date :'MM/dd/yyyy hh:mm a'}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

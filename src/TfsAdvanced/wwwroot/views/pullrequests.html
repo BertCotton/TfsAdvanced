@@ -1,0 +1,64 @@
+﻿<div class="container-fluid" ng-controller="PullRequestsController">
+    <div class="row">
+        <div class="col-lg-4 visible-lg"></div>
+        <div class="col-lg-2 visible-lg">
+            <b>Developer</b>
+        </div>
+        <div class="col-lg-6 visible-lg">
+            <b>Reviewers</b>
+        </div>
+    </div>
+    <div id="Loading" ng-if="IsLoading">
+        <div class="loader"></div>
+    </div>
+    <div ng-if="!IsLoading">
+        <div ng-if="pullRequests.length == 0">No Pull Requests.</div>
+        <div class="row striped pullRequest" ng-repeat="pr in pullRequests">
+            <div class="col-lg-4 col-md-12">
+                <span class="prID" style="visibility: hidden">{{pr.pullRequestId}}</span>
+                <span class="prTitle" style="visibility: hidden">{{pr.title}}</span>
+                <h3>
+                    <a href="{{pr.remoteUrl}}" target="_blank">{{pr.title}}</a>
+                    <span ng-bind-html="pr.mergeStatus | mergeStatus"></span>
+                </h3>
+                <h5>
+                    <a href="{{pr.repository.project.remoteUrl}}" target="_blank">{{pr.repository.project.name}}</a>
+                    /<a href="{{pr.repository.remoteUrl}}" target="_blank">{{pr.repository.name}}</a>
+                </h5>
+            </div>
+            <div class="col-lg-2 padding col-md-12">
+                <div class="media">
+                    <div class="media-left">
+                        <a href="#">
+                            <img class="media-object" src="{{pr.createdBy.imageUrl}}" alt="User Photo" height="50" width="50">
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        <h5 class="media-heading">
+                            {{pr.createdBy.displayName}}
+                        </h5>
+                    </div>
+                </div>
+                Created: {{pr.creationDate | date : "MM/dd/yyyy h:mm a"}}
+            </div>
+            <div class="col-lg-6 col-md-12 padding">
+                <div class="container" ng-if="pr.reviewers">
+                    <div class="row">
+                        <div class="col-lg-6 col-md-3 col-sm-2" ng-repeat="reviewer in pr.reviewers | filter: { displayName : '![Benefits]\Benefits Team'}">
+                            <div class="media">
+                                <div class="media-left">
+                                    <a href="#">
+                                        <img class="media-object" src="{{reviewer.imageUrl}}" alt="User Photo" height="50" width="50">
+                                    </a>
+                                </div>
+                                <div class="media-body">
+                                    <span ng-bind-html="reviewer | voteStatus"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
