@@ -20,9 +20,9 @@ namespace TfsAdvanced.ServiceRequests
             this.appSettings = appSettings.Value;
         }
 
-        public string BuildDashboardURL(Repository repository)
+        public string BuildDashboardURL(RequestData requestData, Repository repository)
         {
-            return $"{appSettings.OnSiteBaseAddress}/{repository.project.name}/_dashboards";
+            return $"{requestData.BaseAddress}/{repository.project.name}/_dashboards";
         }
 
         public async Task<Repository> CreateRepository(RequestData requestData, RepositoryExistsCheck repositoryExistsCheck)
@@ -79,7 +79,7 @@ namespace TfsAdvanced.ServiceRequests
                             .Result;
             var responseObject = JsonConvert.DeserializeObject<Response<IEnumerable<Repository>>>(response);
             var repositories = responseObject.value.ToList();
-            repositories.ForEach(r => r.project.remoteUrl = BuildDashboardURL(r));
+            repositories.ForEach(r => r.project.remoteUrl = BuildDashboardURL(requestData, r));
 
             return repositories;
         }

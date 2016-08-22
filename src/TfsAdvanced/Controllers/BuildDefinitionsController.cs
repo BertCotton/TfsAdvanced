@@ -29,7 +29,7 @@ namespace TfsAdvanced.Controllers
             if (!definitionIds.Any())
                 return HttpNotFound();
 
-            using (var requestData = tfsRequest.GetHttpClient())
+            using (var requestData = tfsRequest.GetRequestData())
             {
                 var definitions = buildDefinitionRequest.GetAllBuildDefinitions(requestData).Where(x => definitionIds.Contains(x.id)).ToList();
                 buildDefinitionRequest.LaunchBuild(requestData, definitions);
@@ -46,7 +46,7 @@ namespace TfsAdvanced.Controllers
                 return cacheDefinitions;
             }
 
-            using (var requestData = tfsRequest.GetHttpClient())
+            using (var requestData = tfsRequest.GetRequestData())
             {
                 var definitions = buildDefinitionRequest.GetAllBuildDefinitions(requestData);
                 memoryCache.Set(DEFINITONS_CACHE_KEY, definitions,

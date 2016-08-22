@@ -29,7 +29,7 @@ namespace TfsAdvanced.Controllers
             if (memoryCache.TryGetValue(BUILD_MEMORY_KEY, out cachedBuilds))
                 return cachedBuilds;
 
-            using (var requestData = tfsRequest.GetHttpClient())
+            using (var requestData = tfsRequest.GetRequestData())
             {
                 var builds = buildRequest.GetAllBuilds(requestData);
 

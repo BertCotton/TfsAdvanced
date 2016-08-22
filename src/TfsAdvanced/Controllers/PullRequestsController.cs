@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.OptionsModel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace TfsAdvanced.Controllers
 {
@@ -36,9 +37,13 @@ namespace TfsAdvanced.Controllers
         {
             IList<PullRequest> cachedModel;
             if (memoryCache.TryGetValue(CACHE_KEY, out cachedModel))
+            {
                 return cachedModel;
+            }
+            else
+                Debug.WriteLine("Cache Miss");
 
-            using (var requestData = tfsRequest.GetHttpClient())
+            using (var requestData = tfsRequest.GetRequestData())
             {
                 var repositories = repositoryServiceRequest.GetAllRepositories(requestData);
                 var projects = projectServiceRequest.GetProjects(requestData, repositories);

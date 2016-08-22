@@ -2,43 +2,48 @@
 angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$interval', function ($http, $q, $interval) {
     'use strict';
 
+    var cachedDeferred = undefined;
+    var cachedPromise = undefined;
+    var requestDeferred = undefined;
     var cached = undefined;
     var interval = undefined;
     var requesting = false;
 
     this.get = function () {
-        var defer = $q.defer();
-        if (cached == undefined)
-            requests()
-                .then(function() {
-                    defer.resolve(cached);
-                });
+        if (cachedDeferred === undefined)
+            cachedDeferred = $q.defer();
+        
+        if (cached) {
+            cachedDeferred.resolve(cached);
+        }
         else {
-            defer.resolve(cached);
+            requests()
+                .then(function () {
+                    console.log("Resolved");
+                    cachedDeferred.resolve(cached);
+                });
         }
             
-        return defer.promise;
+        if (cachedPromise == undefined)
+            cachedPromise = cachedDeferred.promise;
+        return cachedPromise;
     }
 
     function requests() {
-        var defer = $q.defer();
+        if (requestDeferred === undefined)
+            requestDeferred  = $q.defer();
         if (!requesting) {
             requesting = true;
             $http.get('data/PullRequests', { cache: false })
-                .then(function(response) {
-                        cached = response.data || [];
-                        return cached;
-                    },
-                    function(reason) {
-                        cached = [];
-                        console.log(reason);
-                    })
-                .then(function () {
+                .then(function (response) {
+                    cached = response.data || [];
                     requesting = false;
-                    return defer.resolve();
+                    requestDeferred.resolve(cached);
+                    return cached;
                 });
+                
         }
-        return defer.promise;
+        return requestDeferred.promise;
     }
 
 

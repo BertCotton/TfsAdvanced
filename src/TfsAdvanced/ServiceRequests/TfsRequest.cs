@@ -18,7 +18,7 @@ namespace TfsAdvanced.ServiceRequests
             this.appSettings = appSettings.Value;
         }
 
-        public RequestData GetCloudHttpClient()
+        public RequestData GetRequestData()
         {
             HttpClientHandler handler = new HttpClientHandler()
             {
@@ -26,27 +26,12 @@ namespace TfsAdvanced.ServiceRequests
             };
             var client = new HttpClient(handler);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            var authorization = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{appSettings.CloudSecurity.Username}:{appSettings.CloudSecurity.Password}"));
+            var authorization = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{appSettings.Security.Username}:{appSettings.Security.Password}"));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authorization);
             return new RequestData
             {
                 HttpClient = client,
-                BaseAddress = appSettings.CloudBaseAddress
-            };
-        }
-
-        public RequestData GetHttpClient()
-        {
-            var authHandler = new HttpClientHandler() { Credentials = CredentialCache.DefaultNetworkCredentials, AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-            authHandler.Credentials = new NetworkCredential { Domain = appSettings.Security.Domain, UserName = appSettings.Security.Username, Password = appSettings.Security.Password };
-            var httpClient = new HttpClient(authHandler);
-            httpClient.DefaultRequestHeaders.Clear();
-            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
-
-            return new RequestData
-            {
-                HttpClient = httpClient,
-                BaseAddress = appSettings.OnSiteBaseAddress
+                BaseAddress = appSettings.BaseAddress
             };
         }
     }
