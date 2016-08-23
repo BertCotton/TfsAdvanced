@@ -1,6 +1,6 @@
 ﻿using TfsAdvanced.Data;
 using TfsAdvanced.ServiceRequests;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;

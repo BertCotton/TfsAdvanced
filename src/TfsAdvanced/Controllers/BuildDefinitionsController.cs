@@ -1,10 +1,10 @@
-﻿using TfsAdvanced.Data;
-using TfsAdvanced.ServiceRequests;
-using Microsoft.AspNet.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TfsAdvanced.Data;
+using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
 {
@@ -27,7 +27,7 @@ namespace TfsAdvanced.Controllers
         public IActionResult BuildDefinitions(List<int> definitionIds)
         {
             if (!definitionIds.Any())
-                return HttpNotFound();
+                return NotFound();
 
             using (var requestData = tfsRequest.GetRequestData())
             {

@@ -1,9 +1,9 @@
 ﻿using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
 using TfsAdvanced.ServiceRequests;
-using Microsoft.AspNet.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

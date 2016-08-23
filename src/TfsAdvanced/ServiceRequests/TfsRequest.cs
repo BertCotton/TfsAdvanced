@@ -1,6 +1,6 @@
 ﻿using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
-using Microsoft.Extensions.OptionsModel;
+using Microsoft.Extensions.Options;
 using System;
 using System.Net;
 using System.Net.Http;
