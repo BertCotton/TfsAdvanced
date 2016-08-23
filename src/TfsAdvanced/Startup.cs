@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using System.Reflection;
+using System.IO;
 
 namespace TfsAdvanced
 {
@@ -26,7 +27,7 @@ namespace TfsAdvanced
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{siteName}.json", true)
                 .AddEnvironmentVariables();
