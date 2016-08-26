@@ -44,7 +44,7 @@ namespace TfsAdvanced
             });
 
             services.AddMemoryCache();
-
+            
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             var builder = new ContainerBuilder();
@@ -68,7 +68,7 @@ namespace TfsAdvanced
             
             app.UseDefaultFiles();
             app.UseStaticFiles();
-
+            app.UseClientCertMiddleware();
             app.UseMvc();
 
         }
