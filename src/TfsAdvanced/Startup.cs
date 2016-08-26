@@ -68,7 +68,8 @@ namespace TfsAdvanced
             
             app.UseDefaultFiles();
             app.UseStaticFiles();
-            app.UseClientCertMiddleware();
+            if(!env.IsDevelopment())
+                app.UseClientCertMiddleware();
             app.UseMvc();
 
         }

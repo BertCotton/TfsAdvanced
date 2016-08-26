@@ -2,31 +2,17 @@
 angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$interval', function ($http, $q, $interval) {
     'use strict';
 
-    var cachedDeferred = undefined;
-    var cachedPromise = undefined;
-    var requestDeferred = undefined;
     var cached = undefined;
     var interval = undefined;
     var requesting = false;
+    var isLoaded = false;
 
-    this.get = function () {
-        if (cachedDeferred === undefined)
-            cachedDeferred = $q.defer();
-        
-        if (cached) {
-            cachedDeferred.resolve(cached);
-        }
-        else {
-            requests()
-                .then(function () {
-                    console.log("Resolved");
-                    cachedDeferred.resolve(cached);
-                });
-        }
-            
-        if (cachedPromise == undefined)
-            cachedPromise = cachedDeferred.promise;
-        return cachedPromise;
+    this.pullRequest = function () {
+        return cached;
+    }
+
+    this.isLoaded = function() {
+        return isLoaded;
     }
 
     function requests() {

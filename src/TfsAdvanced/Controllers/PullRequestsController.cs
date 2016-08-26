@@ -15,21 +15,19 @@ namespace TfsAdvanced.Controllers
     {
         private const string CACHE_KEY = "pullRequests";
 
-        private readonly AppSettings appSettings;
         private readonly IMemoryCache memoryCache;
         private readonly ProjectServiceRequest projectServiceRequest;
         private readonly PullRequestServiceRequest pullRequestServiceRequest;
         private readonly RepositoryServiceRequest repositoryServiceRequest;
         private readonly TfsRequest tfsRequest;
 
-        public PullRequestsController(TfsRequest tfsRequest, ProjectServiceRequest projectServiceRequest, PullRequestServiceRequest pullRequestServiceRequest, RepositoryServiceRequest repositoryServiceRequest, IMemoryCache memoryCache, IOptions<AppSettings> appSettings)
+        public PullRequestsController(TfsRequest tfsRequest, ProjectServiceRequest projectServiceRequest, PullRequestServiceRequest pullRequestServiceRequest, RepositoryServiceRequest repositoryServiceRequest, IMemoryCache memoryCache)
         {
             this.tfsRequest = tfsRequest;
             this.projectServiceRequest = projectServiceRequest;
             this.pullRequestServiceRequest = pullRequestServiceRequest;
             this.repositoryServiceRequest = repositoryServiceRequest;
             this.memoryCache = memoryCache;
-            this.appSettings = appSettings.Value;
         }
 
         [HttpGet]
@@ -37,12 +35,8 @@ namespace TfsAdvanced.Controllers
         {
             IList<PullRequest> cachedModel;
             if (memoryCache.TryGetValue(CACHE_KEY, out cachedModel))
-            {
                 return cachedModel;
-            }
-            else
-                Debug.WriteLine("Cache Miss");
-
+            
             using (var requestData = tfsRequest.GetRequestData())
             {
                 var repositories = repositoryServiceRequest.GetAllRepositories(requestData);

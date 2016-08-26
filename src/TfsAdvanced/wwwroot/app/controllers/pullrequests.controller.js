@@ -30,12 +30,16 @@
 
             function filterPullRequests(data)
             {
-                console.log("Filter");
-                var prs = $filter('orderBy')(data, "creationDate");
-                $scope.pullRequests = $filter('filter')(prs, function (record) {
-                    console.log("Filtering Record:", record.repository.project.id, " to ", $scope.SelectedProject);
-                    return $scope.SelectedProject === "-1" || $scope.SelectedProject == record.repository.project.id;
-                });
+                if (angular.isArray(data)) {
+                    var prs = $filter('orderBy')(data, "creationDate");
+                    $scope.pullRequests = $filter('filter')(prs,
+                        function(record) {
+                            return $scope.SelectedProject === "-1" ||
+                                $scope.SelectedProject === record.repository.project.id;
+                        });
+                } else {
+                    console.log("Response not an array:", data);
+                }
             }
             
 
