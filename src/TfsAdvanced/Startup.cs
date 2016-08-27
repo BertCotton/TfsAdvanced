@@ -27,8 +27,8 @@ namespace TfsAdvanced
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", true)
+                .SetBasePath(env.ContentRootPath)
+                .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{siteName}.json", true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
