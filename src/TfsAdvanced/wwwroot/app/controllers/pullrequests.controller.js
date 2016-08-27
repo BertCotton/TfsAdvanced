@@ -1,8 +1,8 @@
 ﻿angular.module('TFS.Advanced')
     .controller('PullRequestsController',
     [
-        '$scope', '$q', '$interval', '$notification', '$filter', 'pullrequestsService', 'ProjectService',
-        function ($scope, $q, $interval, $notification, $filter, pullrequestsService, ProjectService) {
+        '$scope', '$notification', '$filter', 'pullrequestsService', 'ProjectService',
+        function ($scope, $notification, $filter, pullrequestsService, ProjectService) {
             'use strict';
 
             $scope.SelectedProject = "-1";
@@ -10,22 +10,33 @@
             $scope.RawPullRequests = [];
             $scope.IsLoading = true;
 
+            var isLoadedWatch = undefined;
+
             
             $scope.load = function () {
-                pullrequestsService.get()
-                    .then(function (data) {
-                        $scope.RawPullRequests = data;
-                        filterPullRequests(data)
-                        $scope.IsLoading = false;
-                    });
+                $scope.RawPullRequests = pullrequestsService.pullRequests();
+                filterPullRequests($scope.RawPullRequests);
+                $scope.IsLoading = false;
+
             };
 
+            isLoadedWatch = $scope.$watch(pullrequestsService.isLoaded,
+                function (isLoaded) {
+                    if (isLoaded === true) {
+                        $scope.load();
+                        isLoadedWatch();
+                    }
+                });
 
-            $scope.load();
+            $scope.$watchCollection(pullrequestsService.pullRequests,
+                function (data) {
+                    if(data)
+                        $scope.load();
+                });
+
 
             ProjectService.GET.success(function (data) {
                 $scope.projects = [{"id": "-1", "name": "Any"}].concat(data);
-                console.log(data);
             });
 
             function filterPullRequests(data)
@@ -42,10 +53,6 @@
                 }
             }
             
-
-
-            $interval($scope.load, 1000);
-
             $scope.UpdateSelectedProject = function () {
                 filterPullRequests($scope.RawPullRequests);
             };

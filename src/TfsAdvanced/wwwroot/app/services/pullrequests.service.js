@@ -16,20 +16,19 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
     }
 
     function requests() {
-        if (requestDeferred === undefined)
-            requestDeferred  = $q.defer();
+        var deferred = $q.defer();
         if (!requesting) {
             requesting = true;
             $http.get('data/PullRequests', { cache: false })
                 .then(function (response) {
                     cached = response.data || [];
+                    deferred.resolve();
+                    isLoaded = true;
                     requesting = false;
-                    requestDeferred.resolve(cached);
-                    return cached;
                 });
                 
         }
-        return requestDeferred.promise;
+        return deferred.promise;
     }
 
 
