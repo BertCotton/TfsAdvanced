@@ -10,30 +10,31 @@
             $scope.RawPullRequests = [];
             $scope.IsLoading = true;
 
-            var isLoadedWatch = undefined;
 
-            
-            $scope.load = function () {
-                $scope.RawPullRequests = pullrequestsService.pullRequests();
-                filterPullRequests($scope.RawPullRequests);
-                $scope.IsLoading = false;
-
-            };
-
-            isLoadedWatch = $scope.$watch(pullrequestsService.isLoaded,
+            $scope.$watch(pullrequestsService.isLoaded,
                 function (isLoaded) {
-                    if (isLoaded === true) {
-                        $scope.load();
-                        isLoadedWatch();
+
+                    if (isLoaded) {
+                        filterData(pullrequestsService.pullRequests());
+                        $scope.IsLoading = false;
                     }
                 });
 
             $scope.$watchCollection(pullrequestsService.pullRequests,
                 function (data) {
-                    if(data)
-                        $scope.load();
-                });
+                    if ($scope.IsLoading) {
+                        return;
+                    }
+                    filterData(data);
 
+                });
+            function filterData(data) {
+                if (data === undefined || data === null)
+                    return;
+                    $scope.RawPullRequests = data;
+                    filterPullRequests(data);
+                
+            }
 
             ProjectService.GET.success(function (data) {
                 $scope.projects = [{"id": "-1", "name": "Any"}].concat(data);

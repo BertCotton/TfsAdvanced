@@ -1,41 +1,39 @@
 ﻿/*globals angular */
-angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$interval', function ($http, $q, $interval) {
-    'use strict';
+angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$timeout',
+    function ($http, $q, $timeout) {
+        'use strict';
 
-    var cached = undefined;
-    var interval = undefined;
-    var requesting = false;
-    var isLoaded = false;
+        var cached = [];
+        var isLoaded = false;
+        var isRunning = false;
 
-    this.pullRequest = function () {
-        return cached;
-    }
-
-    this.isLoaded = function() {
-        return isLoaded;
-    }
-
-    function requests() {
-        var deferred = $q.defer();
-        if (!requesting) {
-            requesting = true;
-            $http.get('data/PullRequests', { cache: false })
-                .then(function (response) {
-                    cached = response.data || [];
-                    deferred.resolve();
-                    isLoaded = true;
-                    requesting = false;
-                });
-                
+        this.pullRequests = function() {
+            return cached;
         }
-        return deferred.promise;
-    }
+
+        this.isLoaded = function() {
+            return isLoaded;
+        }
+
+        function requests() {
+            isRunning = true;
+            return $http.get('data/PullRequests', { cache: false })
+                .then(function(response) {
+                    cached = response.data || [];
+                    isLoaded = true;
+                    $timeout(requests, 3000);
+                    return response;
+                });
+        }
 
 
-    this.start = function () {
-        interval = $interval(requests, 3000);
+        this.start = function () {
+            if (!isRunning)
+                requests();
+            else
+                console.log("Pull Request Service Started multiple times.");
 
-    };
+        };
 
     this.stop = function () {
         if (interval)
