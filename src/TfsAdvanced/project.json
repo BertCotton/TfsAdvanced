@@ -17,7 +17,8 @@
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "Microsoft.Extensions.Caching.Memory": "1.0.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
-    "Microsoft.AspNetCore.StaticFiles": "1.0.0"
+    "Microsoft.AspNetCore.StaticFiles": "1.0.0",
+    "Microsoft.ApplicationInsights.AspNetCore": "1.0.0"
   },
 
   "tools": {
@@ -47,7 +48,9 @@
   "publishOptions": {
     "include": [
       "wwwroot",
-      "web.config"
+      "web.config",
+      "appsettings.json",
+      "appsettings.*.json"
     ]
   },
 

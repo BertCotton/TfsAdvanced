@@ -1,4 +1,5 @@
-﻿using TfsAdvanced.Data;
+﻿using System.Collections.Concurrent;
+using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -64,22 +65,21 @@ namespace TfsAdvanced.ServiceRequests
 
         public IList<Repository> GetAllRepositories(RequestData requestData)
         {
-            List<Repository> repositories = new List<Repository>();
-            foreach (var project in appSettings.Projects)
+            var repositories = new ConcurrentStack<Repository>();
+            Parallel.ForEach(appSettings.Projects, project =>
             {
-                repositories.AddRange(GetRepositories(requestData, project));
-            }
-            return repositories;
+                var repos = GetRepositories(requestData, project).Result;
+                repositories.PushRange(repos.ToArray());
+            });
+            return repositories.ToList();
         }
 
-        public IList<Repository> GetRepositories(RequestData requestData, string tfsProject)
+        public async Task<IList<Repository>> GetRepositories(RequestData requestData, string tfsProject)
         {
-            var response =
-                        requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/{tfsProject}/_apis/git/repositories?api=1.0")
-                            .Result;
+            var response = await requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/{tfsProject}/_apis/git/repositories?api=1.0");
             var responseObject = JsonConvert.DeserializeObject<Response<IEnumerable<Repository>>>(response);
             var repositories = responseObject.value.ToList();
-            repositories.ForEach(r => r.project.remoteUrl = BuildDashboardURL(requestData, r));
+            Parallel.ForEach(repositories, r => r.project.remoteUrl = BuildDashboardURL(requestData, r));
 
             return repositories;
         }

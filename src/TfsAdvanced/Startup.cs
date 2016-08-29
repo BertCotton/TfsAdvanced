@@ -27,7 +27,7 @@ namespace TfsAdvanced
         {
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json")
                 .AddJsonFile($"appsettings.{siteName}.json", true)
                 .AddEnvironmentVariables();
@@ -44,7 +44,7 @@ namespace TfsAdvanced
             });
 
             services.AddMemoryCache();
-
+            
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             var builder = new ContainerBuilder();
@@ -68,7 +68,8 @@ namespace TfsAdvanced
             
             app.UseDefaultFiles();
             app.UseStaticFiles();
-
+            if(!env.IsDevelopment())
+                app.UseClientCertMiddleware();
             app.UseMvc();
 
         }

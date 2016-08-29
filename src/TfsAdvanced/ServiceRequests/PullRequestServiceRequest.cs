@@ -1,9 +1,11 @@
-﻿using TfsAdvanced.Data;
+﻿using System.Collections.Concurrent;
+using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace TfsAdvanced.ServiceRequests
 {
@@ -22,13 +24,12 @@ namespace TfsAdvanced.ServiceRequests
                 $"{baseUrl}/{pullRequest.repository.project.name}/_git/{pullRequest.repository.name}/pullrequest/{pullRequest.pullRequestId}?view=files";
         }
 
-        public IList<PullRequest> GetPullRequests(RequestData requestData, Repository repo, Project project)
+        public async Task<IList<PullRequest>> GetPullRequests(RequestData requestData, Repository repo, Project project)
         {
-            var pullResponse =
-                                requestData.HttpClient.GetStringAsync(project._links.pullRequests.href).Result;
+            var pullResponse = await requestData.HttpClient.GetStringAsync(project._links.pullRequests.href);
             var pullResponseObject = JsonConvert.DeserializeObject<Response<IEnumerable<PullRequest>>>(pullResponse);
             var pullRequests = pullResponseObject.value.ToList();
-            pullRequests.ForEach(pr =>
+            Parallel.ForEach(pullRequests, pr=> 
             {
                 pr.repository = repo;
                 pr.remoteUrl = BuildPullRequestUrl(pr, requestData.BaseAddress);
@@ -39,15 +40,18 @@ namespace TfsAdvanced.ServiceRequests
 
         public IList<PullRequest> GetPullRequests(RequestData requestData, Dictionary<string, KeyValuePair<Repository, Project>> projects)
         {
-            List<PullRequest> pullRequests = new List<PullRequest>();
-            projects.Keys.ToList().ForEach(repoId =>
+            var pullRequests = new ConcurrentStack<PullRequest>();
+            var repoIds = projects.Keys.ToList();
+            Parallel.ForEach(repoIds, repoId => 
             {
                 var pair = projects[repoId];
                 var repo = pair.Key;
                 var project = pair.Value;
-                pullRequests.AddRange(GetPullRequests(requestData, repo, project));
+                var projectPullRequests = GetPullRequests(requestData, repo, project).Result;
+                if(projectPullRequests.Any())
+                  pullRequests.PushRange(projectPullRequests.ToArray());
             });
-            return pullRequests;
+            return pullRequests.ToList();
         }
     }
 }

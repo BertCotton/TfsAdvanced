@@ -2,7 +2,6 @@
         function ($scope, $interval, $notification, $filter, buildsService, pullrequestsService) {
             'use strict';
 
-            var isLoadingPRs = false;
             var isLoadingBuilds = false;
             var pullRequestUpdates = [];
 
@@ -10,51 +9,45 @@
             buildsService.start();
 
             $interval(function() {
-                loadPullRequests();
                 loadBuilds();
             }, 2000);
 
+            $scope.$watchCollection(pullrequestsService.pullRequests,
+                function (data) {
+                    loadPullRequests(data);
+                });
 
             var pullRequests = [];
             var initialPRLoadDone = false;
-            function loadPullRequests() {
-                if (isLoadingPRs) {
+
+            function loadPullRequests(data) {
+
+                if (data === undefined)
                     return;
-                }
-                isLoadingPRs = true;
-                pullrequestsService.get().then(function (data) {
+                var prUpdates = [];
+                data.forEach(function(pr) {
+                    if (pr.pullRequestId)
+                        prUpdates[pr.pullRequestId] = pr;
+                });
 
-                    if (data === null || data === undefined) {
-                        isLoadingPRs = false;
-                        return;
-                    }
-
-                    var prUpdates = [];
-                    data.forEach(function (pr) {
-                        if(pr.pullRequestId)
-                            prUpdates[pr.pullRequestId] = pr;
+                if (initialPRLoadDone) {
+                    prUpdates.forEach(function(pr) {
+                        if (pr.pullRequestId && pullRequestUpdates[pr.pullRequestId] === undefined) {
+                            newPrNotification(pr);
+                        }
                     });
 
-                    if (initialPRLoadDone) {
-                        prUpdates.forEach(function (pr) {
-                                if (pr.pullRequestId && pullRequestUpdates[pr.pullRequestId] === undefined) {
-                                    newPrNotification(pr);
-                            }
-                        });
+                    pullRequests.forEach(function(pr) {
+                        if (pr.pullRequests && prUpdates[pr.pullRequestId] === undefined)
+                            removedPrNotification(pr);
+                    });
+                }
 
-                        pullRequests.forEach(function (pr) {
-                            if (pr.pullRequests && prUpdates[pr.pullRequestId] === undefined)
-                                removedPrNotification(pr);
-                        });
-                    }
+                pullRequestUpdates = prUpdates;
+                pullRequests = data;
 
-                    pullRequestUpdates = prUpdates;
-                    pullRequests = data;
+                initialPRLoadDone = true;
 
-                    initialPRLoadDone = true;
-                    isLoadingPRs = false;
-
-                });
             }
 
             function newPrNotification(pr) {

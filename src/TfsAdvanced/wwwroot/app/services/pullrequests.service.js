@@ -1,56 +1,39 @@
 ﻿/*globals angular */
-angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$interval', function ($http, $q, $interval) {
-    'use strict';
+angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$timeout',
+    function ($http, $q, $timeout) {
+        'use strict';
 
-    var cachedDeferred = undefined;
-    var cachedPromise = undefined;
-    var requestDeferred = undefined;
-    var cached = undefined;
-    var interval = undefined;
-    var requesting = false;
+        var cached = [];
+        var isLoaded = false;
+        var isRunning = false;
 
-    this.get = function () {
-        if (cachedDeferred === undefined)
-            cachedDeferred = $q.defer();
-        
-        if (cached) {
-            cachedDeferred.resolve(cached);
+        this.pullRequests = function() {
+            return cached;
         }
-        else {
-            requests()
-                .then(function () {
-                    console.log("Resolved");
-                    cachedDeferred.resolve(cached);
-                });
-        }
-            
-        if (cachedPromise == undefined)
-            cachedPromise = cachedDeferred.promise;
-        return cachedPromise;
-    }
 
-    function requests() {
-        if (requestDeferred === undefined)
-            requestDeferred  = $q.defer();
-        if (!requesting) {
-            requesting = true;
-            $http.get('data/PullRequests', { cache: false })
-                .then(function (response) {
+        this.isLoaded = function() {
+            return isLoaded;
+        }
+
+        function requests() {
+            isRunning = true;
+            return $http.get('data/PullRequests', { cache: false })
+                .then(function(response) {
                     cached = response.data || [];
-                    requesting = false;
-                    requestDeferred.resolve(cached);
-                    return cached;
+                    isLoaded = true;
+                    $timeout(requests, 3000);
+                    return response;
                 });
-                
         }
-        return requestDeferred.promise;
-    }
 
 
-    this.start = function () {
-        interval = $interval(requests, 3000);
+        this.start = function () {
+            if (!isRunning)
+                requests();
+            else
+                console.log("Pull Request Service Started multiple times.");
 
-    };
+        };
 
     this.stop = function () {
         if (interval)

@@ -234,3 +234,10 @@ appsettings.*.json
 
 src/*/wwwroot/lib/
 src/*/wwwroot/_references.js
+
+
+node_modules/
+bower_components/
+PublishProfiles/
+
+Service\ References/

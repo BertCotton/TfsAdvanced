@@ -1,4 +1,5 @@
-﻿using TfsAdvanced.Data;
+﻿using System.Collections.Concurrent;
+using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -48,14 +49,14 @@ namespace TfsAdvanced.ServiceRequests
         public Dictionary<string, KeyValuePair<Repository, Project>> GetProjects(RequestData requestData,
             IList<Repository> repos)
         {
-            var projects = new Dictionary<string, KeyValuePair<Repository, Project>>(repos.Count);
-            repos.ToList().ForEach(repository =>
+            var projects = new ConcurrentDictionary<string, KeyValuePair<Repository, Project>>();
+            Parallel.ForEach(repos, repository=> 
             {
-                projects.Add(repository.id,
+                projects.TryAdd(repository.id,
                     new KeyValuePair<Repository, Project>(repository, GetProject(requestData, repository)));
             });
 
-            return projects;
+            return projects.ToDictionary(pair => pair.Key, pair => pair.Value);
         }
     }
 }

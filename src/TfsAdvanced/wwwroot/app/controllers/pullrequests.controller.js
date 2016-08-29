@@ -1,8 +1,8 @@
 ﻿angular.module('TFS.Advanced')
     .controller('PullRequestsController',
     [
-        '$scope', '$q', '$interval', '$notification', '$filter', 'pullrequestsService', 'ProjectService',
-        function ($scope, $q, $interval, $notification, $filter, pullrequestsService, ProjectService) {
+        '$scope', '$notification', '$filter', 'pullrequestsService', 'ProjectService',
+        function ($scope, $notification, $filter, pullrequestsService, ProjectService) {
             'use strict';
 
             $scope.SelectedProject = "-1";
@@ -10,38 +10,50 @@
             $scope.RawPullRequests = [];
             $scope.IsLoading = true;
 
-            
-            $scope.load = function () {
-                pullrequestsService.get()
-                    .then(function (data) {
-                        $scope.RawPullRequests = data;
-                        filterPullRequests(data)
+
+            $scope.$watch(pullrequestsService.isLoaded,
+                function (isLoaded) {
+
+                    if (isLoaded) {
+                        filterData(pullrequestsService.pullRequests());
                         $scope.IsLoading = false;
-                    });
-            };
+                    }
+                });
 
+            $scope.$watchCollection(pullrequestsService.pullRequests,
+                function (data) {
+                    if ($scope.IsLoading) {
+                        return;
+                    }
+                    filterData(data);
 
-            $scope.load();
+                });
+            function filterData(data) {
+                if (data === undefined || data === null)
+                    return;
+                    $scope.RawPullRequests = data;
+                    filterPullRequests(data);
+                
+            }
 
             ProjectService.GET.success(function (data) {
                 $scope.projects = [{"id": "-1", "name": "Any"}].concat(data);
-                console.log(data);
             });
 
             function filterPullRequests(data)
             {
-                console.log("Filter");
-                var prs = $filter('orderBy')(data, "creationDate");
-                $scope.pullRequests = $filter('filter')(prs, function (record) {
-                    console.log("Filtering Record:", record.repository.project.id, " to ", $scope.SelectedProject);
-                    return $scope.SelectedProject === "-1" || $scope.SelectedProject == record.repository.project.id;
-                });
+                if (angular.isArray(data)) {
+                    var prs = $filter('orderBy')(data, "creationDate");
+                    $scope.pullRequests = $filter('filter')(prs,
+                        function(record) {
+                            return $scope.SelectedProject === "-1" ||
+                                $scope.SelectedProject === record.repository.project.id;
+                        });
+                } else {
+                    console.log("Response not an array:", data);
+                }
             }
             
-
-
-            $interval($scope.load, 1000);
-
             $scope.UpdateSelectedProject = function () {
                 filterPullRequests($scope.RawPullRequests);
             };
