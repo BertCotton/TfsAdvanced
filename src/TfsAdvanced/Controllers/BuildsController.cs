@@ -13,12 +13,12 @@ namespace TfsAdvanced.Controllers
         private static string BUILD_MEMORY_KEY = "Builds";
         private readonly BuildRequest buildRequest;
         private readonly IMemoryCache memoryCache;
-        private readonly TfsRequest tfsRequest;
+        private readonly RequestData requestData;
 
-        public BuildsController(IMemoryCache memoryCache, TfsRequest tfsRequest, BuildRequest buildRequest)
+        public BuildsController(IMemoryCache memoryCache, RequestData requestData, BuildRequest buildRequest)
         {
             this.memoryCache = memoryCache;
-            this.tfsRequest = tfsRequest;
+            this.requestData = requestData;
             this.buildRequest = buildRequest;
         }
 
@@ -29,15 +29,13 @@ namespace TfsAdvanced.Controllers
             if (memoryCache.TryGetValue(BUILD_MEMORY_KEY, out cachedBuilds))
                 return cachedBuilds;
 
-            using (var requestData = tfsRequest.GetRequestData())
-            {
-                var builds = buildRequest.GetAllBuilds(requestData);
+            var builds = buildRequest.GetAllBuilds(requestData);
 
-                memoryCache.Set(BUILD_MEMORY_KEY, builds,
-                    new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(10)));
+            memoryCache.Set(BUILD_MEMORY_KEY, builds,
+                new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(10)));
 
-                return builds;
-            }
+            return builds;
+
         }
     }
 }
