@@ -49,36 +49,46 @@ namespace TfsAdvanced.Infrastructure
                             //Stop the pipeline here.
                             Debug.WriteLine("Certificate is not valid");
                             context.Response.StatusCode = 403;
+                            await context.Response.WriteAsync("Certificate is not valid");
                         }
                     }
                     catch (Exception ex)
                     {
                         //What to do with exceptions in middleware?
                         Debug.WriteLine(ex.Message, ex);
-                        await context.Response.WriteAsync(ex.Message);
                         context.Response.StatusCode = 403;
+                        await context.Response.WriteAsync(ex.Message);
                     }
                 }
                 else
                 {
                     Debug.WriteLine("X-ARR-ClientCert header is missing");
                     context.Response.StatusCode = 403;
+                    await context.Response.WriteAsync("Client Certificate is missing");
                 }
             }
             catch (Exception ex)
             {
-                context.Response.Headers["Error"] = ex.Message;
                 context.Response.StatusCode = 400;
+                await context.Response.WriteAsync(ex.Message);
             }
         }
 
         private bool IsValidClientCertificate(X509Certificate2 certificate)
         {
             var _config = appSettings.CertificateValidation;
-            if (null == certificate) return false;
+            if (null == certificate)
+            {
+                throw new Exception("Certificate is null");
+                return false;
+            }
 
             // 1. Check time validity of certificate
-            if (DateTime.Compare(DateTime.Now, certificate.NotBefore) < 0 || DateTime.Compare(DateTime.Now, certificate.NotAfter) > 0) return false;
+            if (DateTime.Compare(DateTime.Now, certificate.NotBefore) < 0 ||
+                DateTime.Compare(DateTime.Now, certificate.NotAfter) > 0)
+            {
+                return false;
+            }
 
             // 2. Check subject name of certificate
             bool foundSubject = false;
@@ -91,7 +101,10 @@ namespace TfsAdvanced.Infrastructure
                     break;
                 }
             }
-            if (!foundSubject) return false;
+            if (!foundSubject)
+            {
+                return false;
+            }
 
             // 3. Check issuer name of certificate
             bool foundIssuerCN = false;
@@ -105,25 +118,16 @@ namespace TfsAdvanced.Infrastructure
                 }
             }
 
-            if (!foundIssuerCN) return false;
+            if (!foundIssuerCN)
+            {
+                return false;
+            }
 
             // 4. Check thumprint of certificate
-            if (String.Compare(certificate.Thumbprint.Trim().ToUpper(), _config.Thumbprint) != 0) return false;
-
-            // If you also want to test if the certificate chains to a Trusted Root Authority you can uncomment the code below
-            //
-            //X509Chain certChain = new X509Chain();
-            //certChain.Build(certificate);
-            //bool isValidCertChain = true;
-            //foreach (X509ChainElement chElement in certChain.ChainElements)
-            //{
-            //    if (!chElement.Certificate.Verify())
-            //    {
-            //        isValidCertChain = false;
-            //        break;
-            //    }
-            //}
-            //if (!isValidCertChain) return false;
+            if (String.Compare(certificate.Thumbprint.Trim().ToUpper(), _config.Thumbprint.ToUpper()) != 0)
+            {
+                return false;
+            }
 
             return true;
         }
