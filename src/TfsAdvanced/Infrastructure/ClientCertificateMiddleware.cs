@@ -33,7 +33,7 @@ namespace TfsAdvanced.Infrastructure
                 string certHeader = context.Request.Headers["X-ARR-ClientCert"];
                 if (String.IsNullOrEmpty(certHeader))
                     certHeader = context.Request.Headers["MS-ASPNETCORE-CLIENTCERT"];
-
+                
                 if (!String.IsNullOrEmpty(certHeader))
                 {
                     try
@@ -51,7 +51,7 @@ namespace TfsAdvanced.Infrastructure
                         {
                             //Stop the pipeline here.
                             Debug.WriteLine("Certificate is not valid");
-                 //           context.Response.StatusCode = 403;
+                            context.Response.StatusCode = 403;
                         }
                     }
                     catch (Exception ex)
@@ -65,13 +65,13 @@ namespace TfsAdvanced.Infrastructure
                 else
                 {
                     Debug.WriteLine("X-ARR-ClientCert header is missing");
-              //      context.Response.StatusCode = 403;
+                    context.Response.StatusCode = 403;
                 }
             }
             catch (Exception ex)
             {
                 context.Response.Headers["Error"] = ex.Message;
-            //    context.Response.StatusCode = 400;
+                context.Response.StatusCode = 400;
             }
         }
 
