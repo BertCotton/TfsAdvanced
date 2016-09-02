@@ -1,17 +1,35 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using Microsoft.Extensions.Options;
+using TfsAdvanced.Infrastructure;
 
 namespace TfsAdvanced.Data
 {
-    public class RequestData : IDisposable
+    public class RequestData
     {
-        public string BaseAddress { get; set; }
-        public HttpClient HttpClient { get; set; }
+        private readonly AppSettings appSettings;
 
-        public void Dispose()
+        public string BaseAddress { get; }
+        public HttpClient HttpClient { get; }
+
+        public RequestData(IOptions<AppSettings> settings)
         {
-            if (HttpClient != null)
-                HttpClient.Dispose();
+
+            appSettings = settings.Value;
+            HttpClientHandler handler = new HttpClientHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+            };
+            BaseAddress = appSettings.BaseAddress;
+            HttpClient = new HttpClient(handler);
+            HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var authorization = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{appSettings.Security.Username}:{appSettings.Security.Password}"));
+            HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authorization);
         }
+
+        
     }
 }

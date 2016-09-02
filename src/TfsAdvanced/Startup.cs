@@ -14,6 +14,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using System.Reflection;
 using System.IO;
+using TfsAdvanced.Data;
 
 namespace TfsAdvanced
 {
@@ -54,6 +55,8 @@ namespace TfsAdvanced
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
                 .Where(t => t.Name.EndsWith("Request") || t.Name.EndsWith("Repository"))
                 .AsSelf();
+
+            builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();

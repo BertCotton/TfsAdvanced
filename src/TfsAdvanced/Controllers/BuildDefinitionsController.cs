@@ -14,13 +14,13 @@ namespace TfsAdvanced.Controllers
         private static string DEFINITONS_CACHE_KEY = "BuildDefinitions";
         private readonly BuildDefinitionRequest buildDefinitionRequest;
         private readonly IMemoryCache memoryCache;
-        private readonly TfsRequest tfsRequest;
+        private readonly RequestData requestData;
 
-        public BuildDefinitionsController(TfsRequest tfsRequest, BuildDefinitionRequest buildDefinitionRequest, IMemoryCache memoryCache)
+        public BuildDefinitionsController(BuildDefinitionRequest buildDefinitionRequest, IMemoryCache memoryCache, RequestData requestData)
         {
-            this.tfsRequest = tfsRequest;
             this.buildDefinitionRequest = buildDefinitionRequest;
             this.memoryCache = memoryCache;
+            this.requestData = requestData;
         }
 
         [HttpPost]
@@ -29,11 +29,12 @@ namespace TfsAdvanced.Controllers
             if (!definitionIds.Any())
                 return NotFound();
 
-            using (var requestData = tfsRequest.GetRequestData())
-            {
-                var definitions = buildDefinitionRequest.GetAllBuildDefinitions(requestData).Where(x => definitionIds.Contains(x.id)).ToList();
-                buildDefinitionRequest.LaunchBuild(requestData, definitions);
-            }
+            var definitions =
+                buildDefinitionRequest.GetAllBuildDefinitions(requestData)
+                    .Where(x => definitionIds.Contains(x.id))
+                    .ToList();
+            buildDefinitionRequest.LaunchBuild(requestData, definitions);
+
             return Ok();
         }
 
@@ -46,14 +47,12 @@ namespace TfsAdvanced.Controllers
                 return cacheDefinitions;
             }
 
-            using (var requestData = tfsRequest.GetRequestData())
-            {
-                var definitions = buildDefinitionRequest.GetAllBuildDefinitions(requestData);
-                memoryCache.Set(DEFINITONS_CACHE_KEY, definitions,
-                    new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
+            var definitions = buildDefinitionRequest.GetAllBuildDefinitions(requestData);
+            memoryCache.Set(DEFINITONS_CACHE_KEY, definitions,
+                new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
 
-                return definitions;
-            }
+            return definitions;
+
         }
     }
 }

@@ -13,22 +13,20 @@ namespace TfsAdvanced.Controllers
     public class ProjectsController : Controller
     {
 
-        private readonly TfsRequest tfsRequest;
+        private readonly RequestData requestData;
         private readonly ProjectServiceRequest projectServiceRequests;
 
-        public ProjectsController(TfsRequest tfsRequest, ProjectServiceRequest projectServiceRequests)
+        public ProjectsController(RequestData requestData, ProjectServiceRequest projectServiceRequests)
         {
-            this.tfsRequest = tfsRequest;
+            this.requestData = requestData;
             this.projectServiceRequests = projectServiceRequests;
         }
 
         [HttpGet]
         public async Task<List<Project>> GetProjects()
         {
-            using (var requestData = tfsRequest.GetRequestData())
-            {
-                return await projectServiceRequests.GetProjects(requestData);
-            }
+            return await projectServiceRequests.GetProjects(requestData);
+
         }
     }
 }

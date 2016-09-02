@@ -20,11 +20,11 @@ namespace TfsAdvanced.Controllers
         private readonly ProjectServiceRequest projectServiceRequest;
         private readonly PullRequestServiceRequest pullRequestServiceRequest;
         private readonly RepositoryServiceRequest repositoryServiceRequest;
-        private readonly TfsRequest tfsRequest;
+        private readonly RequestData requestData;
 
-        public PullRequestsController(TfsRequest tfsRequest, ProjectServiceRequest projectServiceRequest, PullRequestServiceRequest pullRequestServiceRequest, RepositoryServiceRequest repositoryServiceRequest, IMemoryCache memoryCache)
+        public PullRequestsController(RequestData requestData, ProjectServiceRequest projectServiceRequest, PullRequestServiceRequest pullRequestServiceRequest, RepositoryServiceRequest repositoryServiceRequest, IMemoryCache memoryCache)
         {
-            this.tfsRequest = tfsRequest;
+            this.requestData = requestData;
             this.projectServiceRequest = projectServiceRequest;
             this.pullRequestServiceRequest = pullRequestServiceRequest;
             this.repositoryServiceRequest = repositoryServiceRequest;
@@ -37,17 +37,16 @@ namespace TfsAdvanced.Controllers
             IList<PullRequest> cachedModel;
             if (memoryCache.TryGetValue(CACHE_KEY, out cachedModel))
                 return cachedModel;
-            
-            using (var requestData = tfsRequest.GetRequestData())
-            {
-                var repositories = repositoryServiceRequest.GetAllRepositories(requestData);
-                var projects = projectServiceRequest.GetProjects(requestData, repositories);
-                var pullRequest = pullRequestServiceRequest.GetPullRequests(requestData, projects);
 
-                memoryCache.Set(CACHE_KEY, pullRequest, new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(10)));
+            var repositories = repositoryServiceRequest.GetAllRepositories(requestData);
+            var projects = projectServiceRequest.GetProjects(requestData, repositories);
+            var pullRequest = pullRequestServiceRequest.GetPullRequests(requestData, projects);
 
-                return pullRequest;
-            }
+            memoryCache.Set(CACHE_KEY, pullRequest,
+                new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(10)));
+
+            return pullRequest;
+
         }
     }
 }
