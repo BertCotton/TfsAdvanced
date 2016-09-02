@@ -5,19 +5,19 @@
         var text = "";
         var color = "default";
         switch (result) {
-            case 0:
+            case "failed":
                 text = "Failed";
                 color = "red";
                 break;
-            case 1:
+            case "succeeded":
                 text = "Succeeded";
                 color = "green";
                 break;
-            case 2:
+            case "partiallySucceeded":
                 text = "Partially Succeeded";
                 color = "red";
                 break;
-            case 3:
+            case "cancelled":
                 text = "Cancelled";
                 color = "yellow";
                 break;

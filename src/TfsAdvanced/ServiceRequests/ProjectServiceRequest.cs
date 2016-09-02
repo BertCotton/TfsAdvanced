@@ -1,12 +1,14 @@
-﻿using System.Collections.Concurrent;
-using TfsAdvanced.Data;
-using TfsAdvanced.Infrastructure;
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TfsAdvanced.Data;
+using TfsAdvanced.Data.Projects;
+using TfsAdvanced.Data.Repositories;
+using TfsAdvanced.Infrastructure;
 
 namespace TfsAdvanced.ServiceRequests
 {
@@ -50,7 +52,7 @@ namespace TfsAdvanced.ServiceRequests
             IList<Repository> repos)
         {
             var projects = new ConcurrentDictionary<string, KeyValuePair<Repository, Project>>();
-            Parallel.ForEach(repos, repository=> 
+            Parallel.ForEach(repos, repository =>
             {
                 projects.TryAdd(repository.id,
                     new KeyValuePair<Repository, Project>(repository, GetProject(requestData, repository)));

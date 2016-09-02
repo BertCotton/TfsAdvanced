@@ -10,12 +10,11 @@
             $scope.dtOptions = DTOptionsBuilder.newOptions().withOption('order', [1, 'asc']);
 
             function load() {
-                return workItemService.workItems().then(function(data) {
+                return workItemService.workItems().then(function (data) {
                     $scope.workItems = data;
                     $scope.IsLoading = false;
                 });
-
-            };
+            }
 
             load();
         }

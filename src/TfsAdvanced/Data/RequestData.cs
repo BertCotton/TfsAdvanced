@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.Extensions.Options;
 using TfsAdvanced.Infrastructure;
 
 namespace TfsAdvanced.Data
@@ -17,7 +17,6 @@ namespace TfsAdvanced.Data
 
         public RequestData(IOptions<AppSettings> settings)
         {
-
             appSettings = settings.Value;
             HttpClientHandler handler = new HttpClientHandler()
             {
@@ -29,7 +28,5 @@ namespace TfsAdvanced.Data
             var authorization = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{appSettings.Security.Username}:{appSettings.Security.Password}"));
             HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authorization);
         }
-
-        
     }
 }

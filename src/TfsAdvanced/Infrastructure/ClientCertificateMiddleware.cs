@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using System;
 using System.Diagnostics;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 
 namespace TfsAdvanced.Infrastructure
 {
@@ -26,14 +24,13 @@ namespace TfsAdvanced.Infrastructure
             //Validate the cert here
             try
             {
-
                 bool isValidCert = false;
                 X509Certificate2 certificate = null;
 
                 string certHeader = context.Request.Headers["X-ARR-ClientCert"];
                 if (String.IsNullOrEmpty(certHeader))
                     certHeader = context.Request.Headers["MS-ASPNETCORE-CLIENTCERT"];
-                
+
                 if (!String.IsNullOrEmpty(certHeader))
                 {
                     try
@@ -75,7 +72,6 @@ namespace TfsAdvanced.Infrastructure
             }
         }
 
-
         private bool IsValidClientCertificate(X509Certificate2 certificate)
         {
             var _config = appSettings.CertificateValidation;
@@ -107,7 +103,6 @@ namespace TfsAdvanced.Infrastructure
                     foundIssuerCN = true;
                     break;
                 }
-
             }
 
             if (!foundIssuerCN) return false;
@@ -132,8 +127,5 @@ namespace TfsAdvanced.Infrastructure
 
             return true;
         }
-
     }
-
-   
 }

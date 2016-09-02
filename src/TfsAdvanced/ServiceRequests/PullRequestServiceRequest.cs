@@ -1,11 +1,14 @@
-﻿using System.Collections.Concurrent;
-using TfsAdvanced.Data;
-using TfsAdvanced.Infrastructure;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TfsAdvanced.Data;
+using TfsAdvanced.Data.Projects;
+using TfsAdvanced.Data.PullRequests;
+using TfsAdvanced.Data.Repositories;
+using TfsAdvanced.Infrastructure;
 
 namespace TfsAdvanced.ServiceRequests
 {
@@ -29,7 +32,7 @@ namespace TfsAdvanced.ServiceRequests
             var pullResponse = await requestData.HttpClient.GetStringAsync(project._links.pullRequests.href);
             var pullResponseObject = JsonConvert.DeserializeObject<Response<IEnumerable<PullRequest>>>(pullResponse);
             var pullRequests = pullResponseObject.value.ToList();
-            Parallel.ForEach(pullRequests, pr=> 
+            Parallel.ForEach(pullRequests, pr =>
             {
                 pr.repository = repo;
                 pr.remoteUrl = BuildPullRequestUrl(pr, requestData.BaseAddress);
@@ -42,14 +45,14 @@ namespace TfsAdvanced.ServiceRequests
         {
             var pullRequests = new ConcurrentStack<PullRequest>();
             var repoIds = projects.Keys.ToList();
-            Parallel.ForEach(repoIds, repoId => 
+            Parallel.ForEach(repoIds, repoId =>
             {
                 var pair = projects[repoId];
                 var repo = pair.Key;
                 var project = pair.Value;
                 var projectPullRequests = GetPullRequests(requestData, repo, project).Result;
-                if(projectPullRequests.Any())
-                  pullRequests.PushRange(projectPullRequests.ToArray());
+                if (projectPullRequests.Any())
+                    pullRequests.PushRange(projectPullRequests.ToArray());
             });
             return pullRequests.ToList();
         }

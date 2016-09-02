@@ -1,13 +1,10 @@
-﻿using TfsAdvanced.Data;
-using TfsAdvanced.Infrastructure;
-using TfsAdvanced.ServiceRequests;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
+using TfsAdvanced.Data;
+using TfsAdvanced.Data.PullRequests;
+using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
 {
@@ -46,7 +43,6 @@ namespace TfsAdvanced.Controllers
                 new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(10)));
 
             return pullRequest;
-
         }
     }
 }

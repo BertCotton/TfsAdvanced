@@ -24,12 +24,7 @@ app.config(function ($stateProvider, $urlRouterProvider) {
     .state('Builds', {
         url: '/builds',
         templateUrl: 'views/builds.html'
-    })
-    .state("WorkItems",
-        {
-            url: '/workItems',
-            templateUrl: 'views/workItems.html'
-        });
+    });
 
     $urlRouterProvider.otherwise('/');
 });

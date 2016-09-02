@@ -9,13 +9,13 @@ var watch = require("gulp-watch");
 var uglify = require("gulp-uglify");
 
 gulp.task("clean:js",
-    function(cb) {
+    function (cb) {
         return gulp.src("./wwwroot/js/**/*.js")
             .pipe(clean());
     });
 
 gulp.task("clean:css",
-    function(cb) {
+    function (cb) {
         return gulp.src("./wwwroot/css/**/*.css")
             .pipe(clean());
     });
@@ -24,7 +24,7 @@ gulp.task("clean", ["clean:js", "clean:css"]);
 
 gulp.task("concat:js",
     ["clean:js"],
-    function() {
+    function () {
         return gulp.src([
                 "./node_modules/jquery/dist/jquery.js",
                 "./node_modules/bootstrap/dist/js/bootstrap.js",
@@ -44,7 +44,7 @@ gulp.task("concat:js",
                 "./wwwroot/app/filters/*.js",
                 "./wwwroot/app/services/*.js",
                 "./wwwroot/app/controllers/*.js"
-            ])
+        ])
             .pipe(debug())
             .pipe(concat("./wwwroot/js/app.min.js"))
             //.pipe(uglify())
@@ -53,12 +53,12 @@ gulp.task("concat:js",
 
 gulp.task("copy:css",
     ["clean:css"],
-    function() {
+    function () {
         return gulp.src([
                 "./node_modules/bootstrap/dist/css/bootstrap.min.css",
                 "./node_modules/angular-datatables/dist/css/angular-datatables.min.css",
                 "./wwwroot/app/css/**.css"
-            ])
+        ])
             .pipe(debug())
             .pipe(concat("./wwwroot/css/site.min.css"))
             //.pipe(cssmin())
@@ -68,6 +68,6 @@ gulp.task("copy:css",
 gulp.task("build", ["concat:js", "copy:css"]);
 
 gulp.task("watch",
-    function() {
+    function () {
         return gulp.watch("wwwroot/app/**/*.js", ["concat:js"]);
     });

@@ -6,6 +6,7 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
         var cached = [];
         var isLoaded = false;
         var isRunning = false;
+        var isCancelled = false;
 
         this.pullRequests = function() {
             return cached;
@@ -21,7 +22,8 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
                 .then(function(response) {
                     cached = response.data || [];
                     isLoaded = true;
-                    $timeout(requests, 3000);
+                    if(!isCancelled)
+                        $timeout(requests, 3000);
                     return response;
                 });
         }
@@ -36,7 +38,7 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
         };
 
     this.stop = function () {
-        if (interval)
-            interval.cancel();
+        isCancelled = true;
+        isRunning = false;
     }
 }]);

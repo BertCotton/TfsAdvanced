@@ -1,8 +1,15 @@
 ﻿<div class="container" ng-controller="BuildsController">
-    <div id="Loading" ng-if="IsLoading">
+    <div id="Loading" ng-if="!IsLoaded">
         <div class="loader"></div>
     </div>
-    <div class="row" ng-if="!IsLoading">
+    <div class="row" ng-if="IsLoaded">
+        <div class="col-lg-4">
+            <select class="form-control" ng-model="SelectedProjectId" ng-change="UpdateSelectedProject()">
+                <option ng-repeat="project in projects" value="{{project.id}}">{{project.name}}</option>
+            </select>
+        </div>
+    </div>
+    <div class="row" ng-if="IsLoaded">
         <table datatable="" dt-options="dtOptions" class="table table-striped" id="buildsTable">
             <thead>
             <tr>

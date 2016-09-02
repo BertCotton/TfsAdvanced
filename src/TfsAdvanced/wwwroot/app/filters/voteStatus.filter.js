@@ -1,7 +1,5 @@
 ﻿angular.module('TFS.Advanced').filter('voteStatus', function ($sce) {
     return function (reviewer) {
-
-        
         if (reviewer === undefined || reviewer.vote === undefined)
             return "<span></span>";
         var color = "default";
@@ -21,7 +19,7 @@
                 break;
             case 5:
                 status = "Approved With Suggestions";
-                color = "yellow";
+                color = "orange";
                 break;
             case 10:
                 status = "Approved";

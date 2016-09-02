@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
-using TfsAdvanced.Infrastructure;
-using Microsoft.Extensions.Configuration;
-using Autofac;
-using Autofac.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.IO;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using TfsAdvanced.Data;
+using TfsAdvanced.Infrastructure;
 
 namespace TfsAdvanced
 {
@@ -22,7 +21,6 @@ namespace TfsAdvanced
     {
         private string siteName = Environment.GetEnvironmentVariable("SiteName") ?? "ius";
         public IConfigurationRoot Configuration { get; set; }
-
 
         public Startup(IHostingEnvironment env)
         {
@@ -42,10 +40,12 @@ namespace TfsAdvanced
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                options.SerializerSettings.Converters.Add(new StringEnumConverter {CamelCaseText = true});
             });
 
             services.AddMemoryCache();
             
+
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             var builder = new ContainerBuilder();
@@ -61,20 +61,35 @@ namespace TfsAdvanced
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
             return serviceProvider;
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            SetJsonSerializer();
+
             app.UseDeveloperExceptionPage();
-            
+
             app.UseDefaultFiles();
             app.UseStaticFiles();
-            if(!env.IsDevelopment())
+            if (!env.IsDevelopment())
                 app.UseClientCertMiddleware();
             app.UseMvc();
+        }
 
+        private void SetJsonSerializer()
+        {
+            var defaultSettings = new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Converters = new List<JsonConverter>
+                        {
+                            new StringEnumConverter{ CamelCaseText = true },
+                        }
+            };
+
+            JsonConvert.DefaultSettings = () => defaultSettings;
         }
     }
 }

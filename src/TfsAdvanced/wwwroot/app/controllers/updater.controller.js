@@ -1,54 +1,50 @@
-﻿angular.module('TFS.Advanced').controller('UpdaterController',['$scope', '$interval', '$notification', "$filter", 'buildsService', 'pullrequestsService',
+﻿angular.module('TFS.Advanced').controller('UpdaterController', ['$scope', '$interval', '$notification', "$filter", 'buildsService', 'pullrequestsService',
         function ($scope, $interval, $notification, $filter, buildsService, pullrequestsService) {
             'use strict';
 
-            var isLoadingBuilds = false;
+            var isBuildsLoaded = true;
+            var isPRsLoaded = true;
             var pullRequestUpdates = [];
+            var pullRequests = [];
+            var initialPRLoadDone = false;
+            var latestBuildId = 0;
+            var builds = [];
+
 
             pullrequestsService.start();
             buildsService.start();
 
-            $interval(function() {
-                loadBuilds();
-            }, 2000);
+            $scope.$watch(pullrequestsService.IsLoading,
+                function(isLoaded) {
+                    isPRsLoaded = isLoaded;
+                });
 
             $scope.$watchCollection(pullrequestsService.pullRequests,
-                function (data) {
-                    loadPullRequests(data);
-                });
-
-            var pullRequests = [];
-            var initialPRLoadDone = false;
-
-            function loadPullRequests(data) {
-
-                if (data === undefined)
-                    return;
-                var prUpdates = [];
-                data.forEach(function(pr) {
-                    if (pr.pullRequestId)
-                        prUpdates[pr.pullRequestId] = pr;
-                });
-
-                if (initialPRLoadDone) {
-                    prUpdates.forEach(function(pr) {
-                        if (pr.pullRequestId && pullRequestUpdates[pr.pullRequestId] === undefined) {
-                            newPrNotification(pr);
-                        }
+                function(data) {
+                    if (data === undefined || isPRsLoaded)
+                        return;
+                    var prUpdates = [];
+                    data.forEach(function(pr) {
+                        if (pr.pullRequestId)
+                            prUpdates[pr.pullRequestId] = pr;
                     });
 
-                    pullRequests.forEach(function(pr) {
-                        if (pr.pullRequests && prUpdates[pr.pullRequestId] === undefined)
-                            removedPrNotification(pr);
-                    });
-                }
+                    if (initialPRLoadDone) {
+                        prUpdates.forEach(function(pr) {
+                            if (pr.pullRequestId && pullRequestUpdates[pr.pullRequestId] === undefined) {
+                                newPrNotification(pr);
+                            }
+                        });
 
-                pullRequestUpdates = prUpdates;
-                pullRequests = data;
+                        pullRequests.forEach(function(pr) {
+                            if (pr.pullRequests && prUpdates[pr.pullRequestId] === undefined)
+                                removedPrNotification(pr);
+                        });
+                    }
 
-                initialPRLoadDone = true;
-
-            }
+                    pullRequestUpdates = prUpdates;
+                    pullRequests = data;
+                });
 
             function newPrNotification(pr) {
                 $notification('New PR From  ' + pr.createdBy.displayName,
@@ -70,25 +66,27 @@
                 });
             }
 
-            var latestBuildId = 0;
-            var builds = [];
+            $scope.$watch(buildsService.IsLoading,
+                function (isLoaded) {
+                    isBuildsLoaded = isLoaded;
+                });
 
-            function loadBuilds() {
-                if (isLoadingBuilds)
-                    return;
-                isLoadingBuilds = true;
-                buildsService.get().then(function (data) {
+
+            $scope.$watchCollection(buildsService.builds,
+                function(data) {
+                    if (data === undefined || isBuildsLoaded)
+                        return;
+
                     builds = $filter('orderBy')(data, "id", true);
                     var updatedBuilds = $filter('filter')(data,
-                        function (build) {
-                            return build.id > latestBuildId;
-                        }) || [];
-
-                    
+                            function(build) {
+                                return build.id > latestBuildId;
+                            }) ||
+                        [];
 
                     if (latestBuildId > 0) {
                         updatedBuilds.forEach(function(build) {
-                            if (build.status > 1 && build.result === 0)
+                            if (build.status === "completed" && build.result === "failed")
                                 newFailedBuildNotification(build);
                         });
                     }
@@ -96,9 +94,7 @@
                     if (builds.length > 0)
                         latestBuildId = builds[0].id;
 
-                    isLoadingBuilds = false;
                 });
-            }
 
             function newFailedBuildNotification(build) {
                 console.log(build);
@@ -111,6 +107,4 @@
                 });
             }
 
-            loadPullRequests();
-            loadBuilds();
-}]);
+        }]);

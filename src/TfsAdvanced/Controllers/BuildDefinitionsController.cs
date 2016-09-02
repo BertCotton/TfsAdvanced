@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using TfsAdvanced.Data;
+using TfsAdvanced.Data.Builds;
 using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
@@ -52,7 +53,6 @@ namespace TfsAdvanced.Controllers
                 new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
 
             return definitions;
-
         }
     }
 }

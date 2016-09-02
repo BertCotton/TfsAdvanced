@@ -1,18 +1,15 @@
-﻿using TfsAdvanced.Data;
-using TfsAdvanced.ServiceRequests;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using TfsAdvanced.Data;
+using TfsAdvanced.Data.Projects;
+using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
 {
     [Route("/data/Projects")]
     public class ProjectsController : Controller
     {
-
         private readonly RequestData requestData;
         private readonly ProjectServiceRequest projectServiceRequests;
 
@@ -26,7 +23,6 @@ namespace TfsAdvanced.Controllers
         public async Task<List<Project>> GetProjects()
         {
             return await projectServiceRequests.GetProjects(requestData);
-
         }
     }
 }

@@ -1,51 +1,44 @@
 ﻿/*globals angular */
-angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$interval', function ($http, $q, $interval) {
+angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeout', function ($http, $q, $timeout) {
     'use strict';
 
-    var cached = undefined;
-    var interval = undefined;
-    var requesting = false;
+    var cached = [];
+    var isLoaded = false;
+    var isRunning = false;
+    var isCancelled = false;
 
-    this.get = function () {
-        var defer = $q.defer();
-        if (cached == undefined)
-            builds()
-                .then(function () {
-                    defer.resolve(cached);
-                });
-        else
-            defer.resolve(cached);
-        return defer.promise;
-    }
+    this.builds = function() {
+        return cached;
+    };
+
+    this.isLoaded = function() {
+        return isLoaded;
+    };
 
     function builds() {
-        var defer = $q.defer();
-        if (!requesting) {
-            requesting = true;
-            $http.get('data/Builds', { cache: false })
-                .then(function(response) {
-                        cached = response.data || [];
-                        return cached;
-                    },
-                    function(reason) {
-                        cached = [];
-                        console.log(reason);
-                    })
-                .then(function() {
-                    requesting = false;
-                    defer.resolve();
-                });
-        }
-        return defer.promise;
+        isRunning = true;
+        return $http.get('data/Builds', { cache: false })
+            .then(function(response) {
+                cached = response.data || [];
+                isLoaded = true;
+                if(!isCancelled)
+                    $timeout(builds, 3000);
+                return response;
+            });
     }
 
     this.start = function () {
-        interval = $interval(builds, 3000);
+        isCancelled = false;
+        if (!isRunning)
+            builds();
+        else {
+            console.log("Builds Request Service Started Multiple Times.");
+        }
 
     };
 
     this.stop = function() {
-        if(interval)
-            interval.cancel();
-    }
+        isCancelled = true;
+        isRunning = false;
+    };
 }]);

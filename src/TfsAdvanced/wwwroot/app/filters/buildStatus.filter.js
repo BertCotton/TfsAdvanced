@@ -5,27 +5,27 @@
         var text = "";
         var color = "default";
         switch(status) {
-            case 0:
+            case "inProgress":
                 text = "In Progress";
                 color = "blue";
                 break;
-            case 1:
+            case "completed":
                 text = "Completed";
                 color = "green";
                 break;
-            case 2:
+            case "cancelling":
                 text = "Cancelling";
                 color = "orange";
                 break;
-            case 3:
+            case "postponed":
                 text = "Postponed";
                 color = "yellow";
                 break;
-            case 4:
+            case "notStarted":
                 text = "Not Started";
                 color = "gray";
                 break;
-            case 5:
+            case "all":
                 text = "All";
                 color = "gray";
                 break;
