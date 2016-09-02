@@ -66,8 +66,6 @@ namespace TfsAdvanced
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            SetJsonSerializer();
-
             app.UseDeveloperExceptionPage();
 
             app.UseDefaultFiles();
@@ -75,21 +73,6 @@ namespace TfsAdvanced
             if (!env.IsDevelopment())
                 app.UseClientCertMiddleware();
             app.UseMvc();
-        }
-
-        private void SetJsonSerializer()
-        {
-            var defaultSettings = new JsonSerializerSettings
-            {
-                Formatting = Formatting.Indented,
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Converters = new List<JsonConverter>
-                        {
-                            new StringEnumConverter{ CamelCaseText = true },
-                        }
-            };
-
-            JsonConvert.DefaultSettings = () => defaultSettings;
         }
     }
 }
