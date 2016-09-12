@@ -38,7 +38,7 @@
             </div>
             <div class="col-lg-2 padding col-md-12">
                 <div class="media">
-                    <div class="media-left"><img class="media-object" src="{{pr.createdBy.imageUrl}}" alt="User Photo" height="50" width="50"></div>
+                    <div class="media-left"><img class="media-object" ng-src="{{pr.createdBy.imageUrl}}" alt="User Photo" height="50" width="50"></div>
                     <div class="media-body">
                         <h5 class="media-heading">
                             {{pr.createdBy.displayName}}
@@ -50,9 +50,9 @@
             <div class="col-lg-6 col-md-12 padding">
                 <div class="container" ng-if="pr.reviewers">
                     <div class="row">
-                        <div class="col-lg-6 col-md-3 col-sm-2" ng-repeat="reviewer in pr.reviewers | filter: { displayName : '![Benefits]\Benefits Team'}">
+                        <div class="col-lg-6 col-md-3 col-sm-2" ng-repeat="reviewer in pr.reviewers">
                             <div class="media">
-                                <div class="media-left"><img class="media-object" src="{{reviewer.imageUrl}}" alt="User Photo" height="50" width="50"></div>
+                                <div class="media-left"><img class="media-object" ng-src="{{reviewer.imageUrl}}" alt="User Photo" height="50" width="50"></div>
                                 <div class="media-body">
                                     <span ng-bind-html="reviewer | voteStatus"></span>
                                 </div>

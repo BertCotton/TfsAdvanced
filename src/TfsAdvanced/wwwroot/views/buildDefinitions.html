@@ -1,5 +1,4 @@
 ﻿<div class="container" ng-controller="BuildDefinitionController">
-    <form action="data/Builds/BuildDefinitions">
         <div class="row">
             <label for="DevBuildsOnly">Dev Builds Only</label>
             <input type="checkbox" name="DevBuildsOnly" />
@@ -8,7 +7,7 @@
                     <tr>
                         <th style="width:225px">
                             <button ng-click="toggle()" type="button" class="btn btn-default">Toggle</button>
-                            <button type="submit" class="btn btn-success" id="launch"  ng-disabled="noneChecked()" >Launch Selected</button>
+                            <button ng-click="queueDefinitions()" class="btn btn-success" id="launch"  ng-disabled="noneChecked()" >Launch Selected</button>
                         </th>
                         <th>Repository Name</th>
                         <th>Build Definition Name</th>
@@ -29,5 +28,4 @@
                 </tbody>
             </table>
         </div>
-    </form>
 </div>

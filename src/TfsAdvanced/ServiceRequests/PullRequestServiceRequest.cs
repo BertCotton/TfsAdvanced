@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Memory;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Projects;
 using TfsAdvanced.Data.PullRequests;
@@ -15,9 +17,12 @@ namespace TfsAdvanced.ServiceRequests
     public class PullRequestServiceRequest
     {
         private readonly AppSettings appSettings;
+        private readonly IMemoryCache memoryCache;
+        private string MEMORY_REPOSITORY_KEY = "MEMORY_REPOSITORY_KEY-";
 
-        public PullRequestServiceRequest(IOptions<AppSettings> appSettings)
+        public PullRequestServiceRequest(IOptions<AppSettings> appSettings, IMemoryCache memoryCache)
         {
+            this.memoryCache = memoryCache;
             this.appSettings = appSettings.Value;
         }
 
@@ -29,6 +34,10 @@ namespace TfsAdvanced.ServiceRequests
 
         public async Task<IList<PullRequest>> GetPullRequests(RequestData requestData, Repository repo, Project project)
         {
+            string cacheKey = MEMORY_REPOSITORY_KEY + repo.id + project.id;
+            IList<PullRequest> cached;
+            if (memoryCache.TryGetValue(cacheKey, out cached))
+                return cached;
             var pullResponse = await requestData.HttpClient.GetStringAsync(project._links.pullRequests.href);
             var pullResponseObject = JsonConvert.DeserializeObject<Response<IEnumerable<PullRequest>>>(pullResponse);
             var pullRequests = pullResponseObject.value.ToList();
@@ -37,6 +46,8 @@ namespace TfsAdvanced.ServiceRequests
                 pr.repository = repo;
                 pr.remoteUrl = BuildPullRequestUrl(pr, requestData.BaseAddress);
             });
+
+            memoryCache.Set(cacheKey, pullRequests, TimeSpan.FromSeconds(20));
 
             return pullRequests;
         }

@@ -4,17 +4,19 @@ var app = angular.module('TFS.Advanced', [
     'ngCookies',
     'ngSanitize',
     'ngResource',
+    'ngRoute',
     'ui.router',
     'ui.bootstrap',
     'notification',
-    'datatables'
+    'datatables',
+    "angular-appinsights"
 ]);
 
-app.config(function ($stateProvider, $urlRouterProvider) {
+app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, insightsProvider) {
     'use strict';
 
     $stateProvider.state('pullRequests', {
-        url: '/',
+        url: '/pullRequests',
         templateUrl: 'views/pullrequests.html'
     })
     .state('BuildDefinitions', {
@@ -26,5 +28,7 @@ app.config(function ($stateProvider, $urlRouterProvider) {
         templateUrl: 'views/builds.html'
     });
 
-    $urlRouterProvider.otherwise('/');
+    insightsProvider.start('61137fb3-e654-4fb7-88d3-242de0edf9d6');
+
+    $urlRouterProvider.otherwise('/pullRequests');
 });

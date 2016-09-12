@@ -79,7 +79,6 @@ namespace TfsAdvanced.Infrastructure
             var _config = appSettings.CertificateValidation;
             if (null == certificate)
             {
-                throw new Exception("Certificate is null");
                 return false;
             }
 

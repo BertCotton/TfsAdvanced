@@ -11,14 +11,11 @@ namespace TfsAdvanced.Controllers
     [Route("data/Builds")]
     public class BuildsController : Controller
     {
-        private static string BUILD_MEMORY_KEY = "Builds";
         private readonly BuildRequest buildRequest;
-        private readonly IMemoryCache memoryCache;
         private readonly RequestData requestData;
 
-        public BuildsController(IMemoryCache memoryCache, RequestData requestData, BuildRequest buildRequest)
+        public BuildsController(RequestData requestData, BuildRequest buildRequest)
         {
-            this.memoryCache = memoryCache;
             this.requestData = requestData;
             this.buildRequest = buildRequest;
         }
@@ -26,16 +23,7 @@ namespace TfsAdvanced.Controllers
         [HttpGet]
         public IList<Build> Index()
         {
-            List<Build> cachedBuilds;
-            if (memoryCache.TryGetValue(BUILD_MEMORY_KEY, out cachedBuilds))
-                return cachedBuilds;
-
-            var builds = buildRequest.GetAllBuilds(requestData);
-
-            memoryCache.Set(BUILD_MEMORY_KEY, builds,
-                new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(10)));
-
-            return builds;
+            return buildRequest.GetAllBuilds(requestData);
         }
     }
 }

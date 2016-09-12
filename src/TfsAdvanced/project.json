@@ -13,8 +13,8 @@
     "Autofac": "4.0.0",
     "Autofac.Configuration": "4.0.0",
     "Autofac.Extensions.DependencyInjection": "4.0.0",
-    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0-rc2-final",
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
+    "Microsoft.Extensions.Caching.Abstractions": "1.0.0",
     "Microsoft.Extensions.Caching.Memory": "1.0.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
     "Microsoft.AspNetCore.StaticFiles": "1.0.0",
@@ -32,6 +32,7 @@
         "portable-net45+win8"
       ]
     }
+    
   },
 
   "buildOptions": {

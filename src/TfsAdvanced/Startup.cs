@@ -27,9 +27,12 @@ namespace TfsAdvanced
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile($"appsettings.{siteName}.json", true)
+                .AddJsonFile("appsettings.json", optional:false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{siteName}.json", optional:true, reloadOnChange:true )
                 .AddEnvironmentVariables();
+
+            builder.AddApplicationInsightsSettings(developerMode: true);
+
             Configuration = builder.Build();
         }
 
@@ -42,7 +45,7 @@ namespace TfsAdvanced
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 options.SerializerSettings.Converters.Add(new StringEnumConverter {CamelCaseText = true});
             });
-
+            services.AddApplicationInsightsTelemetry(Configuration);
             services.AddMemoryCache();
             
 
@@ -54,9 +57,13 @@ namespace TfsAdvanced
 
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
                 .Where(t => t.Name.EndsWith("Request") || t.Name.EndsWith("Repository"))
-                .AsSelf();
+                .AsSelf()
+                .SingleInstance();
+
+            builder.RegisterType<Cache>().AsSelf().SingleInstance();
 
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
+            
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
@@ -72,6 +79,10 @@ namespace TfsAdvanced
             app.UseStaticFiles();
             if (!env.IsDevelopment())
                 app.UseClientCertMiddleware();
+
+            app.UseApplicationInsightsExceptionTelemetry();
+            app.UseApplicationInsightsRequestTelemetry();
+
             app.UseMvc();
         }
     }
