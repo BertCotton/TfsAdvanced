@@ -37,7 +37,7 @@ namespace TfsAdvanced.Infrastructure
         {
             Debug.WriteLine($"Cache set [{key}] for {cacheTime}");
             memoryCache.Set(key, value, new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(cacheTime)
+                .SetAbsoluteExpiration(cacheTime)
                 .RegisterPostEvictionCallback((o, value1, reason, state) =>
                 {
                     Debug.WriteLine($"Cache Eviction of {o} because of {reason}");
