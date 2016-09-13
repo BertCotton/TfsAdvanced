@@ -17,24 +17,24 @@ namespace TfsAdvanced.ServiceRequests
     {
         private static string PROJECT_MEM_KEY = "Projects";
         private readonly AppSettings appSettings;
-        private readonly IMemoryCache memoryCache;
+        private readonly Cache cache;
 
-        public ProjectServiceRequest(IOptions<AppSettings> appSettings, IMemoryCache memoryCache)
+        public ProjectServiceRequest(IOptions<AppSettings> appSettings, Cache cache)
         {
-            this.memoryCache = memoryCache;
+            this.cache = cache;
             this.appSettings = appSettings.Value;
         }
 
         public Project GetProject(RequestData requestData, Repository repo)
         {
             string cacheKey = PROJECT_MEM_KEY + "-" + repo.id;
-            Project cached;
-            if (memoryCache.TryGetValue(cacheKey, out cached))
+            Project cached = cache.Get<Project>(cacheKey);
+            if(cached != null)
                 return cached;
             var projectsResponse = requestData.HttpClient.GetStringAsync(repo.url).Result;
             Project project = JsonConvert.DeserializeObject<Project>(projectsResponse);
 
-            memoryCache.Set(cacheKey, project, TimeSpan.FromHours(1));
+            cache.Put(cacheKey, project, TimeSpan.FromHours(1));
 
             return project;
 
@@ -42,8 +42,7 @@ namespace TfsAdvanced.ServiceRequests
 
         public async Task<List<Project>> GetProjects(RequestData requestData)
         {
-            List<Project> cachedProjects;
-            memoryCache.TryGetValue(PROJECT_MEM_KEY, out cachedProjects);
+            List<Project> cachedProjects = cache.Get<List<Project>>(PROJECT_MEM_KEY);
             if (cachedProjects != null)
                 return cachedProjects;
 
@@ -53,7 +52,7 @@ namespace TfsAdvanced.ServiceRequests
             var projects = responseObject.value.ToList();
 
             projects = projects.Where(p => appSettings.Projects.Contains(p.name)).ToList();
-            memoryCache.Set(PROJECT_MEM_KEY, projects, TimeSpan.FromHours(1));
+            cache.Put(PROJECT_MEM_KEY, projects, TimeSpan.FromHours(1));
 
             return projects;
         }

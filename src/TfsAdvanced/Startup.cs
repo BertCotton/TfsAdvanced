@@ -55,12 +55,15 @@ namespace TfsAdvanced
 
             builder.Populate(services);
 
+            builder.RegisterType<CacheStats>().AsSelf().SingleInstance();
+            builder.RegisterType<Cache>().AsSelf().SingleInstance();
+
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
                 .Where(t => t.Name.EndsWith("Request") || t.Name.EndsWith("Repository"))
                 .AsSelf()
                 .SingleInstance();
 
-            builder.RegisterType<Cache>().AsSelf().SingleInstance();
+            
 
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
             

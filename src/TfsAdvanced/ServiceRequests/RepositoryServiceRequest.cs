@@ -18,12 +18,12 @@ namespace TfsAdvanced.ServiceRequests
     public class RepositoryServiceRequest
     {
         private readonly AppSettings appSettings;
-        private IMemoryCache memoryCache;
+        private Cache cache;
         private string REPOSITORY_LIST_MEMORY_KEY = "RepositoryListMemoryKey-";
 
-        public RepositoryServiceRequest(IOptions<AppSettings> appSettings, IMemoryCache memoryCache)
+        public RepositoryServiceRequest(IOptions<AppSettings> appSettings, Cache cache)
         {
-            this.memoryCache = memoryCache;
+            this.cache = cache;
             this.appSettings = appSettings.Value;
         }
 
@@ -34,8 +34,8 @@ namespace TfsAdvanced.ServiceRequests
 
         public IList<Repository> GetAllRepositories(RequestData requestData)
         {
-            IList<Repository> cached;
-            if (memoryCache.TryGetValue(REPOSITORY_LIST_MEMORY_KEY + "all", out cached))
+            IList<Repository> cached = cache.Get<IList<Repository>>(REPOSITORY_LIST_MEMORY_KEY + "all");
+            if(cached != null)
                 return cached;
 
             var concurrentRepositories = new ConcurrentStack<Repository>();
@@ -45,15 +45,15 @@ namespace TfsAdvanced.ServiceRequests
                 concurrentRepositories.PushRange(repos.ToArray());
             });
             var repositories = concurrentRepositories.ToList();
-            memoryCache.Set(REPOSITORY_LIST_MEMORY_KEY + "all", repositories, TimeSpan.FromHours(1));
+            cache.Put(REPOSITORY_LIST_MEMORY_KEY + "all", repositories, TimeSpan.FromHours(1));
 
             return repositories;
         }
 
         public async Task<IList<Repository>> GetRepositories(RequestData requestData, string tfsProject)
         {
-            IList<Repository> cached;
-            if (memoryCache.TryGetValue(REPOSITORY_LIST_MEMORY_KEY + tfsProject, out cached))
+            IList<Repository> cached = cache.Get<IList<Repository>>(REPOSITORY_LIST_MEMORY_KEY + tfsProject);
+            if(cached != null)
                 return cached;
 
             var response = await requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/{tfsProject}/_apis/git/repositories?api=1.0");
@@ -61,7 +61,7 @@ namespace TfsAdvanced.ServiceRequests
             var repositories = responseObject.value.ToList();
             Parallel.ForEach(repositories, r => r.project.remoteUrl = BuildDashboardURL(requestData, r));
 
-            memoryCache.Set(REPOSITORY_LIST_MEMORY_KEY + tfsProject, repositories, TimeSpan.FromHours(1));
+            cache.Put(REPOSITORY_LIST_MEMORY_KEY + tfsProject, repositories, TimeSpan.FromHours(1));
 
             return repositories;
         }

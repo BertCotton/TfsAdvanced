@@ -10,6 +10,13 @@ namespace TfsAdvanced.Infrastructure
     public class Cache
     {
         private readonly IMemoryCache memoryCache;
+        private readonly CacheStats cacheStats;
+
+        public Cache(IMemoryCache memoryCache, CacheStats cacheStats)
+        {
+            this.memoryCache = memoryCache;
+            this.cacheStats = cacheStats;
+        }
 
         public T Get<T>(string key)
         {
@@ -17,16 +24,25 @@ namespace TfsAdvanced.Infrastructure
             if (memoryCache.TryGetValue(key, out cached))
             {
                 Debug.WriteLine($"Cache Hit [{key}]");
+                cacheStats.Hit();
                 return cached;
             }
+
             Debug.WriteLine($"Cache Miss [{key}]");
+            cacheStats.Miss();
             return default(T);
         }
 
         public void Put(string key, object value, TimeSpan cacheTime)
         {
             Debug.WriteLine($"Cache set [{key}] for {cacheTime}");
-            memoryCache.Set(key, value, cacheTime);
+            memoryCache.Set(key, value, new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(cacheTime)
+                .RegisterPostEvictionCallback((o, value1, reason, state) =>
+                {
+                    Debug.WriteLine($"Cache Eviction of {o} because of {reason}");
+                    cacheStats.Eviction();
+                }));
         }
     }
 }
