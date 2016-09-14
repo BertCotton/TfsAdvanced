@@ -1,13 +1,12 @@
-﻿using System;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
 using TfsAdvanced.Data.Projects;
@@ -30,7 +29,7 @@ namespace TfsAdvanced.ServiceRequests
         public IList<BuildDefinition> GetAllBuildDefinitions(RequestData requestData)
         {
             IList<BuildDefinition> cached = cache.Get<IList<BuildDefinition>>(MEMORY_CACHE_KEY + "all");
-            if(cached != null)
+            if (cached != null)
                 return cached;
             var buildDefinitions = new List<BuildDefinition>();
             Parallel.ForEach(appSettings.Projects, tfsProject =>
@@ -44,12 +43,12 @@ namespace TfsAdvanced.ServiceRequests
         public async Task<IList<BuildDefinition>> GetBuildDefinitions(RequestData requestData, string tfsProject)
         {
             IList<BuildDefinition> cached = cache.Get<IList<BuildDefinition>>(MEMORY_CACHE_KEY + tfsProject);
-            if(cached != null)
+            if (cached != null)
                 return cached;
             var response =
                 await requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/{tfsProject}/_apis/build/definitions?api=2.2");
             var responseObject = JsonConvert.DeserializeObject<Response<IEnumerable<BuildDefinition>>>(response);
-            IList<BuildDefinition> buildDefinitions =  responseObject.value.ToList();
+            IList<BuildDefinition> buildDefinitions = responseObject.value.ToList();
 
             cache.Put(MEMORY_CACHE_KEY + "all", buildDefinitions, TimeSpan.FromHours(1));
 

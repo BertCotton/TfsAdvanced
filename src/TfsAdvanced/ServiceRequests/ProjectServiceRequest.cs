@@ -1,7 +1,6 @@
-﻿using System;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +28,7 @@ namespace TfsAdvanced.ServiceRequests
         {
             string cacheKey = PROJECT_MEM_KEY + "-" + repo.id;
             Project cached = cache.Get<Project>(cacheKey);
-            if(cached != null)
+            if (cached != null)
                 return cached;
             var projectsResponse = requestData.HttpClient.GetStringAsync(repo.url).Result;
             Project project = JsonConvert.DeserializeObject<Project>(projectsResponse);
@@ -37,7 +36,6 @@ namespace TfsAdvanced.ServiceRequests
             cache.Put(cacheKey, project, TimeSpan.FromHours(1));
 
             return project;
-
         }
 
         public async Task<List<Project>> GetProjects(RequestData requestData)

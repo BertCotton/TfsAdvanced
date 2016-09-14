@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using System;
 using System.Collections.Generic;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.PullRequests;
@@ -27,10 +25,9 @@ namespace TfsAdvanced.Controllers
         [HttpGet]
         public IList<PullRequest> Index()
         {
-
             var repositories = repositoryServiceRequest.GetAllRepositories(requestData);
             var projects = projectServiceRequest.GetProjects(requestData, repositories);
-            return  pullRequestServiceRequest.GetPullRequests(requestData, projects);
+            return pullRequestServiceRequest.GetPullRequests(requestData, projects);
         }
     }
 }

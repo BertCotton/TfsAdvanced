@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
 using TfsAdvanced.Infrastructure;
@@ -26,9 +25,9 @@ namespace TfsAdvanced.ServiceRequests
         public IList<Build> GetAllBuilds(RequestData requestData)
         {
             IList<Build> cached = cache.Get<IList<Build>>(MEMORY_CACHE_KEY + "all");
-            if(cached != null)
+            if (cached != null)
                 return cached;
-            
+
             var builds = new List<Build>();
             appSettings.Projects.ForEach(project =>
             {
@@ -43,7 +42,7 @@ namespace TfsAdvanced.ServiceRequests
         public async Task<IList<Build>> GetBuilds(RequestData requestData, string tfsProject)
         {
             IList<Build> cached = cache.Get<IList<Build>>(MEMORY_CACHE_KEY + tfsProject);
-            if(cached != null)
+            if (cached != null)
                 return cached;
 
             var response = await

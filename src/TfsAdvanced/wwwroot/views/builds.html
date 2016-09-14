@@ -10,27 +10,16 @@
         </div>
     </div>
     <div class="row" ng-if="IsLoaded">
-        <table datatable="" dt-options="dtOptions" class="table table-striped" id="buildsTable">
-            <thead>
-            <tr>
-                <th>Build Id</th>
-                <th>Repository Name</th>
-                <th>Build Definition Name</th>
-                <th>Latest Change</th>
-                <th>Result</th>
-                <th>Status</th>
+        <table  ng-table="tableParams" class="table table-striped" id="buildsTable" show-filter="true">
+            <tr ng-repeat="build in $data">
+                <td title='Build ID' sortable="'id'" filter="{id: 'number'}"><a href="{{build.buildUrl}}" target="_blank">{{build.id}}</a></td>
+                <td title="Project Name" sortable="'project.name'" filter="{project.name : 'text'}">{{build.project.name}}</td>
+                <td title="Definition Name" sortable="'definition.name'" filter="{definition.name : 'text'}">{{build.definition.name}}</td>
+                <td title="Last Change" sortable="'lastChangedDate'" filter="{lastChangedDate : 'text'}">{{build.lastChangedDate | date : "MM/dd/yyyy 'at' h:mm a" }}</td>
+                <td title="Build Result" sortable="'result'" filter="{result : 'text'}" ng-bind-html="build | buildResult"></td>
+                <td title="Build Status" sortable="'status'" filter="{status : 'text'}" ng-bind-html="build.status | buildStatus"></td>
             </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="build in builds">
-                <td><a href="{{build.buildUrl}}" target="_blank">{{build.id}}</a></td>
-                <td>{{build.project.name}}</td>
-                <td>{{build.definition.name}}</td>
-                <td>{{build.lastChangedDate | date : "MM/dd/yyyy 'at' h:mm a" }}</td>
-                <td ng-bind-html="build | buildResult"></td>
-                <td ng-bind-html="build.status | buildStatus"></td>
-            </tr>
-            </tbody>
+            
         </table>
     </div>
 </div>

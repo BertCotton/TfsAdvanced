@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace TfsAdvanced.Infrastructure
 {
@@ -11,7 +8,8 @@ namespace TfsAdvanced.Infrastructure
         private int hitCount;
         private int missCount;
         private int evictionCount;
-        
+        public readonly DateTime StartTime = DateTime.Now;
+
         public void Hit()
         {
             Interlocked.Increment(ref hitCount);
@@ -44,7 +42,7 @@ namespace TfsAdvanced.Infrastructure
 
         public double HitRate()
         {
-            return (hitCount + 0d)/(missCount + hitCount);
+            return (hitCount + 0d) / (missCount + hitCount);
         }
     }
 }

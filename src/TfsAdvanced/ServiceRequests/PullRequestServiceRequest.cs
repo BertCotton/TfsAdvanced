@@ -1,11 +1,10 @@
-﻿using System;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Projects;
 using TfsAdvanced.Data.PullRequests;
@@ -36,7 +35,7 @@ namespace TfsAdvanced.ServiceRequests
         {
             string cacheKey = MEMORY_REPOSITORY_KEY + repo.id + project.id;
             IList<PullRequest> cached = cache.Get<IList<PullRequest>>(cacheKey);
-            if(cached != null)
+            if (cached != null)
                 return cached;
             var pullResponse = await requestData.HttpClient.GetStringAsync(project._links.pullRequests.href);
             var pullResponseObject = JsonConvert.DeserializeObject<Response<IEnumerable<PullRequest>>>(pullResponse);

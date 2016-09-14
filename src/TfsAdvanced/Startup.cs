@@ -5,13 +5,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
 
@@ -27,8 +25,8 @@ namespace TfsAdvanced
             // Set up configuration sources.
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional:false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{siteName}.json", optional:true, reloadOnChange:true )
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{siteName}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
 
             builder.AddApplicationInsightsSettings(developerMode: true);
@@ -43,11 +41,10 @@ namespace TfsAdvanced
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                options.SerializerSettings.Converters.Add(new StringEnumConverter {CamelCaseText = true});
+                options.SerializerSettings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
             });
             services.AddApplicationInsightsTelemetry(Configuration);
             services.AddMemoryCache();
-            
 
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
@@ -63,10 +60,7 @@ namespace TfsAdvanced
                 .AsSelf()
                 .SingleInstance();
 
-            
-
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
-            
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();

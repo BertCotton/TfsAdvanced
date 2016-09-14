@@ -1,14 +1,10 @@
-﻿using System;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Repositories;
 using TfsAdvanced.Infrastructure;
@@ -35,7 +31,7 @@ namespace TfsAdvanced.ServiceRequests
         public IList<Repository> GetAllRepositories(RequestData requestData)
         {
             IList<Repository> cached = cache.Get<IList<Repository>>(REPOSITORY_LIST_MEMORY_KEY + "all");
-            if(cached != null)
+            if (cached != null)
                 return cached;
 
             var concurrentRepositories = new ConcurrentStack<Repository>();
@@ -53,7 +49,7 @@ namespace TfsAdvanced.ServiceRequests
         public async Task<IList<Repository>> GetRepositories(RequestData requestData, string tfsProject)
         {
             IList<Repository> cached = cache.Get<IList<Repository>>(REPOSITORY_LIST_MEMORY_KEY + tfsProject);
-            if(cached != null)
+            if (cached != null)
                 return cached;
 
             var response = await requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/{tfsProject}/_apis/git/repositories?api=1.0");

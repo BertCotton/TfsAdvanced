@@ -10,6 +10,8 @@
             $scope.IsLoaded = true;
             $scope.projects = [];
 
+                $scope.tableParams = new NgTableParams({}, { dataset: $scope.builds });
+
             $scope.dtOptions = DTOptionsBuilder.newOptions().withOption('order', [0, 'desc']);
 
             $scope.$watch(buildsService.isLoaded,

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using TfsAdvanced.Infrastructure;
 
 namespace TfsAdvanced.Controllers
@@ -22,13 +20,22 @@ namespace TfsAdvanced.Controllers
         {
             Dictionary<string, object> response = new Dictionary<string, object>();
 
-            response["hitCount"] = cacheStats.HitCount();
-            response["missCount"] = cacheStats.MissCount();
+            var hitCount = cacheStats.HitCount();
+            var missCount = cacheStats.MissCount();
+            var evictionCount = cacheStats.EvictionCount();
+            var upTime = (DateTime.Now - cacheStats.StartTime).TotalSeconds;
+
+            response["hitCount"] = hitCount;
+            response["missCount"] = missCount;
             response["hitRate"] = cacheStats.HitRate();
-            response["evictionCount"] = cacheStats.EvictionCount();
+            response["evictionCount"] = evictionCount;
+            response["cacheStartTime"] = cacheStats.StartTime;
+            response["hitsPerSecond"] = hitCount/upTime;
+            response["missPerSecond"] = missCount/upTime;
+            response["requestPerSecond"] = (hitCount + missCount)/upTime;
+            response["evictionPerSecond"] = evictionCount/upTime;
 
             return Ok(response);
         }
     }
 }
-

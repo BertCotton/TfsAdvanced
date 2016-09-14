@@ -9,6 +9,7 @@ var app = angular.module('TFS.Advanced', [
     'ui.bootstrap',
     'notification',
     'datatables',
+    'ngTable'
     "angular-appinsights"
 ]);
 

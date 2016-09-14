@@ -10,11 +10,11 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
 
         this.pullRequests = function() {
             return cached;
-        }
+        };
 
         this.isLoaded = function() {
             return isLoaded;
-        }
+        };
 
         function requests() {
             isRunning = true;
@@ -37,8 +37,8 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
 
         };
 
-    this.stop = function () {
-        isCancelled = true;
-        isRunning = false;
-    }
-}]);
+        this.stop = function() {
+            isCancelled = true;
+            isRunning = false;
+        };
+    }]);
