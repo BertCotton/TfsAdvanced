@@ -83,7 +83,7 @@
                 });
 
             $scope.getLatestBuild = function(buildDefinition) {
-                return $filter('orderBy')(buildDefinition.data, "finishedTime")[0];
+                return $filter('orderBy')(buildDefinition.data, "id", true)[0];
             };
         }
     ]);
