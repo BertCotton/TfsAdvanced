@@ -46,7 +46,7 @@ namespace TfsAdvanced.ServiceRequests
                 return cached;
 
             var response = await
-                requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/{tfsProject}/_apis/build/builds?api-version=2.2&minFinishTime={DateTime.Now.Date.AddDays(-1).ToString("o")}");
+                requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/{tfsProject}/_apis/build/builds?api-version=2.2");
             var responseObject = JsonConvert.DeserializeObject<Response<IEnumerable<Build>>>(response);
 
             var builds = responseObject.value.ToList();

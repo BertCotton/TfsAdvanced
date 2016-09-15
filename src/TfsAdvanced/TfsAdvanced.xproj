@@ -11,13 +11,13 @@
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)'=='' ">.\obj</BaseIntermediateOutputPath>
     <OutputPath Condition="'$(OutputPath)'=='' ">.\bin\</OutputPath>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TypeScriptEnabled>false</TypeScriptEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
     <ApplicationInsightsResourceId>/subscriptions/703a3233-4ed7-4934-a142-20792002f2cf/resourcegroups/Default-ApplicationInsights-CentralUS/providers/microsoft.insights/components/ApplicationInsights-Dev</ApplicationInsightsResourceId>
   </PropertyGroup>
   <ItemGroup>
-    <DnxInvisibleContent Include="bower.json" />
     <DnxInvisibleContent Include=".bowerrc" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\DotNet.Web\Microsoft.DotNet.Web.targets" Condition="'$(VSToolsPath)' != ''" />

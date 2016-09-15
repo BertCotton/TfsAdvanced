@@ -60,6 +60,7 @@ gulp.task("copy:css",
         return gulp.src([
                 "./node_modules/bootstrap/dist/css/bootstrap.min.css",
                 "./node_modules/angular-datatables/dist/css/angular-datatables.min.css",
+                "./node_modules/ng-table/dist/ng-table.css",
                 "./wwwroot/app/css/**.css"
         ])
             .pipe(debug())
