@@ -20,6 +20,12 @@ gulp.task("clean:css",
             .pipe(clean());
     });
 
+gulp.task("clean:fonts",
+    function (cb) {
+        return gulp.src("./wwwroot/fonts/*")
+            .pipe(clean());
+    });
+
 gulp.task("clean", ["clean:js", "clean:css"]);
 
 gulp.task("concat:js",
@@ -67,6 +73,15 @@ gulp.task("copy:css",
             .pipe(concat("./wwwroot/css/site.min.css"))
             //.pipe(cssmin())
             .pipe(gulp.dest("."));
+    });
+
+gulp.task("copy:fonts", ["clean:fonts"],
+    function() {
+        return gulp.src([
+               "./node_modules/bootstrap/dist/fonts/*",
+        ])
+           .pipe(debug())
+           .pipe(gulp.dest("./wwwroot/fonts/"));
     });
 
 gulp.task("build", ["concat:js", "copy:css"]);
