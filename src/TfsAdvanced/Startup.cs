@@ -2,6 +2,7 @@
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,9 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
 
@@ -55,6 +59,8 @@ namespace TfsAdvanced
             builder.RegisterType<CacheStats>().AsSelf().SingleInstance();
             builder.RegisterType<Cache>().AsSelf().SingleInstance();
 
+            builder.RegisterType<SignInManager<User>>().AsSelf();
+
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
                 .Where(t => t.Name.EndsWith("Request") || t.Name.EndsWith("Repository"))
                 .AsSelf()
@@ -79,6 +85,24 @@ namespace TfsAdvanced
 
             app.UseApplicationInsightsExceptionTelemetry();
             app.UseApplicationInsightsRequestTelemetry();
+
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationScheme = "Cookies",
+                LoginPath = new PathString("/data/Login"),
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                CookieName = "TfsAdvance.Cookies"
+            });
+            
+
+            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
+            {
+                AuthenticationScheme = "Microsoft",
+                SignInScheme = "Cookies",
+                ClientId = "",
+                ClientSecret = ""
+            });
 
             app.UseMvc();
         }

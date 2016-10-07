@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.PullRequests;
 using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
 {
+    [Authorize]
     [Route("data/PullRequests")]
     public class PullRequestsController : Controller
     {

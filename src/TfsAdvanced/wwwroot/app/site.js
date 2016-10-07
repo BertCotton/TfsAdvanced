@@ -27,7 +27,12 @@ app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, insight
     .state('Builds', {
         url: '/builds',
         templateUrl: 'views/builds.html'
-    });
+    })
+    .state("Login",
+        {
+            url: "/login",
+            templateUrl: 'views/login.html'
+        });
 
     insightsProvider.start('61137fb3-e654-4fb7-88d3-242de0edf9d6');
 

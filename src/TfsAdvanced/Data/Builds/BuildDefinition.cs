@@ -1,4 +1,5 @@
-﻿using TfsAdvanced.Data.Projects;
+﻿using System.Collections.Generic;
+using TfsAdvanced.Data.Projects;
 
 namespace TfsAdvanced.Data.Builds
 {
