@@ -24,6 +24,7 @@
     "angular-ui-router": "^0.3.1",
     "bootstrap": "^3.3.7",
     "datatables.net": "^1.10.12",
-    "jquery": "^3.1.0"
+    "jquery": "^3.1.0",
+    "ng-table": "^1.0.0"
   }
 }

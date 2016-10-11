@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +9,7 @@ using TfsAdvanced.Data;
 using TfsAdvanced.Data.Projects;
 using TfsAdvanced.Data.Repositories;
 using TfsAdvanced.Infrastructure;
+using TfsAdvanced.Utilities;
 
 namespace TfsAdvanced.ServiceRequests
 {
@@ -16,34 +17,37 @@ namespace TfsAdvanced.ServiceRequests
     {
         private static string PROJECT_MEM_KEY = "Projects";
         private readonly AppSettings appSettings;
-        private readonly IMemoryCache memoryCache;
+        private readonly Cache cache;
 
-        public ProjectServiceRequest(IOptions<AppSettings> appSettings, IMemoryCache memoryCache)
+        public ProjectServiceRequest(IOptions<AppSettings> appSettings, Cache cache)
         {
-            this.memoryCache = memoryCache;
+            this.cache = cache;
             this.appSettings = appSettings.Value;
         }
 
         public Project GetProject(RequestData requestData, Repository repo)
         {
+            string cacheKey = PROJECT_MEM_KEY + "-" + repo.id;
+            Project cached = cache.Get<Project>(cacheKey);
+            if (cached != null)
+                return cached;
             var projectsResponse = requestData.HttpClient.GetStringAsync(repo.url).Result;
-            return JsonConvert.DeserializeObject<Project>(projectsResponse);
+            Project project = JsonConvert.DeserializeObject<Project>(projectsResponse);
+
+            cache.Put(cacheKey, project, TimeSpan.FromHours(1));
+
+            return project;
         }
 
         public async Task<List<Project>> GetProjects(RequestData requestData)
         {
-            List<Project> cachedProjects;
-            memoryCache.TryGetValue(PROJECT_MEM_KEY, out cachedProjects);
+            List<Project> cachedProjects = cache.Get<List<Project>>(PROJECT_MEM_KEY);
             if (cachedProjects != null)
                 return cachedProjects;
 
-            var response = await requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/_apis/projects?api-version=1.0");
-            var responseObject = JsonConvert.DeserializeObject<Response<IEnumerable<Project>>>(response);
+            var projects = await GetAsync.FetchResponseList<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects?api-version=1.0");
 
-            var projects = responseObject.value.ToList();
-
-            projects = projects.Where(p => appSettings.Projects.Contains(p.name)).ToList();
-            memoryCache.Set(PROJECT_MEM_KEY, projects);
+            cache.Put(PROJECT_MEM_KEY, projects, TimeSpan.FromHours(1));
 
             return projects;
         }

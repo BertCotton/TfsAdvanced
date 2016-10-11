@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.PullRequests;
 using TfsAdvanced.ServiceRequests;
@@ -11,38 +11,25 @@ namespace TfsAdvanced.Controllers
     [Route("data/PullRequests")]
     public class PullRequestsController : Controller
     {
-        private const string CACHE_KEY = "pullRequests";
-
-        private readonly IMemoryCache memoryCache;
         private readonly ProjectServiceRequest projectServiceRequest;
         private readonly PullRequestServiceRequest pullRequestServiceRequest;
         private readonly RepositoryServiceRequest repositoryServiceRequest;
         private readonly RequestData requestData;
 
-        public PullRequestsController(RequestData requestData, ProjectServiceRequest projectServiceRequest, PullRequestServiceRequest pullRequestServiceRequest, RepositoryServiceRequest repositoryServiceRequest, IMemoryCache memoryCache)
+        public PullRequestsController(RequestData requestData, ProjectServiceRequest projectServiceRequest, PullRequestServiceRequest pullRequestServiceRequest, RepositoryServiceRequest repositoryServiceRequest)
         {
             this.requestData = requestData;
             this.projectServiceRequest = projectServiceRequest;
             this.pullRequestServiceRequest = pullRequestServiceRequest;
             this.repositoryServiceRequest = repositoryServiceRequest;
-            this.memoryCache = memoryCache;
         }
 
         [HttpGet]
-        public IList<PullRequest> Index()
+        public async Task<IList<PullRequest>> Index()
         {
-            IList<PullRequest> cachedModel;
-            if (memoryCache.TryGetValue(CACHE_KEY, out cachedModel))
-                return cachedModel;
-
-            var repositories = repositoryServiceRequest.GetAllRepositories(requestData);
+            var repositories = await repositoryServiceRequest.GetAllRepositories(requestData);
             var projects = projectServiceRequest.GetProjects(requestData, repositories);
-            var pullRequest = pullRequestServiceRequest.GetPullRequests(requestData, projects);
-
-            memoryCache.Set(CACHE_KEY, pullRequest,
-                new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromSeconds(10)));
-
-            return pullRequest;
+            return pullRequestServiceRequest.GetPullRequests(requestData, projects);
         }
     }
 }

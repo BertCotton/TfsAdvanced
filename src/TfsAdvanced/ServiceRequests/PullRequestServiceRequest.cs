@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,15 +10,19 @@ using TfsAdvanced.Data.Projects;
 using TfsAdvanced.Data.PullRequests;
 using TfsAdvanced.Data.Repositories;
 using TfsAdvanced.Infrastructure;
+using TfsAdvanced.Utilities;
 
 namespace TfsAdvanced.ServiceRequests
 {
     public class PullRequestServiceRequest
     {
         private readonly AppSettings appSettings;
+        private readonly Cache cache;
+        private string MEMORY_REPOSITORY_KEY = "MEMORY_REPOSITORY_KEY-";
 
-        public PullRequestServiceRequest(IOptions<AppSettings> appSettings)
+        public PullRequestServiceRequest(IOptions<AppSettings> appSettings, Cache cache)
         {
+            this.cache = cache;
             this.appSettings = appSettings.Value;
         }
 
@@ -29,14 +34,18 @@ namespace TfsAdvanced.ServiceRequests
 
         public async Task<IList<PullRequest>> GetPullRequests(RequestData requestData, Repository repo, Project project)
         {
-            var pullResponse = await requestData.HttpClient.GetStringAsync(project._links.pullRequests.href);
-            var pullResponseObject = JsonConvert.DeserializeObject<Response<IEnumerable<PullRequest>>>(pullResponse);
-            var pullRequests = pullResponseObject.value.ToList();
+            string cacheKey = MEMORY_REPOSITORY_KEY + repo.id + project.id;
+            IList<PullRequest> cached = cache.Get<IList<PullRequest>>(cacheKey);
+            if (cached != null)
+                return cached;
+            var pullRequests = await GetAsync.FetchResponseList<PullRequest>(requestData, project._links.pullRequests.href);
             Parallel.ForEach(pullRequests, pr =>
             {
                 pr.repository = repo;
                 pr.remoteUrl = BuildPullRequestUrl(pr, requestData.BaseAddress);
             });
+
+            cache.Put(cacheKey, pullRequests, TimeSpan.FromSeconds(20));
 
             return pullRequests;
         }

@@ -3,34 +3,24 @@
         <div class="loader"></div>
     </div>
     <div class="row" ng-if="IsLoaded">
-        <div class="col-lg-4">
-            <select class="form-control" ng-model="SelectedProjectId" ng-change="UpdateSelectedProject()">
-                <option ng-repeat="project in projects" value="{{project.id}}">{{project.name}}</option>
-            </select>
-        </div>
-    </div>
-    <div class="row" ng-if="IsLoaded">
-        <table datatable="" dt-options="dtOptions" class="table table-striped" id="buildsTable">
-            <thead>
-            <tr>
-                <th>Build Id</th>
-                <th>Repository Name</th>
-                <th>Build Definition Name</th>
-                <th>Latest Change</th>
-                <th>Result</th>
-                <th>Status</th>
+        <table ng-table="tableParams" class="table table-striped table-bordered table-condensed" id="buildsTable" show-filter="true" show-group="false">
+            <tr class="ng-table-group" ng-repeat-start="buildDefinition in $groups" ng-init="groupState(buildDefinition)">
+                <td colspan="{{$columns.length}}">
+                    <a href="" ng-click="toggleGroup(buildDefinition)">
+                        <span class="glyphicon" ng-class="{ 'glyphicon-chevron-right': buildDefinition.$hideRows, 'glyphicon-chevron-down': !buildDefinition.$hideRows }"></span>
+                        <strong>{{ buildDefinition.value }}</strong>
+                        <span class="pull-right" style="width:200px" ng-bind-html="getLatestBuild(buildDefinition) | buildResult"></span>
+                        <span class="pull-right" style="margin-right:20px">{{getLatestBuild(buildDefinition).lastChangedDate | date : "MM/dd/yyyy 'at' h:mm a"}}</span>
+                    </a>
             </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="build in builds">
-                <td><a href="{{build.buildUrl}}" target="_blank">{{build.id}}</a></td>
-                <td>{{build.project.name}}</td>
-                <td>{{build.definition.name}}</td>
-                <td>{{build.lastChangedDate | date : "MM/dd/yyyy 'at' h:mm a" }}</td>
-                <td ng-bind-html="build | buildResult"></td>
-                <td ng-bind-html="build.status | buildStatus"></td>
+            <tr ng-hide="buildDefinition.$hideRows" ng-repeat="build in buildDefinition.data" ng-repeat-end>
+                <td title="'Build ID'" sortable="'id'"><a href="{{build.buildUrl}}" target="_blank">{{build.id}}</a></td>
+                <td title="'Project Name'" sortable="'project.name'" filter="{project : 'text'}">{{build.project.name}}</td>
+                <td title="'Definition Name'" sortable="'definition.name'" filter="{definition: 'text'}">{{build.definition.name}}</td>
+                <td title="'Last Change'" sortable="'lastChangedDate'">{{build.lastChangedDate | date : "MM/dd/yyyy 'at' h:mm a" }}</td>
+                <td title="'Build Result'" ng-bind-html="build | buildResult"></td>
+                <td title="'Build Status'" ng-bind-html="build.status | buildStatus"></td>
             </tr>
-            </tbody>
         </table>
     </div>
 </div>

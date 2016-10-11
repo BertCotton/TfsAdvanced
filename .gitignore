@@ -233,6 +233,7 @@ images/site.png
 appsettings.*.json
 
 src/*/wwwroot/lib/
+src/*/wwwroot/fonts/
 src/*/wwwroot/_references.js
 
 

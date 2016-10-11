@@ -5,8 +5,8 @@
         var text = "";
         var color = "default";
         switch (result) {
-            case "failed":
-                text = "Failed";
+            case "conflicts":
+                text = "Conflicts";
                 color = "red";
                 break;
             case "succeeded":

@@ -1,8 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using System;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
 using TfsAdvanced.ServiceRequests;
@@ -12,47 +18,34 @@ namespace TfsAdvanced.Controllers
     [Route("data/BuildDefinitions")]
     public class BuildDefinitionsController : Controller
     {
-        private static string DEFINITONS_CACHE_KEY = "BuildDefinitions";
         private readonly BuildDefinitionRequest buildDefinitionRequest;
-        private readonly IMemoryCache memoryCache;
         private readonly RequestData requestData;
 
-        public BuildDefinitionsController(BuildDefinitionRequest buildDefinitionRequest, IMemoryCache memoryCache, RequestData requestData)
+        public BuildDefinitionsController(BuildDefinitionRequest buildDefinitionRequest, RequestData requestData)
         {
             this.buildDefinitionRequest = buildDefinitionRequest;
-            this.memoryCache = memoryCache;
             this.requestData = requestData;
         }
 
         [HttpPost]
-        public IActionResult BuildDefinitions(List<int> definitionIds)
+        public async Task<IActionResult> BuildDefinitions([FromBody] List<int> definitionIds)
         {
             if (!definitionIds.Any())
                 return NotFound();
 
             var definitions =
-                buildDefinitionRequest.GetAllBuildDefinitions(requestData)
+                (await buildDefinitionRequest.GetAllBuildDefinitions(requestData))
                     .Where(x => definitionIds.Contains(x.id))
                     .ToList();
             buildDefinitionRequest.LaunchBuild(requestData, definitions);
 
             return Ok();
         }
-
+        
         [HttpGet]
-        public IList<BuildDefinition> Index()
+        public async Task<IList<BuildDefinition>> Index()
         {
-            List<BuildDefinition> cacheDefinitions;
-            if (memoryCache.TryGetValue(DEFINITONS_CACHE_KEY, out cacheDefinitions))
-            {
-                return cacheDefinitions;
-            }
-
-            var definitions = buildDefinitionRequest.GetAllBuildDefinitions(requestData);
-            memoryCache.Set(DEFINITONS_CACHE_KEY, definitions,
-                new MemoryCacheEntryOptions().SetAbsoluteExpiration(TimeSpan.FromMinutes(1)));
-
-            return definitions;
+            return await buildDefinitionRequest.GetAllBuildDefinitions(requestData);
         }
     }
 }

@@ -5,7 +5,7 @@ angular.module('TFS.Advanced').service('buildDefinitionService', ['$http', funct
         
         GET: $http.get('data/BuildDefinitions'),
         POST: function(data) {
-            return $http.POST('data/BuildDefinitions', data);
+            return $http.post('data/BuildDefinitions', data);
         }
 }
 }]);

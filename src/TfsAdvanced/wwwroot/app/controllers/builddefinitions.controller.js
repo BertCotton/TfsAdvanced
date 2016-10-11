@@ -1,8 +1,8 @@
 ﻿angular.module('TFS.Advanced')
     .controller('BuildDefinitionController',
     [
-        '$scope', '$location', '$interval', '$notification', '$filter', 'DTOptionsBuilder', 'buildDefinitionService',
-        function ($scope, $location, $interval, $notification, $filter, DTOptionsBuilder, buildDefinitionService) {
+        '$window', '$scope', '$location', '$interval', '$notification', '$filter', 'DTOptionsBuilder', 'buildDefinitionService',
+        function ($window, $scope, $location, $interval, $notification, $filter, DTOptionsBuilder, buildDefinitionService) {
             'use strict';
 
             $scope.buildDefinitions = [];
@@ -13,8 +13,6 @@
             $scope.load = function () {
                 buildDefinitionService.GET.success(function (data) {
                     $scope.buildDefinitions = data;
-                }).then(function () {
-                    $("#definitionsTable").dataTable().draw();
                 });
             };
 
@@ -46,6 +44,17 @@
             };
 
             $scope.queueDefinitions = function () {
+                var submitIds = [];
+                
+                $scope.selectedDefinitions.forEach(function(def) {
+                    var defId = $scope.selectedDefinitions[def];
+                    if (defId)
+                        submitIds.push(defId);
+                });
+                buildDefinitionService.POST(submitIds).then(function() {
+                    $scope.selectedDefinitions = [];
+                    $window.alert("Builds launched");
+                });
             }
 
             $scope.load();

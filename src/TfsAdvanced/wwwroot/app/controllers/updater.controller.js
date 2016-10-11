@@ -3,7 +3,7 @@
             'use strict';
 
             var isBuildsLoaded = true;
-            var isPRsLoaded = true;
+            var isPRsLoaded = false;
             var pullRequestUpdates = [];
             var pullRequests = [];
             var initialPRLoadDone = false;
@@ -14,14 +14,14 @@
             pullrequestsService.start();
             buildsService.start();
 
-            $scope.$watch(pullrequestsService.IsLoading,
+            $scope.$watch(pullrequestsService.isLoaded,
                 function(isLoaded) {
                     isPRsLoaded = isLoaded;
                 });
 
             $scope.$watchCollection(pullrequestsService.pullRequests,
-                function(data) {
-                    if (data === undefined || isPRsLoaded)
+                function (data) {
+                    if (data === undefined || !isPRsLoaded)
                         return;
                     var prUpdates = [];
                     data.forEach(function(pr) {
@@ -29,6 +29,7 @@
                             prUpdates[pr.pullRequestId] = pr;
                     });
 
+                    
                     if (initialPRLoadDone) {
                         prUpdates.forEach(function(pr) {
                             if (pr.pullRequestId && pullRequestUpdates[pr.pullRequestId] === undefined) {
@@ -44,6 +45,7 @@
 
                     pullRequestUpdates = prUpdates;
                     pullRequests = data;
+                    initialPRLoadDone = true;
                 });
 
             function newPrNotification(pr) {
