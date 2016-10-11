@@ -88,38 +88,11 @@ namespace TfsAdvanced
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             app.UseDeveloperExceptionPage();
-
             app.UseDefaultFiles();
             app.UseStaticFiles();
-//            if (!env.IsDevelopment())
-//                app.UseClientCertMiddleware();
-
             app.UseAuthenticationMiddleware();
-
             app.UseApplicationInsightsExceptionTelemetry();
             app.UseApplicationInsightsRequestTelemetry();
-
-//            app.UseCookieAuthentication(new CookieAuthenticationOptions
-//            {
-//                AuthenticationScheme = "Cookies",
-//                LoginPath = new PathString("/data/Login"),
-//                AutomaticAuthenticate = true,
-//                AutomaticChallenge = true,
-//                CookieName = "TfsAdvance.Cookies"
-//            });
-//            
-//            app.UseIdentity();
-//
-//            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
-//            {
-//                
-//                AuthenticationScheme = "Microsoft",
-//                SignInScheme = "Cookies",
-//                ClientId = "53ee2d1e-2545-468d-b535-b7802768b021",
-//                ClientSecret = "4xvpaOOV5WcretbRjOAZHCX",
-//                CallbackPath = "/data/Login/Callback"
-//            });
-
             app.UseMvc();
         }
     }
