@@ -21,9 +21,9 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpGet]
-        public async Task<IList<Build>> Index()
+        public IList<Build> Index()
         {
-            return await buildRequest.GetAllBuilds(requestData);
+            return buildRequest.GetAllBuilds(requestData);
         }
     }
 }

@@ -7,6 +7,8 @@ namespace TfsAdvanced.Infrastructure
 {
     public class AuthorizationSettings
     {
+        public string TenantId { get; set; }
+
         public string ClientId { get; set; }
 
         public string State { get; set; }

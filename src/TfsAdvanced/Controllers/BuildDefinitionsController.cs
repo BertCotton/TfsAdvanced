@@ -28,13 +28,13 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> BuildDefinitions([FromBody] List<int> definitionIds)
+        public IActionResult BuildDefinitions([FromBody] List<int> definitionIds)
         {
             if (!definitionIds.Any())
                 return NotFound();
 
             var definitions =
-                (await buildDefinitionRequest.GetAllBuildDefinitions(requestData))
+                buildDefinitionRequest.GetAllBuildDefinitions(requestData)
                     .Where(x => definitionIds.Contains(x.id))
                     .ToList();
             buildDefinitionRequest.LaunchBuild(requestData, definitions);
@@ -43,9 +43,9 @@ namespace TfsAdvanced.Controllers
         }
         
         [HttpGet]
-        public async Task<IList<BuildDefinition>> Index()
+        public IList<BuildDefinition> Index()
         {
-            return await buildDefinitionRequest.GetAllBuildDefinitions(requestData);
+            return buildDefinitionRequest.GetAllBuildDefinitions(requestData);
         }
     }
 }

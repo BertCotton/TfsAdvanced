@@ -28,14 +28,14 @@ namespace TfsAdvanced.ServiceRequests
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<IList<Build>> GetAllBuilds(RequestData requestData)
+        public IList<Build> GetAllBuilds(RequestData requestData)
         {
             IList<Build> cached = cache.Get<IList<Build>>(MEMORY_CACHE_KEY + "all");
             if (cached != null)
                 return cached;
 
             var builds = new ConcurrentStack<Build>();
-            var projects = await projectServiceRequest.GetProjects(requestData);
+            var projects = projectServiceRequest.GetProjects(requestData);
             Parallel.ForEach(projects, project =>
             {
                 builds.PushRange(GetBuilds(requestData, project).Result.ToArray());

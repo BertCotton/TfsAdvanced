@@ -23,7 +23,7 @@ namespace TfsAdvanced.Utilities
         {
             var response = await requestData.HttpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
-                throw new BadRequestException(url, response.StatusCode);
+                throw new BadRequestException(url.Replace("https://", $"https://{requestData.BearerToken}"), response.StatusCode);
 
             var items = await JsonDeserializer.Deserialie<Response<IEnumerable<T>>>(response);
             return items.value.ToList();

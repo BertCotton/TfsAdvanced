@@ -42,9 +42,13 @@ namespace TfsAdvanced.Controllers
 
         [HttpGet("LoginAuth")]
         [AllowAnonymous]
-        public async Task<IActionResult> LoginAuth(string code = null, string state = null)
+        public async Task<IActionResult> LoginAuth(string code = null, string state = null, bool Admin_consent = false, string Session_state = null)
         {
-            var token = await authorizationRequest.GetAccessToken(GetBaseURL(), code, state);
+            var tokenString = await authorizationRequest.GetAccessToken(GetBaseURL(), code, state);
+
+            return Ok(tokenString);
+
+            var token = JsonConvert.DeserializeObject<AuthenticationToken>(tokenString);
 
             if (String.IsNullOrEmpty(token.access_token))
                 throw new Exception("The access token is null");
@@ -61,7 +65,12 @@ namespace TfsAdvanced.Controllers
 
             cacheStats.UserLogin();
 
-            return Redirect("/");
+            var securityToken = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token.access_token);
+
+            
+            return Ok(securityToken);
+
+            //return Redirect("/data/PullRequests");
         }
 
         private string GetBaseURL()
