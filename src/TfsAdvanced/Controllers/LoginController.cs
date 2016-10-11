@@ -37,25 +37,36 @@ namespace TfsAdvanced.Controllers
         [AllowAnonymous]
         public IActionResult Login(string ReturnURL = null)
         {
-            return Redirect(authorizationRequest.GetChallengeUrl((HttpContext.Request.IsHttps ? "https://" :"http://") + HttpContext.Request.Host.ToString()));
+            return Redirect(authorizationRequest.GetChallengeUrl(GetBaseURL()));
         }
 
         [HttpGet("LoginAuth")]
         [AllowAnonymous]
         public async Task<IActionResult> LoginAuth(string code = null, string state = null)
         {
-            var token = await authorizationRequest.GetAccessToken(code, state);
-            
-            HttpContext.Response.Cookies.Append("Auth", JsonConvert.SerializeObject(token), new CookieOptions
+            var token = await authorizationRequest.GetAccessToken(GetBaseURL(), code, state);
+
+            if (String.IsNullOrEmpty(token.access_token))
+                throw new Exception("The access token is null");
+
+            var cookieValue = JsonConvert.SerializeObject(token);
+            HttpContext.Response.Cookies.Append("Auth", cookieValue, new CookieOptions
             {
                 Secure = true,
                 Expires = DateTime.Now.AddYears(1),
-                HttpOnly = true
+                HttpOnly = true,
+                Path = "/",
+                Domain = HttpContext.Request.Host.ToString()
             });
 
             cacheStats.UserLogin();
 
             return Redirect("/");
+        }
+
+        private string GetBaseURL()
+        {
+            return(HttpContext.Request.IsHttps ? "https://" : "http://") + HttpContext.Request.Host;
         }
     }
 }

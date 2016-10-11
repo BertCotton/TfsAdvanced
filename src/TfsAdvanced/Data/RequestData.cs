@@ -26,7 +26,6 @@ namespace TfsAdvanced.Data
             BaseAddress = appSettings.BaseAddress;
             HttpClient = new HttpClient(handler);
             HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            //var authorization = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{authenticationToken.access_token}"));
             HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authenticationToken.access_token);
         }
     }

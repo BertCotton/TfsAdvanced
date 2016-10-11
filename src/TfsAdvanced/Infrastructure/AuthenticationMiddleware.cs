@@ -37,7 +37,6 @@ namespace TfsAdvanced.Infrastructure
                 AuthenticationToken token = JsonConvert.DeserializeObject<AuthenticationToken>(authCookie);
                 if (token.access_token == null)
                 {
-
                     context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     await context.Response.WriteAsync("Token is null");
                     return;
