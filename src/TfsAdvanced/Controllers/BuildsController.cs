@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
@@ -7,7 +8,6 @@ using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
 {
-    [Authorize]
     [Route("data/Builds")]
     public class BuildsController : Controller
     {
@@ -21,9 +21,9 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpGet]
-        public IList<Build> Index()
+        public async Task<IList<Build>> Index()
         {
-            return buildRequest.GetAllBuilds(requestData);
+            return await buildRequest.GetAllBuilds(requestData);
         }
     }
 }

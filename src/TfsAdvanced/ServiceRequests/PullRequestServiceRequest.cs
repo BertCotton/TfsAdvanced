@@ -10,6 +10,7 @@ using TfsAdvanced.Data.Projects;
 using TfsAdvanced.Data.PullRequests;
 using TfsAdvanced.Data.Repositories;
 using TfsAdvanced.Infrastructure;
+using TfsAdvanced.Utilities;
 
 namespace TfsAdvanced.ServiceRequests
 {
@@ -37,9 +38,7 @@ namespace TfsAdvanced.ServiceRequests
             IList<PullRequest> cached = cache.Get<IList<PullRequest>>(cacheKey);
             if (cached != null)
                 return cached;
-            var pullResponse = await requestData.HttpClient.GetStringAsync(project._links.pullRequests.href);
-            var pullResponseObject = JsonConvert.DeserializeObject<Response<IEnumerable<PullRequest>>>(pullResponse);
-            var pullRequests = pullResponseObject.value.ToList();
+            var pullRequests = await GetAsync.FetchResponseList<PullRequest>(requestData, project._links.pullRequests.href);
             Parallel.ForEach(pullRequests, pr =>
             {
                 pr.repository = repo;

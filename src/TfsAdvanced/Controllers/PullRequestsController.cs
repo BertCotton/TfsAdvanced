@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.PullRequests;
@@ -7,7 +8,6 @@ using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
 {
-    [Authorize]
     [Route("data/PullRequests")]
     public class PullRequestsController : Controller
     {
@@ -25,9 +25,9 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpGet]
-        public IList<PullRequest> Index()
+        public async Task<IList<PullRequest>> Index()
         {
-            var repositories = repositoryServiceRequest.GetAllRepositories(requestData);
+            var repositories = await repositoryServiceRequest.GetAllRepositories(requestData);
             var projects = projectServiceRequest.GetProjects(requestData, repositories);
             return pullRequestServiceRequest.GetPullRequests(requestData, projects);
         }

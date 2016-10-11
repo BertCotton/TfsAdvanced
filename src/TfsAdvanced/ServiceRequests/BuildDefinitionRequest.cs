@@ -11,44 +11,45 @@ using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
 using TfsAdvanced.Data.Projects;
 using TfsAdvanced.Infrastructure;
+using TfsAdvanced.Utilities;
 
 namespace TfsAdvanced.ServiceRequests
 {
     public class BuildDefinitionRequest
     {
         private readonly AppSettings appSettings;
+        private readonly ProjectServiceRequest projectServiceRequest;
         private readonly Cache cache;
         private string MEMORY_CACHE_KEY = "BUILD_DEFINITONS_MEMORY_KEY-";
 
-        public BuildDefinitionRequest(IOptions<AppSettings> appSettings, Cache cache)
+        public BuildDefinitionRequest(IOptions<AppSettings> appSettings, Cache cache, ProjectServiceRequest projectServiceRequest)
         {
             this.cache = cache;
+            this.projectServiceRequest = projectServiceRequest;
             this.appSettings = appSettings.Value;
         }
 
-        public IList<BuildDefinition> GetAllBuildDefinitions(RequestData requestData)
+        public async Task<IList<BuildDefinition>> GetAllBuildDefinitions(RequestData requestData)
         {
             IList<BuildDefinition> cached = cache.Get<IList<BuildDefinition>>(MEMORY_CACHE_KEY + "all");
             if (cached != null)
                 return cached;
             var buildDefinitions = new List<BuildDefinition>();
-            Parallel.ForEach(appSettings.Projects, tfsProject =>
+            var projects = await projectServiceRequest.GetProjects(requestData);
+            Parallel.ForEach(projects, project =>
             {
-                buildDefinitions.AddRange(GetBuildDefinitions(requestData, tfsProject).Result);
+                buildDefinitions.AddRange(GetBuildDefinitions(requestData, project).Result);
             });
             cache.Put(MEMORY_CACHE_KEY + "all", buildDefinitions, TimeSpan.FromHours(1));
             return buildDefinitions;
         }
 
-        public async Task<IList<BuildDefinition>> GetBuildDefinitions(RequestData requestData, string tfsProject)
+        public async Task<IList<BuildDefinition>> GetBuildDefinitions(RequestData requestData, Project project)
         {
-            IList<BuildDefinition> cached = cache.Get<IList<BuildDefinition>>(MEMORY_CACHE_KEY + tfsProject);
+            IList<BuildDefinition> cached = cache.Get<IList<BuildDefinition>>(MEMORY_CACHE_KEY + project.name);
             if (cached != null)
                 return cached;
-            var response =
-                await requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/{tfsProject}/_apis/build/definitions?api=2.2");
-            var responseObject = JsonConvert.DeserializeObject<Response<IEnumerable<BuildDefinition>>>(response);
-            IList<BuildDefinition> buildDefinitions = responseObject.value.ToList();
+            var buildDefinitions = await GetAsync.FetchResponseList<BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/definitions?api=2.2");
 
             cache.Put(MEMORY_CACHE_KEY + "all", buildDefinitions, TimeSpan.FromHours(1));
 

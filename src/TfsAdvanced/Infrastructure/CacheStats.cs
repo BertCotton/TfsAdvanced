@@ -5,11 +5,16 @@ namespace TfsAdvanced.Infrastructure
 {
     public class CacheStats
     {
+        private int userLogins;
         private int hitCount;
         private int missCount;
         private int evictionCount;
         public readonly DateTime StartTime = DateTime.Now;
 
+        public void UserLogin()
+        {
+            Interlocked.Increment(ref userLogins);
+        }
         public void Hit()
         {
             Interlocked.Increment(ref hitCount);
@@ -23,6 +28,11 @@ namespace TfsAdvanced.Infrastructure
         public void Eviction()
         {
             Interlocked.Increment(ref evictionCount);
+        }
+
+        public int UserLoginCount()
+        {
+            return userLogins;
         }
 
         public int HitCount()

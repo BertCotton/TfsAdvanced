@@ -8,7 +8,6 @@ using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
 {
-    [Authorize]
     [Route("/data/Projects")]
     public class ProjectsController : Controller
     {

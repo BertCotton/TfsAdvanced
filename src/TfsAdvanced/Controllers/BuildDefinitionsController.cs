@@ -15,7 +15,6 @@ using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
 {
-    [Authorize]
     [Route("data/BuildDefinitions")]
     public class BuildDefinitionsController : Controller
     {
@@ -29,13 +28,13 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpPost]
-        public IActionResult BuildDefinitions([FromBody] List<int> definitionIds)
+        public async Task<IActionResult> BuildDefinitions([FromBody] List<int> definitionIds)
         {
             if (!definitionIds.Any())
                 return NotFound();
 
             var definitions =
-                buildDefinitionRequest.GetAllBuildDefinitions(requestData)
+                (await buildDefinitionRequest.GetAllBuildDefinitions(requestData))
                     .Where(x => definitionIds.Contains(x.id))
                     .ToList();
             buildDefinitionRequest.LaunchBuild(requestData, definitions);
@@ -47,7 +46,7 @@ namespace TfsAdvanced.Controllers
         public async Task<IActionResult> SetCIBuild([FromQuery] bool JustUpdate)
         {
             IList<BuildDefinition> updated = new List<BuildDefinition>();
-            IList<BuildDefinition> builds = buildDefinitionRequest.GetAllBuildDefinitions(requestData);
+            IList<BuildDefinition> builds = await buildDefinitionRequest.GetAllBuildDefinitions(requestData);
             foreach (var buildDefinition in builds)
             {
                 if(buildDefinition.project.name != "Benefits")
@@ -116,9 +115,9 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpGet]
-        public IList<BuildDefinition> Index()
+        public async Task<IList<BuildDefinition>> Index()
         {
-            return buildDefinitionRequest.GetAllBuildDefinitions(requestData);
+            return await buildDefinitionRequest.GetAllBuildDefinitions(requestData);
         }
     }
 }

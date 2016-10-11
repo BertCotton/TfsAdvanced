@@ -2,7 +2,6 @@
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using TfsAdvanced.Data;
+using TfsAdvanced.DataStore;
 using TfsAdvanced.Infrastructure;
 
 namespace TfsAdvanced
@@ -42,24 +42,33 @@ namespace TfsAdvanced
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            services.AddEntityFrameworkInMemoryDatabase()
+                .AddDbContext<TfsAdvancedDataContext>();
+
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<TfsAdvancedDataContext>()
+                .AddDefaultTokenProviders();
+
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 options.SerializerSettings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
-            });
+            }).AddMvcOptions(options => options.Filters.Add(new ExceptionHandler()));
             services.AddApplicationInsightsTelemetry(Configuration);
             services.AddMemoryCache();
-
+            
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             var builder = new ContainerBuilder();
 
             builder.Populate(services);
 
+            builder.RegisterType<AuthenticationTokenProvider>();
+
             builder.RegisterType<CacheStats>().AsSelf().SingleInstance();
             builder.RegisterType<Cache>().AsSelf().SingleInstance();
 
-            builder.RegisterType<SignInManager<User>>().AsSelf();
+            builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
 
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
                 .Where(t => t.Name.EndsWith("Request") || t.Name.EndsWith("Repository"))
@@ -67,6 +76,8 @@ namespace TfsAdvanced
                 .SingleInstance();
 
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
+
+            
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
@@ -80,29 +91,34 @@ namespace TfsAdvanced
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
-            if (!env.IsDevelopment())
-                app.UseClientCertMiddleware();
+//            if (!env.IsDevelopment())
+//                app.UseClientCertMiddleware();
+
+            app.UseAuthenticationMiddleware();
 
             app.UseApplicationInsightsExceptionTelemetry();
             app.UseApplicationInsightsRequestTelemetry();
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AuthenticationScheme = "Cookies",
-                LoginPath = new PathString("/data/Login"),
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                CookieName = "TfsAdvance.Cookies"
-            });
-            
-
-            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
-            {
-                AuthenticationScheme = "Microsoft",
-                SignInScheme = "Cookies",
-                ClientId = "",
-                ClientSecret = ""
-            });
+//            app.UseCookieAuthentication(new CookieAuthenticationOptions
+//            {
+//                AuthenticationScheme = "Cookies",
+//                LoginPath = new PathString("/data/Login"),
+//                AutomaticAuthenticate = true,
+//                AutomaticChallenge = true,
+//                CookieName = "TfsAdvance.Cookies"
+//            });
+//            
+//            app.UseIdentity();
+//
+//            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
+//            {
+//                
+//                AuthenticationScheme = "Microsoft",
+//                SignInScheme = "Cookies",
+//                ClientId = "53ee2d1e-2545-468d-b535-b7802768b021",
+//                ClientSecret = "4xvpaOOV5WcretbRjOAZHCX",
+//                CallbackPath = "/data/Login/Callback"
+//            });
 
             app.UseMvc();
         }

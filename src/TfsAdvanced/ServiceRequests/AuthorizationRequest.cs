@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
 
@@ -17,6 +18,12 @@ namespace TfsAdvanced.ServiceRequests
         public AuthorizationRequest(IOptions<AppSettings> appSettings)
         {
             this.appSettings = appSettings.Value;
+        }
+
+        public string GetChallengeUrl(string baseURL)
+        {
+            return
+                $"https://app.vssps.visualstudio.com/oauth2/authorize?client_id={appSettings.authorization.ClientId}&response_type=Assertion&state={appSettings.authorization.State}&scope={appSettings.authorization.Scope}&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}";
         }
 
         public async Task<string> Authorize()
@@ -34,7 +41,7 @@ namespace TfsAdvanced.ServiceRequests
 
         }
 
-        public async Task GetAccessToken(string code, string state)
+        public async Task<AuthenticationToken> GetAccessToken(string code, string state)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, "https://app.vssps.visualstudio.com/oauth2/token");
             request.Content = new FormUrlEncodedContent(new[]
@@ -52,6 +59,11 @@ namespace TfsAdvanced.ServiceRequests
             var HttpClient = new HttpClient(handler);
 
             var saveResponse = await HttpClient.SendAsync(request);
+
+            var responseText = await saveResponse.Content.ReadAsStringAsync();
+
+            AuthenticationToken token = JsonConvert.DeserializeObject<AuthenticationToken>(responseText);
+            return token;
         }
     }
 }

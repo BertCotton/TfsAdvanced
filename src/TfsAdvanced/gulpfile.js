@@ -55,8 +55,16 @@ gulp.task("concat:js",
                 "./wwwroot/app/controllers/*.js"
         ])
             .pipe(debug())
+            .pipe(concat("./wwwroot/js/app.js"))
+            .pipe(gulp.dest("."));
+    });
+
+gulp.task("minify:js",
+    ["concat:js"],
+    function() {
+        return gulp.src("./wwwroot/js/app.js")
             .pipe(concat("./wwwroot/js/app.min.js"))
-            //.pipe(uglify())
+            .pipe(uglify())
             .pipe(gulp.dest("."));
     });
 
@@ -84,7 +92,7 @@ gulp.task("copy:fonts", ["clean:fonts"],
            .pipe(gulp.dest("./wwwroot/fonts/"));
     });
 
-gulp.task("build", ["concat:js", "copy:css"]);
+gulp.task("build", ["concat:js", "minify:js", "copy:css"]);
 
 gulp.task("watch",
     function () {

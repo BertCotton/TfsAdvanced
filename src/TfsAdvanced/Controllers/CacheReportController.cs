@@ -16,6 +16,7 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpGet]
+        [Produces("application/json")]
         public IActionResult GetCacheStats()
         {
             Dictionary<string, object> response = new Dictionary<string, object>();
@@ -34,6 +35,7 @@ namespace TfsAdvanced.Controllers
             response["missPerSecond"] = missCount/upTime;
             response["requestPerSecond"] = (hitCount + missCount)/upTime;
             response["evictionPerSecond"] = evictionCount/upTime;
+            response["userLogins"] = cacheStats.UserLoginCount();
 
             return Ok(response);
         }

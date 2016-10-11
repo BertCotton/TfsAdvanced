@@ -9,6 +9,7 @@ using TfsAdvanced.Data;
 using TfsAdvanced.Data.Projects;
 using TfsAdvanced.Data.Repositories;
 using TfsAdvanced.Infrastructure;
+using TfsAdvanced.Utilities;
 
 namespace TfsAdvanced.ServiceRequests
 {
@@ -44,12 +45,8 @@ namespace TfsAdvanced.ServiceRequests
             if (cachedProjects != null)
                 return cachedProjects;
 
-            var response = await requestData.HttpClient.GetStringAsync($"{requestData.BaseAddress}/_apis/projects?api-version=1.0");
-            var responseObject = JsonConvert.DeserializeObject<Response<IEnumerable<Project>>>(response);
+            var projects = await GetAsync.FetchResponseList<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects?api-version=1.0");
 
-            var projects = responseObject.value.ToList();
-
-            projects = projects.Where(p => appSettings.Projects.Contains(p.name)).ToList();
             cache.Put(PROJECT_MEM_KEY, projects, TimeSpan.FromHours(1));
 
             return projects;

@@ -13,7 +13,7 @@ var app = angular.module('TFS.Advanced', [
     "angular-appinsights"
 ]);
 
-app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, insightsProvider) {
+app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, $httpProvider, insightsProvider) {
     'use strict';
 
     $stateProvider.state('pullRequests', {
@@ -37,4 +37,5 @@ app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, insight
     insightsProvider.start('61137fb3-e654-4fb7-88d3-242de0edf9d6');
 
     $urlRouterProvider.otherwise('/pullRequests');
+    $httpProvider.interceptors.push("Interceptor");
 });

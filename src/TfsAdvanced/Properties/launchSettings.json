@@ -3,14 +3,15 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:44300/",
-      "sslPort": 44389
+      "applicationUrl": "http://pullrequests.t-reb.net:44330/",
+      "sslPort": 44340
     }
   },
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
+      "launchUrl": "/data/pullrequests",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

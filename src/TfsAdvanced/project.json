@@ -22,7 +22,9 @@
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
     "Microsoft.AspNetCore.Authentication.MicrosoftAccount": "1.0.0",
     "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "1.0.0",
-    "Microsoft.AspNetCore.Identity": "1.0.0"
+    "Microsoft.AspNetCore.Identity": "1.0.0",
+    "Microsoft.EntityFrameworkCore.InMemory": "1.0.1",
+    "Microsoft.EntityFrameworkCore": "1.0.1"
   },
 
   "tools": {
