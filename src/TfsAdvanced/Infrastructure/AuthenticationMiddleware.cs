@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Principal;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,13 @@ namespace TfsAdvanced.Infrastructure
             {
                 await _next.Invoke(context);
                 return;
+            }
+
+            
+            byte[] value;
+            if (context.Session.TryGetValue("AuthToken", out value))
+            {
+                var token = JsonConvert.DeserializeObject<AuthenticationToken>(ASCIIEncoding.ASCII.GetString(value));
             }
 
             if (context.Request.Cookies.ContainsKey("Auth"))

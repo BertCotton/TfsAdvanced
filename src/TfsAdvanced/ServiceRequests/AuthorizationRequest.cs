@@ -22,26 +22,22 @@ namespace TfsAdvanced.ServiceRequests
 
         public string GetChallengeUrl(string baseURL)
         {
-            var auth = appSettings.authorization;
             return
-                $"https://login.microsoftonline.com/{auth.TenantId}/oauth2/authorize?client_id={appSettings.authorization.ClientId}&response_type=code&state={appSettings.authorization.State}&scope={appSettings.authorization.Scope}&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}&prompt=consent";
+                $"https://app.vssps.visualstudio.com/oauth2/authorize?client_id={appSettings.authorization.ClientId}&response_type=Assertion&state={appSettings.authorization.State}&scope={appSettings.authorization.Scope}&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}";
         }
 
 
         public async Task<string> GetAccessToken(string baseURL, string code, string state)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, $"https://login.microsoftonline.com/{appSettings.authorization.TenantId}/oauth2/token")
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://app.vssps.visualstudio.com/oauth2/token");
+            request.Content = new FormUrlEncodedContent(new[]
             {
-                Content = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("client_secret", appSettings.authorization.AppSecret),
-                    new KeyValuePair<string, string>("grant_type", "authorization_code"),
-                    new KeyValuePair<string, string>("code", code),
-                    new KeyValuePair<string, string>("redirect_uri", baseURL + appSettings.authorization.RedirectURI),
-                    new KeyValuePair<string, string>("resource", baseURL),
-                    new KeyValuePair<string, string>("client_id", appSettings.authorization.ClientId)
-                })
-            };
+                new KeyValuePair<string, string>("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
+                new KeyValuePair<string, string>("client_assertion", appSettings.authorization.AppSecret),
+                new KeyValuePair<string, string>("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer"),
+                new KeyValuePair<string, string>("assertion", code),
+                new KeyValuePair<string, string>("redirect_uri", baseURL + appSettings.authorization.RedirectURI)
+            });
             HttpClientHandler handler = new HttpClientHandler()
             {
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -46,14 +47,13 @@ namespace TfsAdvanced.Controllers
         {
             var tokenString = await authorizationRequest.GetAccessToken(GetBaseURL(), code, state);
 
-            return Ok(tokenString);
-
             var token = JsonConvert.DeserializeObject<AuthenticationToken>(tokenString);
 
             if (String.IsNullOrEmpty(token.access_token))
                 throw new Exception("The access token is null");
 
             var cookieValue = JsonConvert.SerializeObject(token);
+            HttpContext.Session.Set("AuthToken", ASCIIEncoding.ASCII.GetBytes(JsonConvert.SerializeObject(token)));
             HttpContext.Response.Cookies.Append("Auth", cookieValue, new CookieOptions
             {
                 Secure = true,
@@ -68,9 +68,9 @@ namespace TfsAdvanced.Controllers
             var securityToken = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token.access_token);
 
             
-            return Ok(securityToken);
+            return Ok(token);
 
-            //return Redirect("/data/PullRequests");
+            return Redirect("/data/PullRequests");
         }
 
         private string GetBaseURL()
