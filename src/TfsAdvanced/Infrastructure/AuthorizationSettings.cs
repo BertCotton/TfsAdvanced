@@ -9,7 +9,12 @@ namespace TfsAdvanced.Infrastructure
     {
         public string TenantId { get; set; }
 
+        public string AppId { get; set; }
+        public string AppSecret { get; set; }
+
         public string ClientId { get; set; }
+
+        public string ClientSecret { get; set; }
 
         public string State { get; set; }
 
@@ -17,6 +22,6 @@ namespace TfsAdvanced.Infrastructure
 
         public string RedirectURI { get; set; }
 
-        public string AppSecret { get; set; }
+        
     }
 }

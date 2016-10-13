@@ -38,14 +38,48 @@ namespace TfsAdvanced.Controllers
         [AllowAnonymous]
         public IActionResult Login(string ReturnURL = null)
         {
-            return Redirect(authorizationRequest.GetChallengeUrl(GetBaseURL()));
+            //return Redirect(authorizationRequest.GetChallengeUrl(GetBaseURL()));
+            return Redirect(authorizationRequest.GetADChallengeUrl(GetBaseURL()));
+        }
+
+        [HttpGet("ADLogin")]
+        [HttpGet("LoginAuth")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ADLogin(string code = null, string state = null, bool Admin_consent = false, string Session_state = null)
+        {
+            var tokenString = await authorizationRequest.GetADAccessToken(GetBaseURL(), code, state);
+
+            var token = JsonConvert.DeserializeObject<AuthenticationToken>(tokenString);
+
+            if (String.IsNullOrEmpty(token.access_token))
+                throw new Exception("The access token is null");
+
+            var cookieValue = JsonConvert.SerializeObject(token);
+            HttpContext.Session.Set("AuthToken", ASCIIEncoding.ASCII.GetBytes(JsonConvert.SerializeObject(token)));
+            HttpContext.Response.Cookies.Append("Auth", cookieValue, new CookieOptions
+            {
+                Secure = true,
+                Expires = DateTime.Now.AddYears(1),
+                HttpOnly = true,
+                Path = "/",
+                Domain = HttpContext.Request.Host.ToString()
+            });
+
+            cacheStats.UserLogin();
+
+            var securityToken = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token.access_token);
+
+
+            return Ok(token);
+
+            return Redirect("/data/PullRequests");
         }
 
         [HttpGet("LoginAuth")]
         [AllowAnonymous]
         public async Task<IActionResult> LoginAuth(string code = null, string state = null, bool Admin_consent = false, string Session_state = null)
         {
-            var tokenString = await authorizationRequest.GetAccessToken(GetBaseURL(), code, state);
+            var tokenString = await authorizationRequest.GetVSOAccessToken(GetBaseURL(), code, state);
 
             var token = JsonConvert.DeserializeObject<AuthenticationToken>(tokenString);
 
