@@ -42,17 +42,11 @@ namespace TfsAdvanced.Controllers
             return Redirect(authorizationRequest.GetADChallengeUrl(GetBaseURL()));
         }
 
-        [HttpGet("ADLogin")]
-        [HttpGet("LoginAuth")]
+        [HttpGet("ADLoginAuth")]
         [AllowAnonymous]
         public async Task<IActionResult> ADLogin(string code = null, string state = null, bool Admin_consent = false, string Session_state = null)
         {
-            var tokenString = await authorizationRequest.GetADAccessToken(GetBaseURL(), code, state);
-
-            var token = JsonConvert.DeserializeObject<AuthenticationToken>(tokenString);
-
-            if (String.IsNullOrEmpty(token.access_token))
-                throw new Exception("The access token is null");
+            var token = await authorizationRequest.GetADAccessToken(GetBaseURL(), code, state);
 
             var cookieValue = JsonConvert.SerializeObject(token);
             HttpContext.Session.Set("AuthToken", ASCIIEncoding.ASCII.GetBytes(JsonConvert.SerializeObject(token)));
@@ -66,11 +60,6 @@ namespace TfsAdvanced.Controllers
             });
 
             cacheStats.UserLogin();
-
-            var securityToken = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token.access_token);
-
-
-            return Ok(token);
 
             return Redirect("/data/PullRequests");
         }

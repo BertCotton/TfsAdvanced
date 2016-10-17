@@ -8,6 +8,8 @@ namespace TfsAdvanced.Infrastructure
 
         public List<string> Projects { get; set; }
 
+        public Security Security { get; set; }
+
     public AuthorizationSettings authorization { get; set; }
     }
 }

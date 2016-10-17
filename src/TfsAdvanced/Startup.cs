@@ -49,6 +49,13 @@ namespace TfsAdvanced
                 .AddEntityFrameworkStores<TfsAdvancedDataContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddSession(options =>
+            {
+                options.CookieHttpOnly = true;
+                options.CookieName = "TFSAdvanced";
+                options.IdleTimeout = TimeSpan.FromHours(5);
+            });
+
             services.AddMvc().AddJsonOptions(options =>
             {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -90,6 +97,7 @@ namespace TfsAdvanced
             app.UseDeveloperExceptionPage();
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.UseSession();
             app.UseAuthenticationMiddleware();
             app.UseApplicationInsightsExceptionTelemetry();
             app.UseApplicationInsightsRequestTelemetry();

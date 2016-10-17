@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
@@ -23,7 +27,10 @@ namespace TfsAdvanced.ServiceRequests
         public string GetVSOChallengeUrl(string baseURL)
         {
             return
-                $"https://app.vssps.visualstudio.com/oauth2/authorize?client_id={appSettings.authorization.AppId}&response_type=Assertion&state={appSettings.authorization.State}&scope={appSettings.authorization.Scope}&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}";
+                $"https://app.vssps.visualstudio.com/oauth2/authorize?" +
+                $"client_id={appSettings.authorization.AppId}&response_type=Assertion" + 
+                $"&state={appSettings.authorization.State}&scope={appSettings.authorization.Scope}" +
+                $"&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}";
         }
 
 
@@ -56,34 +63,37 @@ namespace TfsAdvanced.ServiceRequests
         {
             return $"https://login.microsoftonline.com/{appSettings.authorization.TenantId}/oauth2/authorize?" +
                 $"client_id={appSettings.authorization.ClientId}" +
-                "&response_type=code" +
-                $"&redirect_uri={baseURL}/data/Login/ADLogin" +
-                "&response_mode=query" +
-                $"&resource={baseURL}" +
-                $"&state=User";
+                $"&response_type=code&redirect_uri={baseURL}/data/Login/ADLoginAuth" +
+                $"&response_mode=query&resource=https://graph.windows.net&state=User&prompt=consent";
         }
 
-        public async Task<string> GetADAccessToken(string baseURL, string code, string state)
+        public async Task<AuthenticationToken> GetADAccessToken(string baseURL, string code, string state)
         {
-            var request = new HttpRequestMessage(HttpMethod.Post, $"https://login.microsoftonline.com/{appSettings.authorization.TenantId}/oauth2/token");
-            request.Content = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("client_id", appSettings.authorization.ClientId),
-                new KeyValuePair<string, string>("code", code),
-                new KeyValuePair<string, string>("grant_type", "authorization_code"),
-                new KeyValuePair<string, string>("resource", baseURL),
-                new KeyValuePair<string, string>("client_secret", appSettings.authorization.ClientSecret),
-                new KeyValuePair<string, string>("redirect_uri", baseURL + appSettings.authorization.RedirectURI)
-            });
+
+            var content = new StringContent($"grant_type=authorization_code&client_id={appSettings.authorization.ClientId}"+
+                $"&code={code}&redirect_uri={baseURL}/data/Login/ADLoginAuth" + 
+                $"&resource=https://graph.windows.net"+
+                $"&client_secret={appSettings.authorization.ClientSecret}",
+                Encoding.UTF8,
+                "application/x-www-form-urlencoded");
+
             HttpClientHandler handler = new HttpClientHandler()
             {
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             };
-
-            var saveResponse = await new HttpClient(handler).SendAsync(request);
+            var client = new HttpClient(handler);
+            
+            var saveResponse = await client.PostAsync($"https://login.microsoftonline.com/{appSettings.authorization.TenantId}/oauth2/token", content);
 
             var responseText = await saveResponse.Content.ReadAsStringAsync();
-            return responseText;
+
+            
+            var token = JsonConvert.DeserializeObject<AuthenticationToken>(responseText);
+            if(token.access_token == null)
+                throw new Exception("Unable to deserialize AuthenticationToken from response: " + responseText);
+
+            return token;
+
         }
     }
 }
