@@ -14,6 +14,14 @@
             pullrequestsService.start();
             buildsService.start();
 
+            // Keesp the services running
+            $interval(function() {
+                    pullrequestsService.start();
+                    buildsService.start();
+                },
+                5000);
+
+
             $scope.$watch(pullrequestsService.isLoaded,
                 function(isLoaded) {
                     isPRsLoaded = isLoaded;

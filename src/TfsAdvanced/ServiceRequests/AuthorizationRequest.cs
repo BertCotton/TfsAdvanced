@@ -62,9 +62,11 @@ namespace TfsAdvanced.ServiceRequests
         public string GetADChallengeUrl(string baseURL)
         {
             return $"https://login.microsoftonline.com/{appSettings.authorization.TenantId}/oauth2/authorize?" +
-                $"client_id={appSettings.authorization.ClientId}" +
-                $"&response_type=code&redirect_uri={baseURL}/data/Login/ADLoginAuth" +
-                $"&response_mode=query&resource=https://graph.windows.net&state=User&prompt=consent";
+                   $"client_id={appSettings.authorization.ClientId}" +
+                   $"&response_type=code&redirect_uri={baseURL}/data/Login/ADLoginAuth" +
+                   //"&resource=https://graph.windows.net"
+                   $"&response_mode=query&state=User&prompt=consent";// + 
+                
         }
 
         public async Task<AuthenticationToken> GetADAccessToken(string baseURL, string code, string state)
@@ -72,7 +74,7 @@ namespace TfsAdvanced.ServiceRequests
 
             var content = new StringContent($"grant_type=authorization_code&client_id={appSettings.authorization.ClientId}"+
                 $"&code={code}&redirect_uri={baseURL}/data/Login/ADLoginAuth" + 
-                $"&resource=https://graph.windows.net"+
+                //$"&resource=https://graph.windows.net"+
                 $"&client_secret={appSettings.authorization.ClientSecret}",
                 Encoding.UTF8,
                 "application/x-www-form-urlencoded");

@@ -41,7 +41,7 @@ namespace TfsAdvanced.ServiceRequests
                 builds.PushRange(GetBuilds(requestData, project).Result.ToArray());
             });
 
-            cache.Put(MEMORY_CACHE_KEY + "all", builds, TimeSpan.FromSeconds(30));
+            cache.Put(MEMORY_CACHE_KEY + "all", builds.ToList(), TimeSpan.FromSeconds(30));
 
             return builds.ToList();
         }
@@ -56,7 +56,7 @@ namespace TfsAdvanced.ServiceRequests
 
             builds.ForEach(build => build.buildUrl = $"{requestData.BaseAddress}/{project.name}/_build?_a=summary&buildId={build.id}");
 
-            cache.Put(MEMORY_CACHE_KEY + project.name, builds, TimeSpan.FromSeconds(30));
+            cache.Put(MEMORY_CACHE_KEY + project.name, builds.ToList(), TimeSpan.FromSeconds(30));
 
             return builds;
         }

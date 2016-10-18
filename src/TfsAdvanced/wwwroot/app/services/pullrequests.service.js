@@ -19,12 +19,16 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
         function requests() {
             isRunning = true;
             return $http.get('data/PullRequests', { cache: false })
-                .then(function(response) {
-                    cached = response.data || [];
+                .success(function(data) {
+                    cached = data || [];
                     isLoaded = true;
                     if(!isCancelled)
                         $timeout(requests, 3000);
-                    return response;
+                    else {
+                        isRunning = false;
+                    };
+                }).error(function(error, status) {
+                    isRunning = false;
                 });
         }
 
@@ -32,9 +36,6 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
         this.start = function () {
             if (!isRunning)
                 requests();
-            else
-                console.log("Pull Request Service Started multiple times.");
-
         };
 
         this.stop = function() {
