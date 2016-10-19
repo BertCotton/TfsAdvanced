@@ -47,7 +47,7 @@ namespace TfsAdvanced.Infrastructure
 
         private string buildKey(string key)
         {
-            return $"{authenticationToken.access_token}:{key}";
+            return $"{key}";
         }
     }
 }
