@@ -13,13 +13,7 @@
                 'responseError': function (rejection) {
                     if (rejection.status < 0)
                         return rejection;
-                    if (rejection.status === 403) {
-                        canceller.resolve('Unauthorized');
-                        var url = $location.absUrl();
-                        var baseUrl = url.split("#")[0];
-                        $window.location = baseUrl + '/data/Login';
-                    }
-                    if (rejection.status === 401) {
+                    if (rejection.status === 401 || rejection.status === 403) {
                         canceller.resolve('Unauthorized');
                         var url = $location.absUrl();
                         var baseUrl = url.split("#")[0];

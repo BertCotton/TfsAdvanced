@@ -24,13 +24,11 @@ namespace TfsAdvanced.Controllers
     public class LoginController : Controller
     {
         private readonly AuthorizationRequest authorizationRequest;
-        private readonly SignInManager<ApplicationUser> signInManager;
         private readonly CacheStats cacheStats;
 
-        public LoginController(AuthorizationRequest authorizationRequest, SignInManager<ApplicationUser> signInManager, CacheStats cacheStats)
+        public LoginController(AuthorizationRequest authorizationRequest, CacheStats cacheStats)
         {
             this.authorizationRequest = authorizationRequest;
-            this.signInManager = signInManager;
             this.cacheStats = cacheStats;
         }
 
@@ -38,7 +36,6 @@ namespace TfsAdvanced.Controllers
         [AllowAnonymous]
         public IActionResult Login(string ReturnURL = null)
         {
-            //return Redirect(authorizationRequest.GetChallengeUrl(GetBaseURL()));
             return Redirect(authorizationRequest.GetADChallengeUrl(GetBaseURL()));
         }
 
@@ -80,12 +77,7 @@ namespace TfsAdvanced.Controllers
 
             cacheStats.UserLogin();
 
-            var securityToken = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token.access_token);
-
-            
-            return Ok(token);
-
-            return Redirect("/data/PullRequests");
+            return Redirect("/");
         }
 
         private string GetBaseURL()
