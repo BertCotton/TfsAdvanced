@@ -72,7 +72,7 @@ namespace TfsAdvanced.ServiceRequests
 
             var content = new StringContent($"grant_type=authorization_code&client_id={appSettings.authorization.ClientId}"+
                 $"&code={code}&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}" + 
-                //$"&resource=https://graph.windows.net"+
+                $"&resource=https://graph.windows.net"+
                 $"&client_secret={appSettings.authorization.ClientSecret}",
                 Encoding.UTF8,
                 "application/x-www-form-urlencoded");
