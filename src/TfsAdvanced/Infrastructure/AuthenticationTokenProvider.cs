@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -19,8 +20,14 @@ namespace TfsAdvanced.Infrastructure
 
         public AuthenticationToken GetToken()
         {
-            var authCookie = context.Request.Cookies["Auth"];
-            return JsonConvert.DeserializeObject<AuthenticationToken>(authCookie);
+            byte[] value;
+            if (context.Session.TryGetValue("AuthToken", out value))
+            {
+                var token = JsonConvert.DeserializeObject<AuthenticationToken>(ASCIIEncoding.ASCII.GetString(value));
+                return token;
+            }
+            throw new Exception("Unable to get token from session.");
+
         }
     }
 }

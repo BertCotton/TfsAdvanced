@@ -25,9 +25,9 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpGet]
-        public async Task<IList<PullRequest>> Index()
+        public IList<PullRequest> Index()
         {
-            var repositories = await repositoryServiceRequest.GetAllRepositories(requestData);
+            var repositories = repositoryServiceRequest.GetAllRepositories(requestData);
             var projects = projectServiceRequest.GetProjects(requestData, repositories);
             return pullRequestServiceRequest.GetPullRequests(requestData, projects);
         }

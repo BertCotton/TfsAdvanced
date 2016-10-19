@@ -12,7 +12,6 @@
         var finishedTime;
         if (build.finishTime === null) {
             finishedTime = new Date();
-            console.log(build);
             if (build.startTime === null) {
                 text = "Queued";
                 color = "blue";

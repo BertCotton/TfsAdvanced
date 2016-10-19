@@ -45,7 +45,7 @@ namespace TfsAdvanced.ServiceRequests
                 pr.remoteUrl = BuildPullRequestUrl(pr, requestData.BaseAddress);
             });
 
-            cache.Put(cacheKey, pullRequests, TimeSpan.FromSeconds(20));
+            cache.Put(cacheKey, pullRequests, TimeSpan.FromSeconds(2));
 
             return pullRequests;
         }

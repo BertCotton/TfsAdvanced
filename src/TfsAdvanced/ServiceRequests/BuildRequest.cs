@@ -28,20 +28,20 @@ namespace TfsAdvanced.ServiceRequests
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<IList<Build>> GetAllBuilds(RequestData requestData)
+        public IList<Build> GetAllBuilds(RequestData requestData)
         {
             IList<Build> cached = cache.Get<IList<Build>>(MEMORY_CACHE_KEY + "all");
             if (cached != null)
                 return cached;
 
             var builds = new ConcurrentStack<Build>();
-            var projects = await projectServiceRequest.GetProjects(requestData);
+            var projects = projectServiceRequest.GetProjects(requestData);
             Parallel.ForEach(projects, project =>
             {
                 builds.PushRange(GetBuilds(requestData, project).Result.ToArray());
             });
 
-            cache.Put(MEMORY_CACHE_KEY + "all", builds, TimeSpan.FromSeconds(30));
+            cache.Put(MEMORY_CACHE_KEY + "all", builds.ToList(), TimeSpan.FromSeconds(30));
 
             return builds.ToList();
         }
@@ -56,7 +56,7 @@ namespace TfsAdvanced.ServiceRequests
 
             builds.ForEach(build => build.buildUrl = $"{requestData.BaseAddress}/{project.name}/_build?_a=summary&buildId={build.id}");
 
-            cache.Put(MEMORY_CACHE_KEY + project.name, builds, TimeSpan.FromSeconds(30));
+            cache.Put(MEMORY_CACHE_KEY + project.name, builds.ToList(), TimeSpan.FromSeconds(30));
 
             return builds;
         }

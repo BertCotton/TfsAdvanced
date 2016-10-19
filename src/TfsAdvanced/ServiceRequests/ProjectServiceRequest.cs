@@ -39,14 +39,20 @@ namespace TfsAdvanced.ServiceRequests
             return project;
         }
 
-        public async Task<List<Project>> GetProjects(RequestData requestData)
+        public List<Project> GetProjects(RequestData requestData)
         {
             List<Project> cachedProjects = cache.Get<List<Project>>(PROJECT_MEM_KEY);
             if (cachedProjects != null)
                 return cachedProjects;
 
-            var projects = await GetAsync.FetchResponseList<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects?api-version=1.0");
+            List<Project> projects = new List<Project>();
 
+            Parallel.ForEach(appSettings.Projects, projectName =>
+            {
+                var project = GetAsync.Fetch<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects/Benefits?api-version=1.0").Result;
+                projects.Add(project);
+            });
+            
             cache.Put(PROJECT_MEM_KEY, projects, TimeSpan.FromHours(1));
 
             return projects;

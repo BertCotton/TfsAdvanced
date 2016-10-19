@@ -21,9 +21,9 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpGet]
-        public async Task<List<Project>> GetProjects()
+        public List<Project> GetProjects()
         {
-            return await projectServiceRequests.GetProjects(requestData);
+            return projectServiceRequests.GetProjects(requestData);
         }
     }
 }

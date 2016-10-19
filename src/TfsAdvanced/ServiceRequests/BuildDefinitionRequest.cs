@@ -29,13 +29,13 @@ namespace TfsAdvanced.ServiceRequests
             this.appSettings = appSettings.Value;
         }
 
-        public async Task<IList<BuildDefinition>> GetAllBuildDefinitions(RequestData requestData)
+        public IList<BuildDefinition> GetAllBuildDefinitions(RequestData requestData)
         {
             IList<BuildDefinition> cached = cache.Get<IList<BuildDefinition>>(MEMORY_CACHE_KEY + "all");
             if (cached != null)
                 return cached;
             var buildDefinitions = new List<BuildDefinition>();
-            var projects = await projectServiceRequest.GetProjects(requestData);
+            var projects = projectServiceRequest.GetProjects(requestData);
             Parallel.ForEach(projects, project =>
             {
                 buildDefinitions.AddRange(GetBuildDefinitions(requestData, project).Result);

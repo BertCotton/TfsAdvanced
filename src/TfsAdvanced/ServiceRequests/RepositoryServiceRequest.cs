@@ -33,7 +33,7 @@ namespace TfsAdvanced.ServiceRequests
             return $"{requestData.BaseAddress}/{repository.project.name}/_dashboards";
         }
 
-        public async Task<IList<Repository>> GetAllRepositories(RequestData requestData)
+        public IList<Repository> GetAllRepositories(RequestData requestData)
         {
             IList<Repository> cached = cache.Get<IList<Repository>>(REPOSITORY_LIST_MEMORY_KEY + "all");
             if (cached != null)
@@ -41,7 +41,7 @@ namespace TfsAdvanced.ServiceRequests
 
             var exceptions = new ConcurrentQueue<Exception>();
             var concurrentRepositories = new ConcurrentStack<Repository>();
-            var projects = await projectServiceRequest.GetProjects(requestData);
+            var projects = projectServiceRequest.GetProjects(requestData);
             Parallel.ForEach(projects, project =>
             {
                 try
