@@ -37,27 +37,24 @@ namespace TfsAdvanced.Infrastructure
             if (context.Session.TryGetValue("AuthToken", out value))
             {
                 var token = JsonConvert.DeserializeObject<AuthenticationToken>(ASCIIEncoding.ASCII.GetString(value));
-            }
-
-            if (context.Request.Cookies.ContainsKey("Auth"))
-            {
-                var authCookie = context.Request.Cookies["Auth"];
-                AuthenticationToken token = JsonConvert.DeserializeObject<AuthenticationToken>(authCookie);
-                if (token.access_token == null)
+                if (token?.access_token == null)
                 {
-                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    await context.Response.WriteAsync("Token is null");
+                    context.Response.StatusCode = (int) HttpStatusCode.Forbidden;
+                    await context.Response.WriteAsync("Unable to read session.  User is not authenticated.");
                     return;
                 }
-
+                if (DateTime.Now > token.expiredTime)
+                {
+                    context.Response.StatusCode = (int) HttpStatusCode.Unauthorized;
+                    await context.Response.WriteAsync("Token is expired.  User needs to reauthenticate.");
+                    return;
+                }
                 await _next.Invoke(context);
-            }
-            else
-            {
-                context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                await context.Response.WriteAsync("User not authenticated");
+                return;
             }
 
+            context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+            await context.Response.WriteAsync("Session does not have AuthToken set.  User is not authenticated.");
         }
     }
 }

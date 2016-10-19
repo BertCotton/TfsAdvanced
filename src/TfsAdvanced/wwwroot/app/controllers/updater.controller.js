@@ -84,7 +84,7 @@
 
             $scope.$watchCollection(buildsService.builds,
                 function(data) {
-                    if (data === undefined || isBuildsLoaded)
+                    if (data === undefined || !isBuildsLoaded)
                         return;
 
                     builds = $filter('orderBy')(data, "id", true);

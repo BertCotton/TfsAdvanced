@@ -42,29 +42,21 @@ namespace TfsAdvanced.Controllers
             return Redirect(authorizationRequest.GetADChallengeUrl(GetBaseURL()));
         }
 
-        [HttpGet("ADLoginAuth")]
+        [HttpGet("LoginAuth")]
         [AllowAnonymous]
         public async Task<IActionResult> ADLogin(string code = null, string state = null, bool Admin_consent = false, string Session_state = null)
         {
             var token = await authorizationRequest.GetADAccessToken(GetBaseURL(), code, state);
 
-            var cookieValue = JsonConvert.SerializeObject(token);
+            this.
             HttpContext.Session.Set("AuthToken", ASCIIEncoding.ASCII.GetBytes(JsonConvert.SerializeObject(token)));
-            HttpContext.Response.Cookies.Append("Auth", cookieValue, new CookieOptions
-            {
-                Secure = true,
-                Expires = DateTime.Now.AddYears(1),
-                HttpOnly = true,
-                Path = "/",
-                Domain = HttpContext.Request.Host.ToString()
-            });
 
             cacheStats.UserLogin();
 
-            return Redirect("/data/PullRequests");
+            return Redirect("/");
         }
 
-        [HttpGet("LoginAuth")]
+        [HttpGet("LoginVSOAuth")]
         [AllowAnonymous]
         public async Task<IActionResult> LoginAuth(string code = null, string state = null, bool Admin_consent = false, string Session_state = null)
         {

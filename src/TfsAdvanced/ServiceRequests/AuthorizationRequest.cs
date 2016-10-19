@@ -62,18 +62,16 @@ namespace TfsAdvanced.ServiceRequests
         public string GetADChallengeUrl(string baseURL)
         {
             return $"https://login.microsoftonline.com/{appSettings.authorization.TenantId}/oauth2/authorize?" +
-                   $"client_id={appSettings.authorization.ClientId}" +
-                   $"&response_type=code&redirect_uri={baseURL}/data/Login/ADLoginAuth" +
-                   //"&resource=https://graph.windows.net"
-                   $"&response_mode=query&state=User&prompt=consent";// + 
-                
+                $"client_id={appSettings.authorization.ClientId}" +
+                $"&response_type=code&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}" +
+                $"&response_mode=query&resource=https://graph.windows.net&state=User&prompt=consent";
         }
 
         public async Task<AuthenticationToken> GetADAccessToken(string baseURL, string code, string state)
         {
 
             var content = new StringContent($"grant_type=authorization_code&client_id={appSettings.authorization.ClientId}"+
-                $"&code={code}&redirect_uri={baseURL}/data/Login/ADLoginAuth" + 
+                $"&code={code}&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}" + 
                 //$"&resource=https://graph.windows.net"+
                 $"&client_secret={appSettings.authorization.ClientSecret}",
                 Encoding.UTF8,
@@ -91,6 +89,7 @@ namespace TfsAdvanced.ServiceRequests
 
             
             var token = JsonConvert.DeserializeObject<AuthenticationToken>(responseText);
+            token.expiredTime = DateTime.Now.AddSeconds(token.expires_in);
             if(token.access_token == null)
                 throw new Exception("Unable to deserialize AuthenticationToken from response: " + responseText);
 

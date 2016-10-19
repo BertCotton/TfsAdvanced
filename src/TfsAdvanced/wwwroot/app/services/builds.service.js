@@ -34,7 +34,6 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
         else {
             console.log("Builds Request Service Started Multiple Times.");
         }
-
     };
 
     this.stop = function() {

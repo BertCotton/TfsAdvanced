@@ -10,11 +10,11 @@ namespace TfsAdvanced.Data
     {
         public string access_token { get; set; }
 
-        public string base64_token => Convert.ToBase64String(Encoding.ASCII.GetBytes(access_token));
-
         public string token_type { get; set; }
 
         public int expires_in { get; set; }
+
+        public DateTime expiredTime { get; set; }
 
         public string refresh_token { get; set; }
     }
