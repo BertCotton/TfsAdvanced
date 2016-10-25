@@ -39,6 +39,7 @@ namespace TfsAdvanced.Controllers
                     .ToList();
             buildDefinitionRequest.LaunchBuild(requestData, definitions);
 
+            buildDefinitionRequest.InvalidateBuildCache(definitions);
             return Ok();
         }
         

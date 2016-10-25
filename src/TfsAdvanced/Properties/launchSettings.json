@@ -3,8 +3,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://pullrequests.t-reb.net:44330/",
-      "sslPort": 44340
+      "applicationUrl": "http://localhost:44330/",
+      "sslPort": 0
     }
   },
   "profiles": {

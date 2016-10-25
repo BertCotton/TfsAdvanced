@@ -1,31 +1,25 @@
 ﻿<div class="container" ng-controller="BuildDefinitionController">
         <div class="row">
-            <label for="DevBuildsOnly">Dev Builds Only</label>
-            <input type="checkbox" name="DevBuildsOnly" />
-            <table datatable="ng" dt-options="dtOptions" dt-instance="dtInstance" class="table table-striped" id="definitionsTable">
+            <table ng-table="tableParams" class="table table-striped table-bordered table-condensed" id="buildsTable" show-filter="true">
                 <thead>
-                    <tr>
-                        <th style="width:225px">
-                            <button ng-click="toggle()" type="button" class="btn btn-default">Toggle</button>
-                            <button ng-click="queueDefinitions()" class="btn btn-success" id="launch"  ng-disabled="noneChecked()" >Launch Selected</button>
-                        </th>
-                        <th>Repository Name</th>
-                        <th>Build Definition Name</th>
-                    </tr>
+                <tr>
+                    <th style="width:225px">
+                        <button ng-click="toggle()" type="button" class="btn btn-default">Toggle</button>
+                        <button ng-click="queueDefinitions()" class="btn btn-success" id="launch" ng-disabled="noneChecked()">Launch Selected</button>
+                    </th>
+                    <th>Repository Name</th>
+                    <th>Build Definition Name</th>
+                    <th>Default Branch</th>
+                    <th>Latest Build Status</th>
+                </tr>
                 </thead>
-                <tbody>
-                        <tr ng-repeat="definition in buildDefinitions">
-                            <td>
-                                <input type="checkbox" name="definitionIds" value="{{definition.id}}" ng-checked="isSelected(definition)" ng-click="select(definition)" />
-                            </td>
-                            <td>
-                                {{definition.project.name}}
-                            </td>
-                            <td>
-                                {{definition.name}}
-                            </td>
-                        </tr>
-                </tbody>
+                <tr ng-repeat="definition in $data">
+                    <td title="''"><input type="checkbox" name="definitionIds" value="{{definition.id}}" ng-checked="isSelected(definition)" ng-click="select(definition)" /></td>
+                    <td title="'Project Name'" sortable="'project.name'" filter="{project : 'text'}">{{definition.project.name}}</td>
+                    <td title="'Definition Name'" sortable="'definition.name'" filter="{definition: 'text'}" >{{definition.name}}</td>
+                    <td title="'Default Branch'">{{definition.defaultBranch | buildDefaultBranch}}</td>
+                    <td title="'Latest Build Status'" ng-bind-html="definition.latestBuilds | latestBuildStatus"></td>
+                </tr>
             </table>
         </div>
 </div>

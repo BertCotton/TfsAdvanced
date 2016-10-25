@@ -5,19 +5,16 @@
         function($scope, $filter, buildsService, NgTableParams) {
             'use strict';
 
-            var groupState = {};
             $scope.IsLoaded = true;
-            $scope.groupExpanded = {};
-
+            
             $scope.tableParams = new NgTableParams({
+                count : 20,
                     sorting: {
                         id: 'desc'
-                    },
-                    group: 'definition.name'
+                    }
                 },
                 {
-                    counts: [],
-                    showGroupPanel: false,
+                    counts: [20, 50, 100],
                     getData: function(params) {
                         var data = buildsService.builds();
 
@@ -47,6 +44,7 @@
                                 }
                             }
                         }
+
                         var filteredData = params.filter() ? $filter('filter')(data, newFilters) : data;
 
                         var orderedData = params.sorting()
@@ -55,24 +53,13 @@
                         var page = orderedData.slice((params.page() - 1) * params.count(),
                             params.page() * params.count());
 
-                        params.count(orderedData.length);
-                        params.total(orderedData.length);
+                        params.total(data.length);
                         return page;
                     }
+
                 });
 
-            $scope.toggleGroup = function(group) {
-                groupState[group.value] = !group.$hideRows;
-                group.$hideRows = !group.$hideRows;
-            }
-
-            $scope.groupState = function(group) {
-                if (groupState[group.value] === undefined)
-                    group.$hideRows = true;
-                else
-                    group.$hideRows = groupState[group.value];
-            };
-
+            
             $scope.$watch(buildsService.isLoaded, function(isLoaded) { $scope.IsLoaded = isLoaded; });
 
             $scope.$watchCollection(buildsService.builds,
@@ -81,9 +68,5 @@
                         $scope.tableParams.reload();
                     }
                 });
-
-            $scope.getLatestBuild = function(buildDefinition) {
-                return $filter('orderBy')(buildDefinition.data, "id", true)[0];
-            };
         }
     ]);

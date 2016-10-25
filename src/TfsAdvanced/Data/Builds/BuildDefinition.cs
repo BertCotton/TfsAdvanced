@@ -9,5 +9,9 @@ namespace TfsAdvanced.Data.Builds
         public string name { get; set; }
         public Project project { get; set; }
         public string url { get; set; }
+        public string defaultBranch { get; set; }
+        public BuildQueue queue { get; set; }
+
+        public IList<Build> LatestBuilds { get; set; }
     }
 }

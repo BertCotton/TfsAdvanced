@@ -15,12 +15,8 @@ namespace TfsAdvanced.Data
         public string BaseAddress { get; }
         public HttpClient HttpClient { get; }
 
-        public string BearerToken { get; }
-
-        public RequestData(IOptions<AppSettings> settings, AuthenticationTokenProvider authenticationTokenProvider)
+        public RequestData(IOptions<AppSettings> settings)
         {
-            var authenticationToken = authenticationTokenProvider.GetToken();
-            BearerToken = authenticationToken.access_token;
             appSettings = settings.Value;
             HttpClientHandler handler = new HttpClientHandler()
             {

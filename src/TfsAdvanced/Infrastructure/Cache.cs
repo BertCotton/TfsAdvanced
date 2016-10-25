@@ -9,13 +9,11 @@ namespace TfsAdvanced.Infrastructure
     {
         private readonly IMemoryCache memoryCache;
         private readonly CacheStats cacheStats;
-        private readonly AuthenticationToken authenticationToken;
 
-        public Cache(IMemoryCache memoryCache, CacheStats cacheStats, AuthenticationTokenProvider authenticationTokenProvider)
+        public Cache(IMemoryCache memoryCache, CacheStats cacheStats)
         {
             this.memoryCache = memoryCache;
             this.cacheStats = cacheStats;
-            this.authenticationToken = authenticationTokenProvider.GetToken();
         }
 
         public T Get<T>(string key)
@@ -43,6 +41,11 @@ namespace TfsAdvanced.Infrastructure
                     Debug.WriteLine($"Cache Eviction of {o} because of {reason}");
                     cacheStats.Eviction();
                 }));
+        }
+
+        public void Invalidate(string key)
+        {
+            memoryCache.Remove(key);
         }
 
         private string buildKey(string key)

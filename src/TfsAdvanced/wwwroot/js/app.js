@@ -79119,6 +79119,17 @@ app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, $httpPr
     $httpProvider.interceptors.push("Interceptor");
 });
 
+angular.module('TFS.Advanced').filter('buildDefaultBranch', function ($sce) {
+    return function (branch) {
+        if (branch === undefined || branch === null)
+            return "";
+        if (branch.includes("develop"))
+            return "develop";
+        if (branch.includes("master"))
+            return "master";
+        return branch;
+    };
+});
 angular.module('TFS.Advanced').filter('buildResult', function ($sce) {
     return function (build) {
         if (build.result === undefined)
@@ -79131,18 +79142,21 @@ angular.module('TFS.Advanced').filter('buildResult', function ($sce) {
         var color = "default";
 
         var finishedTime;
-        if (build.finishTime === null) {
+        var startTime = build.startTime;
+        if (build.status === "notStarted")
+        {
+            text = "Queued";
+            color = "blue";
+            startTime = build.queueTime;
             finishedTime = new Date();
-            if (build.startTime === null) {
-                text = "Queued";
-                color = "blue";
-            } else {
-                text = "Building";
-                color = "blue";
-            }
+        }
+        else if (build.status === "inProgress") {
+            text = "<strong>Building</strong>";
+            color = "blue";
+            finishedTime = new Date();
         } else {
             finishedTime = new Date(build.finishTime);
-        switch (build.result) {
+            switch (build.result) {
             case "failed":
                 text = "Failed";
                 color = "red";
@@ -79161,7 +79175,7 @@ angular.module('TFS.Advanced').filter('buildResult', function ($sce) {
                 break;
             }
         }
-        var difference = finishedTime - new Date(build.startTime).getTime();
+        var difference = finishedTime - new Date(startTime).getTime();
         var differenceSeconds = difference / 1000;
         var differenceMinutes = differenceSeconds / 60;
         // Times 100 , divide by 100 to give 2 decimal places after rounding
@@ -79191,7 +79205,7 @@ angular.module('TFS.Advanced').filter('buildStatus', function ($sce) {
                 break;
             case "postponed":
                 text = "Postponed";
-                color = "yellow";
+                color = "orange";
                 break;
             case "notStarted":
                 text = "Not Started";
@@ -79202,6 +79216,75 @@ angular.module('TFS.Advanced').filter('buildStatus', function ($sce) {
                 color = "gray";
                 break;
         }
+        return $sce.trustAs('html', "<span style='color:" + color + "'>" + text + "</span>");
+    };
+});
+angular.module('TFS.Advanced').filter('latestBuildStatus', function ($sce) {
+    return function (builds) {
+        if (builds === undefined)
+            return "";
+        var latestFinishedBuild = undefined;
+        var latestBuild = undefined;
+        for (var i = 0; i < builds.length; i++) {
+            var build = builds[i];
+            if (latestBuild === undefined) {
+                latestBuild = build;
+                if (build.finishTime)
+                    latestFinishedBuild = build;
+            } else if (latestBuild.id < build.id) {
+                latestBuild = build[i];
+                if (build.finishTime)
+                    latestFinishedBuild = build;
+            }
+        }
+        if (latestBuild !== latestFinishedBuild) {
+            console.log("LatestBuild: ", latestBuild);
+        }
+        var text = "";
+        var color = "default";
+        if (latestFinishedBuild === undefined) {
+            text = "Never Build";
+            color = "gray";
+        } else {
+         
+
+            var status = latestFinishedBuild.status;
+            if (status === undefined)
+                return "";
+            
+            switch (status) {
+            case "inProgress":
+                text = "In Progress";
+                color = "blue";
+                break;
+            case "completed":
+                text = "Completed";
+                color = "green";
+                break;
+            case "cancelling":
+                text = "Cancelling";
+                color = "orange";
+                break;
+            case "postponed":
+                text = "Postponed";
+                color = "orange";
+                break;
+            case "notStarted":
+                text = "Not Started";
+                color = "gray";
+                break;
+            case "all":
+                text = "All";
+                color = "gray";
+                break;
+            }
+
+            if (latestBuild.id !== latestFinishedBuild.id) {
+                text = "(Currently Building)";
+            }
+        }
+
+        
         return $sce.trustAs('html', "<span style='color:" + color + "'>" + text + "</span>");
     };
 });
@@ -79265,16 +79348,53 @@ angular.module('TFS.Advanced').filter('voteStatus', function ($sce) {
     };
 });
 /*globals angular */
-angular.module('TFS.Advanced').service('buildDefinitionService', ['$http', function ($http) {
-    'use strict';
-    return {
-        
-        GET: $http.get('data/BuildDefinitions'),
-        POST: function(data) {
+angular.module('TFS.Advanced').service('buildDefinitionService', ['$http', '$q', '$timeout', function ($http, $q, $timeout) {
+        'use strict';
+        var cached = [];
+        var isLoaded = false;
+        var isRunning = false;
+        var isCancelled = false;
+
+        this.buildDefintions = function () {
+            return cached;
+        };
+
+        this.isLoaded = function() {
+            return isLoaded;
+        };
+
+        this.startBuild = function(data) {
             return $http.post('data/BuildDefinitions', data);
+        };
+
+        function buildDefintions() {
+            isRunning = true;
+            return $http.get('data/BuildDefinitions', { cache: false })
+                .then(function(response) {
+                    cached = response.data || [];
+                    isLoaded = true;
+                    if (!isCancelled)
+                        $timeout(buildDefintions, 3000);
+                    return response;
+                });
         }
-}
-}]);
+
+        this.start = function() {
+            isCancelled = false;
+            if (!isRunning)
+                buildDefintions();
+            else {
+                console.log("Build Defintion Request Service Started Multiple Times.");
+            }
+        };
+
+        this.stop = function() {
+            isCancelled = true;
+            isRunning = false;
+        };
+
+    }
+]);
 /*globals angular */
 angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeout', function ($http, $q, $timeout) {
     'use strict';
@@ -79429,20 +79549,65 @@ angular.module('TFS.Advanced').service('workItemService', ['$http', '$q', functi
 angular.module('TFS.Advanced')
     .controller('BuildDefinitionController',
     [
-        '$window', '$scope', '$location', '$interval', '$notification', '$filter', 'DTOptionsBuilder', 'buildDefinitionService',
-        function ($window, $scope, $location, $interval, $notification, $filter, DTOptionsBuilder, buildDefinitionService) {
+        '$window', '$scope', '$location', '$interval', '$notification', '$filter', 'NgTableParams', 'buildDefinitionService',
+        function ($window, $scope, $location, $interval, $notification, $filter, NgTableParams, buildDefinitionService) {
             'use strict';
 
             $scope.buildDefinitions = [];
             $scope.selectedDefinitions = [];
-            $scope.dtOptions = DTOptionsBuilder.newOptions().withOption('order', [1, 'asc']);
-            $scope.dtInstance = {};
+            
+            $scope.tableParams = new NgTableParams({
+                count: 20,
+                page: 1,
+                sorting: {
+                    id: 'name'
+                }
+            },
+               {
+                   counts: [20,50,100],
+                   getData: function (params) {
+                       var data = buildDefinitionService.buildDefintions();
 
-            $scope.load = function () {
-                buildDefinitionService.GET.success(function (data) {
-                    $scope.buildDefinitions = data;
+                       var filters = params.filter();
+                       var newFilters = {};
+                       for (var key in filters) {
+                           if (filters.hasOwnProperty(key)) {
+                               switch (key) {
+                                   case 'project':
+                                       angular.extend(newFilters,
+                                       {
+                                           project: {
+                                               name: filters[key]
+                                           }
+                                       });
+                                       break;
+                                   default:
+                                       newFilters[key] = filters[key];
+                               }
+                           }
+                       }
+                       var filteredData = params.filter() ? $filter('filter')(data, newFilters) : data;
+
+                       var orderedData = params.sorting()
+                           ? $filter('orderBy')(filteredData, params.orderBy())
+                           : filteredData;
+                       var page = orderedData.slice((params.page() - 1) * params.count(),
+                           params.page() * params.count());
+
+                       params.total(data.length);
+                       return page;
+                   }
+               });
+
+            $scope.$watch(buildDefinitionService.isLoaded, function (isLoaded) { $scope.IsLoaded = isLoaded; });
+
+            $scope.$watchCollection(buildDefinitionService.buildDefintions,
+                function () {
+                    if ($scope.IsLoaded) {
+                        $scope.tableParams.reload();
+                    }
                 });
-            };
+
 
             $scope.noneChecked = function () {
                 return $filter('filter')($scope.selectedDefinitions, function (def) {
@@ -79479,13 +79644,11 @@ angular.module('TFS.Advanced')
                     if (defId)
                         submitIds.push(defId);
                 });
-                buildDefinitionService.POST(submitIds).then(function() {
+                buildDefinitionService.startBuild(submitIds).then(function () {
                     $scope.selectedDefinitions = [];
                     $window.alert("Builds launched");
                 });
             }
-
-            $scope.load();
         }
     ]);
 angular.module('TFS.Advanced')
@@ -79495,19 +79658,16 @@ angular.module('TFS.Advanced')
         function($scope, $filter, buildsService, NgTableParams) {
             'use strict';
 
-            var groupState = {};
             $scope.IsLoaded = true;
-            $scope.groupExpanded = {};
-
+            
             $scope.tableParams = new NgTableParams({
+                count : 20,
                     sorting: {
                         id: 'desc'
-                    },
-                    group: 'definition.name'
+                    }
                 },
                 {
-                    counts: [],
-                    showGroupPanel: false,
+                    counts: [20, 50, 100],
                     getData: function(params) {
                         var data = buildsService.builds();
 
@@ -79537,6 +79697,7 @@ angular.module('TFS.Advanced')
                                 }
                             }
                         }
+
                         var filteredData = params.filter() ? $filter('filter')(data, newFilters) : data;
 
                         var orderedData = params.sorting()
@@ -79545,24 +79706,13 @@ angular.module('TFS.Advanced')
                         var page = orderedData.slice((params.page() - 1) * params.count(),
                             params.page() * params.count());
 
-                        params.count(orderedData.length);
-                        params.total(orderedData.length);
+                        params.total(data.length);
                         return page;
                     }
+
                 });
 
-            $scope.toggleGroup = function(group) {
-                groupState[group.value] = !group.$hideRows;
-                group.$hideRows = !group.$hideRows;
-            }
-
-            $scope.groupState = function(group) {
-                if (groupState[group.value] === undefined)
-                    group.$hideRows = true;
-                else
-                    group.$hideRows = groupState[group.value];
-            };
-
+            
             $scope.$watch(buildsService.isLoaded, function(isLoaded) { $scope.IsLoaded = isLoaded; });
 
             $scope.$watchCollection(buildsService.builds,
@@ -79571,10 +79721,6 @@ angular.module('TFS.Advanced')
                         $scope.tableParams.reload();
                     }
                 });
-
-            $scope.getLatestBuild = function(buildDefinition) {
-                return $filter('orderBy')(buildDefinition.data, "id", true)[0];
-            };
         }
     ]);
 angular.module('TFS.Advanced')
@@ -79643,8 +79789,8 @@ angular.module('TFS.Advanced')
             };
         }
     ]);
-angular.module('TFS.Advanced').controller('UpdaterController', ['$scope', '$interval', '$notification', "$filter", 'buildsService', 'pullrequestsService',
-        function ($scope, $interval, $notification, $filter, buildsService, pullrequestsService) {
+angular.module('TFS.Advanced').controller('UpdaterController', ['$scope', '$interval', '$notification', "$filter", 'buildsService', 'pullrequestsService', 'buildDefinitionService',
+        function ($scope, $interval, $notification, $filter, buildsService, pullrequestsService, buildDefinitionService) {
             'use strict';
 
             var isBuildsLoaded = true;
@@ -79658,14 +79804,7 @@ angular.module('TFS.Advanced').controller('UpdaterController', ['$scope', '$inte
 
             pullrequestsService.start();
             buildsService.start();
-
-            // Keesp the services running
-            $interval(function() {
-                    pullrequestsService.start();
-                    buildsService.start();
-                },
-                5000);
-
+            buildDefinitionService.start();
 
             $scope.$watch(pullrequestsService.isLoaded,
                 function(isLoaded) {

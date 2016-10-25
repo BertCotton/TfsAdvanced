@@ -1,5 +1,5 @@
-﻿angular.module('TFS.Advanced').controller('UpdaterController', ['$scope', '$interval', '$notification', "$filter", 'buildsService', 'pullrequestsService',
-        function ($scope, $interval, $notification, $filter, buildsService, pullrequestsService) {
+﻿angular.module('TFS.Advanced').controller('UpdaterController', ['$scope', '$interval', '$notification', "$filter", 'buildsService', 'pullrequestsService', 'buildDefinitionService',
+        function ($scope, $interval, $notification, $filter, buildsService, pullrequestsService, buildDefinitionService) {
             'use strict';
 
             var isBuildsLoaded = true;
@@ -13,14 +13,7 @@
 
             pullrequestsService.start();
             buildsService.start();
-
-            // Keesp the services running
-            $interval(function() {
-                    pullrequestsService.start();
-                    buildsService.start();
-                },
-                5000);
-
+            buildDefinitionService.start();
 
             $scope.$watch(pullrequestsService.isLoaded,
                 function(isLoaded) {

@@ -49,7 +49,7 @@ namespace TfsAdvanced.ServiceRequests
 
             Parallel.ForEach(appSettings.Projects, projectName =>
             {
-                var project = GetAsync.Fetch<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects/Benefits?api-version=1.0").Result;
+                var project = GetAsync.Fetch<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects/{projectName}?api-version=1.0").Result;
                 projects.Add(project);
             });
             
