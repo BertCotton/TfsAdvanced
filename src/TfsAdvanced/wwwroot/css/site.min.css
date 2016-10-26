@@ -334,4 +334,9 @@ div[ui-view] {
 
 .sub-nav {
     background-color: #f3f3f3;
+    
+}
+.sub-nav select {
+    background-color: #f3f3f3;
+    border: #f3f3f3;
 }
