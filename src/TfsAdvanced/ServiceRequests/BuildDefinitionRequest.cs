@@ -56,7 +56,7 @@ namespace TfsAdvanced.ServiceRequests
 
             Parallel.ForEach(buildDefinitions, definition =>
             {
-                definition.LatestBuilds = buildRequest.GetLatestBuild(requestData, definition, 3).Result;
+                definition.LatestBuilds = buildRequest.GetLatestBuildOnDefaultBranch(requestData, definition, 3).Result;
             });
 
             cache.Put(MEMORY_CACHE_KEY + project.name, buildDefinitions, TimeSpan.FromHours(1));

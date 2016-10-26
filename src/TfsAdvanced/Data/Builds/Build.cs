@@ -16,6 +16,7 @@ namespace TfsAdvanced.Data.Builds
         public BuildResult result { get; set; }
         public DateTime? startTime { get; set; }
         public BuildStatus status { get; set; }
+        public string sourceBranch { get; set; }
         public string url { get; set; }
     }
 }
