@@ -15,7 +15,9 @@ angular.module('TFS.Advanced').service('buildDefinitionService', ['$http', '$q',
         };
 
         this.startBuild = function(data) {
-            return $http.post('data/BuildDefinitions', data);
+            return $http.post('data/BuildDefinitions', data).then(function(response) {
+                    return response.data;
+                });
         };
 
         function buildDefintions() {

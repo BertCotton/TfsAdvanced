@@ -6,64 +6,58 @@
         var latestBuild = undefined;
         for (var i = 0; i < builds.length; i++) {
             var build = builds[i];
-            if (latestBuild === undefined) {
+            if (latestBuild === undefined || latestBuild.id < build.id)
                 latestBuild = build;
-                if (build.finishTime)
+
+            if (build.finishTime && (latestFinishedBuild === undefined || latestFinishedBuild.id < build.id))
                     latestFinishedBuild = build;
-            } else if (latestBuild.id < build.id) {
-                latestBuild = build[i];
-                if (build.finishTime)
-                    latestFinishedBuild = build;
-            }
         }
-        if (latestBuild !== latestFinishedBuild) {
-            console.log("LatestBuild: ", latestBuild);
-        }
-        var text = "";
-        var color = "default";
-        if (latestFinishedBuild === undefined) {
-            text = "Never Build";
-            color = "gray";
-        } else {
-         
-
-            var status = latestFinishedBuild.status;
-            if (status === undefined)
-                return "";
-            
-            switch (status) {
-            case "inProgress":
-                text = "In Progress";
-                color = "blue";
-                break;
-            case "completed":
-                text = "Completed";
-                color = "green";
-                break;
-            case "cancelling":
-                text = "Cancelling";
-                color = "orange";
-                break;
-            case "postponed":
-                text = "Postponed";
-                color = "orange";
-                break;
-            case "notStarted":
-                text = "Not Started";
-                color = "gray";
-                break;
-            case "all":
-                text = "All";
-                color = "gray";
-                break;
-            }
-
-            if (latestBuild.id !== latestFinishedBuild.id) {
-                text = "(Currently Building)";
-            }
-        }
-
         
-        return $sce.trustAs('html', "<span style='color:" + color + "'>" + text + "</span>");
+        var text = "";
+        var color = "gray";
+        var glyphicon = "glyphicon ";
+        if (latestBuild === undefined) {
+            text = "Never Built";
+            glyphicon += "glyphicon-leaf";
+        } else {
+            var result = latestBuild.result;
+            if (latestFinishedBuild === undefined) {
+                text = "Never Finished";
+                glyphicon += "glyphicon-warning-sign";
+            } else
+                result = latestFinishedBuild.result;
+
+            switch (result) {
+                case "failed":
+                    text = "Failed";
+                    glyphicon += "glyphicon-thumbs-down";
+                    color = "red";
+                    break;
+                case "succeeded":
+                    text = "Succeeded";
+                    glyphicon += "glyphicon-thumbs-up";
+                    color = "green";
+                    break;
+                case "partiallySucceeded":
+                    text = "Partially Succeeded";
+                    glyphicon += "glyphicon-fire";
+                    color = "orange";
+                    break;
+                case "canceled":
+                    text = "Cancelled";
+                    glyphicon += "glyphicon-certificate";
+                    color = "orange";
+                    break;
+            }
+
+            text = "<a href='" + latestBuild.buildUrl + "' target='_blank'>" + text + "</a>";
+            if (latestFinishedBuild !== undefined && latestBuild.id !== latestFinishedBuild.id) {
+                text = text + "<a href='" + latestFinishedBuild.buildUrl + "' target='_blank'> | Currently Building</a>";
+            }
+                
+        }
+
+
+        return $sce.trustAs('html', "<span style='color:" + color +"' class='" + glyphicon + "'>" + text + "</span>");
     };
 });

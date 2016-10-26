@@ -37,10 +37,10 @@ namespace TfsAdvanced.Controllers
                 buildDefinitionRequest.GetAllBuildDefinitions(requestData)
                     .Where(x => definitionIds.Contains(x.id))
                     .ToList();
-            buildDefinitionRequest.LaunchBuild(requestData, definitions);
+            var builds = buildDefinitionRequest.LaunchBuild(requestData, definitions);
 
             buildDefinitionRequest.InvalidateBuildCache(definitions);
-            return Ok();
+            return Ok(builds);
         }
         
         [HttpGet]

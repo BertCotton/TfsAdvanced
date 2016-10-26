@@ -311,3 +311,7 @@ textarea {
 .padding {
     padding: 5px;
 }
+
+.buildStarted {
+    background-color: lightblue;
+}

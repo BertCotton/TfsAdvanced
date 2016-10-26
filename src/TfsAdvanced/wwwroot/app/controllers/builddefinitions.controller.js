@@ -5,6 +5,7 @@
         function ($window, $scope, $location, $interval, $notification, $filter, NgTableParams, buildDefinitionService) {
             'use strict';
 
+            $scope.IsLaunching = false;
             $scope.buildDefinitions = [];
             $scope.selectedDefinitions = [];
             
@@ -39,7 +40,7 @@
                            }
                        }
                        var filteredData = params.filter() ? $filter('filter')(data, newFilters) : data;
-
+                       $scope.buildDefinitions = data;
                        var orderedData = params.sorting()
                            ? $filter('orderBy')(filteredData, params.orderBy())
                            : filteredData;
@@ -55,7 +56,7 @@
 
             $scope.$watchCollection(buildDefinitionService.buildDefintions,
                 function () {
-                    if ($scope.IsLoaded) {
+                    if ($scope.IsLoaded && $scope.buildDefinitions.length === 0) {
                         $scope.tableParams.reload();
                     }
                 });
@@ -96,9 +97,29 @@
                     if (defId)
                         submitIds.push(defId);
                 });
-                buildDefinitionService.startBuild(submitIds).then(function () {
+                buildDefinitionService.startBuild(submitIds).then(function (builds) {
+                    $scope.IsLaunching = true;
                     $scope.selectedDefinitions = [];
-                    $window.alert("Builds launched");
+                    for (var i = 0; i < builds.length; i++) {
+                        var build = builds[i];
+                        
+                        var buildDefinitionId = build.definition.id;
+                        console.log("Finding build definition for id ", buildDefinitionId);
+                        var buildDefinition = undefined;
+                        for (var j = 0; j < $scope.buildDefinitions.length; j++) {
+                            
+                            buildDefinition = $scope.buildDefinitions[j];
+                            if (buildDefinition.id === buildDefinitionId) {
+                                break;
+                            }
+                        }
+
+                        if (buildDefinition !== undefined) {
+                            buildDefinition.launched = true;
+                            buildDefinition.latestBuilds.push(build);
+                        }
+                        $scope.IsLaunching = false;
+                    }
                 });
             }
         }
