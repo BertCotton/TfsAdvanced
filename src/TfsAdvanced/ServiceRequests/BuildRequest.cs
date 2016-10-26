@@ -41,9 +41,31 @@ namespace TfsAdvanced.ServiceRequests
                 builds.PushRange(GetBuilds(requestData, project).Result.ToArray());
             });
 
-            cache.Put(MEMORY_CACHE_KEY + "all", builds.ToList(), TimeSpan.FromSeconds(30));
+            var buildList = builds.ToList();
 
-            return builds.ToList();
+            cache.Put(MEMORY_CACHE_KEY + "all", buildList, TimeSpan.FromSeconds(30));
+
+            return buildList;
+        }
+
+        public async Task<IList<Build>> GetLatestBuild(RequestData requestData, BuildDefinition buildDefinition, int limit)
+        {
+            var cacheKey = MEMORY_CACHE_KEY + buildDefinition.name + "_limit" + limit;
+            IList<Build> cached = cache.Get<IList<Build>>(cacheKey);
+            if (cached != null)
+                return cached;
+
+            var project = buildDefinition.project;
+
+            var builds = await GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2&definitions={buildDefinition.id}");
+
+            builds = builds.OrderByDescending(b => b.id).Take(limit).ToList();
+
+            builds.ForEach(build => build.buildUrl = $"{requestData.BaseAddress}/{project.name}/_build?_a=summary&buildId={build.id}");
+
+            cache.Put(cacheKey, builds, TimeSpan.FromSeconds(30));
+
+            return builds;
         }
 
         public async Task<IList<Build>> GetBuilds(RequestData requestData, Project project)
@@ -56,7 +78,7 @@ namespace TfsAdvanced.ServiceRequests
 
             builds.ForEach(build => build.buildUrl = $"{requestData.BaseAddress}/{project.name}/_build?_a=summary&buildId={build.id}");
 
-            cache.Put(MEMORY_CACHE_KEY + project.name, builds.ToList(), TimeSpan.FromSeconds(30));
+            cache.Put(MEMORY_CACHE_KEY + project.name, builds, TimeSpan.FromSeconds(30));
 
             return builds;
         }

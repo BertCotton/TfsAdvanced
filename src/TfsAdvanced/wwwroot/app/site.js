@@ -20,19 +20,14 @@ app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, $httpPr
         url: '/pullRequests',
         templateUrl: 'views/pullrequests.html'
     })
-    .state('BuildDefinitions', {
+    .state('buildDefinitions', {
         url: '/buildDefinitions',
         templateUrl: 'views/buildDefinitions.html'
     })
-    .state('Builds', {
+    .state('builds', {
         url: '/builds',
         templateUrl: 'views/builds.html'
-    })
-    .state("Login",
-        {
-            url: "/login",
-            templateUrl: 'views/login.html'
-        });
+    });
 
     insightsProvider.start('61137fb3-e654-4fb7-88d3-242de0edf9d6');
 

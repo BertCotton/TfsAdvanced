@@ -10,18 +10,21 @@
         var color = "default";
 
         var finishedTime;
-        if (build.finishTime === null) {
+        var startTime = build.startTime;
+        if (build.status === "notStarted")
+        {
+            text = "Queued";
+            color = "blue";
+            startTime = build.queueTime;
             finishedTime = new Date();
-            if (build.startTime === null) {
-                text = "Queued";
-                color = "blue";
-            } else {
-                text = "Building";
-                color = "blue";
-            }
+        }
+        else if (build.status === "inProgress") {
+            text = "<strong>Building</strong>";
+            color = "blue";
+            finishedTime = new Date();
         } else {
             finishedTime = new Date(build.finishTime);
-        switch (build.result) {
+            switch (build.result) {
             case "failed":
                 text = "Failed";
                 color = "red";
@@ -40,7 +43,7 @@
                 break;
             }
         }
-        var difference = finishedTime - new Date(build.startTime).getTime();
+        var difference = finishedTime - new Date(startTime).getTime();
         var differenceSeconds = difference / 1000;
         var differenceMinutes = differenceSeconds / 60;
         // Times 100 , divide by 100 to give 2 decimal places after rounding

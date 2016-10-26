@@ -12,7 +12,7 @@ namespace TfsAdvanced.Data.Builds
         public int id { get; set; }
         public DateTime lastChangedDate { get; set; }
         public Project project { get; set; }
-        public DateTime queuedTime { get; set; }
+        public DateTime queueTime { get; set; }
         public BuildResult result { get; set; }
         public DateTime? startTime { get; set; }
         public BuildStatus status { get; set; }

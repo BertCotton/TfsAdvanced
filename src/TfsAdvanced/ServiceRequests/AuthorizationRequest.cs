@@ -64,7 +64,7 @@ namespace TfsAdvanced.ServiceRequests
             return $"https://login.microsoftonline.com/{appSettings.authorization.TenantId}/oauth2/authorize?" +
                 $"client_id={appSettings.authorization.ClientId}" +
                 $"&response_type=code&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}" +
-                $"&response_mode=query&resource=https://graph.windows.net&state=User&prompt=consent";
+                $"&response_mode=query&resource=https://graph.windows.net&state=User";
         }
 
         public async Task<AuthenticationToken> GetADAccessToken(string baseURL, string code, string state)

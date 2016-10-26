@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,13 +20,15 @@ namespace TfsAdvanced.ServiceRequests
     {
         private readonly AppSettings appSettings;
         private readonly ProjectServiceRequest projectServiceRequest;
+        private readonly BuildRequest buildRequest;
         private readonly Cache cache;
         private string MEMORY_CACHE_KEY = "BUILD_DEFINITONS_MEMORY_KEY-";
 
-        public BuildDefinitionRequest(IOptions<AppSettings> appSettings, Cache cache, ProjectServiceRequest projectServiceRequest)
+        public BuildDefinitionRequest(IOptions<AppSettings> appSettings, Cache cache, ProjectServiceRequest projectServiceRequest, BuildRequest buildRequest)
         {
             this.cache = cache;
             this.projectServiceRequest = projectServiceRequest;
+            this.buildRequest = buildRequest;
             this.appSettings = appSettings.Value;
         }
 
@@ -51,20 +54,27 @@ namespace TfsAdvanced.ServiceRequests
                 return cached;
             var buildDefinitions = await GetAsync.FetchResponseList<BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/definitions?api=2.2");
 
-            cache.Put(MEMORY_CACHE_KEY + "all", buildDefinitions, TimeSpan.FromHours(1));
+            Parallel.ForEach(buildDefinitions, definition =>
+            {
+                definition.LatestBuilds = buildRequest.GetLatestBuild(requestData, definition, 3).Result;
+            });
+
+            cache.Put(MEMORY_CACHE_KEY + project.name, buildDefinitions, TimeSpan.FromHours(1));
 
             return buildDefinitions;
         }
 
-        public void LaunchBuild(RequestData requestData, IList<BuildDefinition> definitions)
+        public IList<Build> LaunchBuild(RequestData requestData, IList<BuildDefinition> definitions)
         {
+            ConcurrentStack<Build> builds = new ConcurrentStack<Build>();
             Parallel.ForEach(definitions, definition =>
             {
-                LaunchBuild(requestData, definition);
+                builds.Push(LaunchBuild(requestData, definition));
             });
+            return builds.ToList();
         }
 
-        public void LaunchBuild(RequestData requestData, BuildDefinition definition)
+        public Build LaunchBuild(RequestData requestData, BuildDefinition definition)
         {
             var request = new HttpRequestMessage(HttpMethod.Post,
                                 $"{requestData.BaseAddress}/{definition.project.name}/_apis/build/builds?api-version=2.2");
@@ -72,13 +82,31 @@ namespace TfsAdvanced.ServiceRequests
                 new StringContent(
                     JsonConvert.SerializeObject(new BuildQueueRequest
                     {
+                        queue = new Id {id = definition.queue.id },
                         definition = new Id { id = definition.id },
-                        project = new ProjectGuid { id = definition.project.id }
+                        project = new ProjectGuid { id = definition.project.id },
+                        sourceBranch = definition.defaultBranch
                     }), Encoding.UTF8,
                     "application/json");
             var buildResponse = requestData.HttpClient.SendAsync(request).Result;
             var responseString = buildResponse.Content.ReadAsStringAsync().Result;
-            Debug.WriteLine(buildResponse.StatusCode);
+            if(buildResponse.IsSuccessStatusCode)
+                return JsonConvert.DeserializeObject<Build>(responseString);
+            return new Build
+            {
+                definition = definition,
+                project = definition.project,
+                buildNumber = "Failed To Start Build"
+            };
+        }
+
+        public void InvalidateBuildCache(IList<BuildDefinition> definitions)
+        {
+            foreach (var definition in definitions)
+            {
+                cache.Invalidate(MEMORY_CACHE_KEY + definition.project.name);
+            }
+            cache.Invalidate(MEMORY_CACHE_KEY + "all");
         }
     }
 }

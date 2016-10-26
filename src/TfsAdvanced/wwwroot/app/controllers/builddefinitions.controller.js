@@ -1,20 +1,66 @@
 ﻿angular.module('TFS.Advanced')
     .controller('BuildDefinitionController',
     [
-        '$window', '$scope', '$location', '$interval', '$notification', '$filter', 'DTOptionsBuilder', 'buildDefinitionService',
-        function ($window, $scope, $location, $interval, $notification, $filter, DTOptionsBuilder, buildDefinitionService) {
+        '$window', '$scope', '$location', '$interval', '$notification', '$filter', 'NgTableParams', 'buildDefinitionService',
+        function ($window, $scope, $location, $interval, $notification, $filter, NgTableParams, buildDefinitionService) {
             'use strict';
 
+            $scope.IsLaunching = false;
             $scope.buildDefinitions = [];
             $scope.selectedDefinitions = [];
-            $scope.dtOptions = DTOptionsBuilder.newOptions().withOption('order', [1, 'asc']);
-            $scope.dtInstance = {};
+            
+            $scope.tableParams = new NgTableParams({
+                count: 20,
+                page: 1,
+                sorting: {
+                    id: 'name'
+                }
+            },
+               {
+                   counts: [20,50,100],
+                   getData: function (params) {
+                       var data = buildDefinitionService.buildDefintions();
 
-            $scope.load = function () {
-                buildDefinitionService.GET.success(function (data) {
-                    $scope.buildDefinitions = data;
+                       var filters = params.filter();
+                       var newFilters = {};
+                       for (var key in filters) {
+                           if (filters.hasOwnProperty(key)) {
+                               switch (key) {
+                                   case 'project':
+                                       angular.extend(newFilters,
+                                       {
+                                           project: {
+                                               name: filters[key]
+                                           }
+                                       });
+                                       break;
+                                   default:
+                                       newFilters[key] = filters[key];
+                               }
+                           }
+                       }
+                       var filteredData = params.filter() ? $filter('filter')(data, newFilters) : data;
+                       $scope.buildDefinitions = data;
+                       var orderedData = params.sorting()
+                           ? $filter('orderBy')(filteredData, params.orderBy())
+                           : filteredData;
+                       var page = orderedData.slice((params.page() - 1) * params.count(),
+                           params.page() * params.count());
+
+                       params.total(data.length);
+                       return page;
+                   }
+               });
+
+            $scope.$watch(buildDefinitionService.isLoaded, function (isLoaded) { $scope.IsLoaded = isLoaded; });
+
+            $scope.$watchCollection(buildDefinitionService.buildDefintions,
+                function () {
+                    if ($scope.IsLoaded) {
+                        $scope.tableParams.reload();
+                    }
                 });
-            };
+
 
             $scope.noneChecked = function () {
                 return $filter('filter')($scope.selectedDefinitions, function (def) {
@@ -51,12 +97,30 @@
                     if (defId)
                         submitIds.push(defId);
                 });
-                buildDefinitionService.POST(submitIds).then(function() {
+                buildDefinitionService.startBuild(submitIds).then(function (builds) {
+                    $scope.IsLaunching = true;
                     $scope.selectedDefinitions = [];
-                    $window.alert("Builds launched");
+                    for (var i = 0; i < builds.length; i++) {
+                        var build = builds[i];
+                        
+                        var buildDefinitionId = build.definition.id;
+                        console.log("Finding build definition for id ", buildDefinitionId);
+                        var buildDefinition = undefined;
+                        for (var j = 0; j < $scope.buildDefinitions.length; j++) {
+                            
+                            buildDefinition = $scope.buildDefinitions[j];
+                            if (buildDefinition.id === buildDefinitionId) {
+                                break;
+                            }
+                        }
+
+                        if (buildDefinition !== undefined) {
+                            buildDefinition.launched = true;
+                            buildDefinition.latestBuilds.push(build);
+                        }
+                        $scope.IsLaunching = false;
+                    }
                 });
             }
-
-            $scope.load();
         }
     ]);

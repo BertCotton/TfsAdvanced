@@ -9,19 +9,19 @@ var watch = require("gulp-watch");
 var uglify = require("gulp-uglify");
 
 gulp.task("clean:js",
-    function (cb) {
+    function () {
         return gulp.src("./wwwroot/js/**/*.js")
             .pipe(clean());
     });
 
 gulp.task("clean:css",
-    function (cb) {
+    function () {
         return gulp.src("./wwwroot/css/**/*.css")
             .pipe(clean());
     });
 
 gulp.task("clean:fonts",
-    function (cb) {
+    function () {
         return gulp.src("./wwwroot/fonts/*")
             .pipe(clean());
     });
@@ -92,9 +92,14 @@ gulp.task("copy:fonts", ["clean:fonts"],
            .pipe(gulp.dest("./wwwroot/fonts/"));
     });
 
-gulp.task("build", ["concat:js", "minify:js", "copy:css"]);
+gulp.task("build", ["concat:js", "minify:js", "copy:css", "copy:fonts"]);
 
 gulp.task("watch",
     function () {
         return gulp.watch("wwwroot/app/**/*.js", ["concat:js"]);
+    });
+
+gulp.task("watch:css",
+    function () {
+        return gulp.watch("wwwroot/app/**/*.css", ["copy:css"]);
     });

@@ -19,7 +19,7 @@
                 break;
             case "postponed":
                 text = "Postponed";
-                color = "yellow";
+                color = "orange";
                 break;
             case "notStarted":
                 text = "Not Started";

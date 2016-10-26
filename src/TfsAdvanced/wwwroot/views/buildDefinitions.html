@@ -1,31 +1,28 @@
 ﻿<div class="container" ng-controller="BuildDefinitionController">
-        <div class="row">
-            <label for="DevBuildsOnly">Dev Builds Only</label>
-            <input type="checkbox" name="DevBuildsOnly" />
-            <table datatable="ng" dt-options="dtOptions" dt-instance="dtInstance" class="table table-striped" id="definitionsTable">
-                <thead>
-                    <tr>
-                        <th style="width:225px">
-                            <button ng-click="toggle()" type="button" class="btn btn-default">Toggle</button>
-                            <button ng-click="queueDefinitions()" class="btn btn-success" id="launch"  ng-disabled="noneChecked()" >Launch Selected</button>
-                        </th>
-                        <th>Repository Name</th>
-                        <th>Build Definition Name</th>
-                    </tr>
-                </thead>
-                <tbody>
-                        <tr ng-repeat="definition in buildDefinitions">
-                            <td>
-                                <input type="checkbox" name="definitionIds" value="{{definition.id}}" ng-checked="isSelected(definition)" ng-click="select(definition)" />
-                            </td>
-                            <td>
-                                {{definition.project.name}}
-                            </td>
-                            <td>
-                                {{definition.name}}
-                            </td>
-                        </tr>
-                </tbody>
-            </table>
-        </div>
+    <div id="Loading" ng-if="!IsLoaded">
+        <div class="loader"></div>
+    </div>
+    <div class="row" ng-if="IsLoaded">
+        <table ng-table="tableParams" class="table table-striped table-bordered table-condensed" id="buildsTable" show-filter="true">
+            <thead>
+                <tr>
+                    <th style="width:225px">
+                        <button ng-click="toggle()" type="button" class="btn btn-default" ng-disabled="IsLaunching">Toggle</button>
+                        <button ng-click="queueDefinitions()" class="btn btn-success" id="launch" ng-disabled="noneChecked() || IsLaunching">Launch Selected</button>
+                    </th>
+                    <th>Repository Name</th>
+                    <th>Build Definition Name</th>
+                    <th>Default Branch</th>
+                    <th>Latest Build Status</th>
+                </tr>
+            </thead>
+            <tr ng-repeat="definition in $data">
+                <td title="''" ng-class="{buildStarted: definition.launched}"><input type="checkbox" name="definitionIds" value="{{definition.id}}" ng-checked="isSelected(definition)" ng-click="select(definition)" ng-disabled="IsLaunching" ng-if="!definition.launched" /><span ng-if="definition.launched">Launched</span></td>
+                <td title="'Project Name'" sortable="'project.name'" filter="{project : 'text'}" ng-class="{buildStarted: definition.launched}">{{definition.project.name}}</td>
+                <td title="'Definition Name'" sortable="'definition.name'" filter="{definition: 'text'}" ng-class="{buildStarted: definition.launched}">{{definition.name}}</td>
+                <td title="'Default Branch'" ng-class="{buildStarted: definition.launched}">{{definition.defaultBranch | buildDefaultBranch}}</td>
+                <td title="'Latest Build Status'" ng-bind-html="definition.latestBuilds | latestBuildStatus" ng-class="{buildStarted: definition.launched}"></td>
+            </tr>
+        </table>
+    </div>
 </div>

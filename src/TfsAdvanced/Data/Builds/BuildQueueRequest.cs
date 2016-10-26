@@ -6,8 +6,8 @@ namespace TfsAdvanced.Data.Builds
     {
         public Id definition { get; set; }
         public ProjectGuid project { get; set; }
-        public Id queue => new Id() { id = 11 };
+        public Id queue { get; set; }
         public int reason => 1;
-        public string sourceBranch => "refs/heads/develop";
+        public string sourceBranch { get; set; }
     }
 }
