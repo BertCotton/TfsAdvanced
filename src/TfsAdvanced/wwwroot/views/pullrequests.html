@@ -1,6 +1,6 @@
 ﻿<div class="container-fluid" ng-controller="PullRequestsController">
     <div class="row">
-        <div class="col-lg-4">
+        <div class="col-lg-12 sub-nav">
             <select class="form-control" ng-model="SelectedProject" ng-change="UpdateSelectedProject()">
                 <option  ng-repeat="project in projects" value="{{project.id}}">{{project.name}}</option>
             </select>

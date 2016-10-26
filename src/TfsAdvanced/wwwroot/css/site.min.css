@@ -241,11 +241,6 @@
   }
 }
 
-body {
-    padding-top: 50px;
-    padding-bottom: 20px;
-}
-
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
@@ -314,4 +309,29 @@ textarea {
 
 .buildStarted {
     background-color: lightblue;
+}
+
+.navbar {
+    background-color: #007acc;
+}
+
+ .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
+    background-color: #0095e8;
+    color: white;
+}
+
+.nav-link {
+    color: white;
+}
+.nav li.active {
+     background-color: #007acc;
+    font-weight: bold;
+}
+
+div[ui-view] {
+    margin-top: 51px;
+}
+
+.sub-nav {
+    background-color: #f3f3f3;
 }

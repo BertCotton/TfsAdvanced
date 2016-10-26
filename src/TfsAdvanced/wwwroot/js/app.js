@@ -78953,19 +78953,14 @@ app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, $httpPr
         url: '/pullRequests',
         templateUrl: 'views/pullrequests.html'
     })
-    .state('BuildDefinitions', {
+    .state('buildDefinitions', {
         url: '/buildDefinitions',
         templateUrl: 'views/buildDefinitions.html'
     })
-    .state('Builds', {
+    .state('builds', {
         url: '/builds',
         templateUrl: 'views/builds.html'
-    })
-    .state("Login",
-        {
-            url: "/login",
-            templateUrl: 'views/login.html'
-        });
+    });
 
     insightsProvider.start('61137fb3-e654-4fb7-88d3-242de0edf9d6');
 
@@ -79454,7 +79449,7 @@ angular.module('TFS.Advanced')
 
             $scope.$watchCollection(buildDefinitionService.buildDefintions,
                 function () {
-                    if ($scope.IsLoaded && $scope.buildDefinitions.length === 0) {
+                    if ($scope.IsLoaded) {
                         $scope.tableParams.reload();
                     }
                 });
@@ -79639,7 +79634,7 @@ angular.module('TFS.Advanced')
             }
 
             ProjectService.GET.success(function (data) {
-                $scope.projects = [{ "id": "-1", "name": "Any" }].concat(data);
+                $scope.projects = [{ "id": "-1", "name": "[Teams Filter]" }].concat(data);
             });
 
             function filterPullRequests(data) {

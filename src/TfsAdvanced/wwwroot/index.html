@@ -8,20 +8,19 @@
     <link rel="stylesheet" href="/css/site.min.css" />
 </head>
 <body>
-<nav class="navbar navbar-default" ng-controller="NavController">
-    <div id="navbar" class="navbar-collapse collapse">
-        <ul class="nav navbar-nav">
-            <li ng-class="{active : isActive('/')}">
-                <a href="#/pullRequests" >Pull Requests</a>
-            </li>
-            <li ng-class="{active : isActive('/buildDefinitions')}">
-                <a href="#/buildDefinitions" >Build Definitions</a>
-            </li>
-            <li ng-class="{active : isActive('/builds')}">
-                <a href="#/builds">Builds</a>
-            </li>
-        </ul>
-    </div>
+<nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
+    <span class="navbar-brand nav-link">TFS Advanced</span>
+    <ul class="nav navbar-nav">
+        <li ng-class="{active : isActive('/pullRequests')}">
+            <a class="nav-link" href="#/pullRequests">Pull Requests</a>
+        </li>
+        <li ng-class="{active : isActive('/buildDefinitions')}">
+            <a class="nav-link" href="#/buildDefinitions">Build Definitions</a>
+        </li>
+        <li ng-class="{active : isActive('/builds')}">
+            <a class="nav-link" href="#/builds">Builds</a>
+        </li>
+    </ul>
 </nav>
 <div ui-view=""></div>
     <div class="updater" ng-controller="UpdaterController"></div>

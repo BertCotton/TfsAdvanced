@@ -98,3 +98,8 @@ gulp.task("watch",
     function () {
         return gulp.watch("wwwroot/app/**/*.js", ["concat:js"]);
     });
+
+gulp.task("watch:css",
+    function () {
+        return gulp.watch("wwwroot/app/**/*.css", ["copy:css"]);
+    });

@@ -33,7 +33,7 @@
             }
 
             ProjectService.GET.success(function (data) {
-                $scope.projects = [{ "id": "-1", "name": "Any" }].concat(data);
+                $scope.projects = [{ "id": "-1", "name": "[Teams Filter]" }].concat(data);
             });
 
             function filterPullRequests(data) {
