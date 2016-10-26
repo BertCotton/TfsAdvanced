@@ -48,7 +48,7 @@ namespace TfsAdvanced.ServiceRequests
             return buildList;
         }
 
-        public async Task<IList<Build>> GetLatestBuild(RequestData requestData, BuildDefinition buildDefinition, int limit)
+        public async Task<IList<Build>> GetLatestBuildOnDefaultBranch(RequestData requestData, BuildDefinition buildDefinition, int limit)
         {
             var cacheKey = MEMORY_CACHE_KEY + buildDefinition.name + "_limit" + limit;
             IList<Build> cached = cache.Get<IList<Build>>(cacheKey);
@@ -59,7 +59,7 @@ namespace TfsAdvanced.ServiceRequests
 
             var builds = await GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2&definitions={buildDefinition.id}");
 
-            builds = builds.OrderByDescending(b => b.id).Take(limit).ToList();
+            builds = builds.Where(b => b.sourceBranch == buildDefinition.defaultBranch).OrderByDescending(b => b.id).Take(limit).ToList();
 
             builds.ForEach(build => build.buildUrl = $"{requestData.BaseAddress}/{project.name}/_build?_a=summary&buildId={build.id}");
 
