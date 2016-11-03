@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Newtonsoft.Json;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
+using TfsAdvanced.Repository;
 using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
@@ -19,12 +20,13 @@ namespace TfsAdvanced.Controllers
     public class BuildDefinitionsController : Controller
     {
         private readonly BuildDefinitionRequest buildDefinitionRequest;
-        private readonly RequestData requestData;
+        private readonly BuildDefinitionRepository buildDefinitionRepository;
+        
 
-        public BuildDefinitionsController(BuildDefinitionRequest buildDefinitionRequest, RequestData requestData)
+        public BuildDefinitionsController(BuildDefinitionRequest buildDefinitionRequest, BuildDefinitionRepository buildDefinitionRepository)
         {
             this.buildDefinitionRequest = buildDefinitionRequest;
-            this.requestData = requestData;
+            this.buildDefinitionRepository = buildDefinitionRepository;
         }
 
         [HttpPost]
@@ -33,20 +35,18 @@ namespace TfsAdvanced.Controllers
             if (!definitionIds.Any())
                 return NotFound();
 
-            var definitions =
-                buildDefinitionRequest.GetAllBuildDefinitions(requestData)
+            var definitions = buildDefinitionRepository.GetBuildDefinitions()
                     .Where(x => definitionIds.Contains(x.id))
                     .ToList();
-            var builds = buildDefinitionRequest.LaunchBuild(requestData, definitions);
+            var builds = buildDefinitionRequest.LaunchBuild(definitions);
 
-            buildDefinitionRequest.InvalidateBuildCache(definitions);
             return Ok(builds);
         }
         
         [HttpGet]
         public IList<BuildDefinition> Index()
         {
-            return buildDefinitionRequest.GetAllBuildDefinitions(requestData);
+            return buildDefinitionRepository.GetBuildDefinitions();
         }
     }
 }

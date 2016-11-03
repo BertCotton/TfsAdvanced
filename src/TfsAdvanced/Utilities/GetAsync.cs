@@ -16,7 +16,7 @@ namespace TfsAdvanced.Utilities
             if (!response.IsSuccessStatusCode)
                 throw new BadRequestException(url, response.StatusCode);
 
-            return await JsonDeserializer.Deserialie<T>(response);
+            return await JsonDeserializer.Deserialize<T>(response);
         }
 
         public static async Task<List<T>> FetchResponseList<T>(RequestData requestData, string url)
@@ -25,7 +25,7 @@ namespace TfsAdvanced.Utilities
             if (!response.IsSuccessStatusCode)
                 throw new BadRequestException(url, response.StatusCode);
 
-            var items = await JsonDeserializer.Deserialie<Response<IEnumerable<T>>>(response);
+            var items = await JsonDeserializer.Deserialize<Response<IEnumerable<T>>>(response);
             return items.value.ToList();
         }
     }

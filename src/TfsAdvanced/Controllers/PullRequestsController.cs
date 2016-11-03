@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.PullRequests;
+using TfsAdvanced.Repository;
 using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
@@ -11,25 +12,17 @@ namespace TfsAdvanced.Controllers
     [Route("data/PullRequests")]
     public class PullRequestsController : Controller
     {
-        private readonly ProjectServiceRequest projectServiceRequest;
-        private readonly PullRequestServiceRequest pullRequestServiceRequest;
-        private readonly RepositoryServiceRequest repositoryServiceRequest;
-        private readonly RequestData requestData;
+        private readonly PullRequestRepository pullRequestRepository;
 
-        public PullRequestsController(RequestData requestData, ProjectServiceRequest projectServiceRequest, PullRequestServiceRequest pullRequestServiceRequest, RepositoryServiceRequest repositoryServiceRequest)
+        public PullRequestsController(PullRequestRepository pullRequestRepository)
         {
-            this.requestData = requestData;
-            this.projectServiceRequest = projectServiceRequest;
-            this.pullRequestServiceRequest = pullRequestServiceRequest;
-            this.repositoryServiceRequest = repositoryServiceRequest;
+            this.pullRequestRepository = pullRequestRepository;
         }
 
         [HttpGet]
         public IList<PullRequest> Index()
         {
-            var repositories = repositoryServiceRequest.GetAllRepositories(requestData);
-            var projects = projectServiceRequest.GetProjects(requestData, repositories);
-            return pullRequestServiceRequest.GetPullRequests(requestData, projects);
+            return pullRequestRepository.GetPullRequests();
         }
     }
 }
