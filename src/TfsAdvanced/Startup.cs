@@ -10,17 +10,21 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Linq;
 using System.Reflection;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using TfsAdvanced.Data;
 using TfsAdvanced.DataStore;
 using TfsAdvanced.Infrastructure;
+using TfsAdvanced.Tasks;
 
 namespace TfsAdvanced
 {
     public class Startup
     {
+        public static readonly int MAX_DEGREE_OF_PARALLELISM = -1;
         private string siteName = Environment.GetEnvironmentVariable("SiteName") ?? "ius";
         public IConfigurationRoot Configuration { get; set; }
 
@@ -62,8 +66,11 @@ namespace TfsAdvanced
                 options.SerializerSettings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
             }).AddMvcOptions(options => options.Filters.Add(new ExceptionHandler()));
             services.AddApplicationInsightsTelemetry(Configuration);
-            services.AddMemoryCache();
-            
+            services.AddHangfire(configuration =>
+            {
+                configuration.UseStorage(new MemoryStorage());
+            });
+
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             var builder = new ContainerBuilder();
@@ -72,13 +79,11 @@ namespace TfsAdvanced
 
             builder.RegisterType<AuthenticationTokenProvider>();
 
-            builder.RegisterType<CacheStats>().AsSelf().SingleInstance();
-            builder.RegisterType<Cache>().AsSelf().SingleInstance();
-
+            
             builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
 
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
-                .Where(t => t.Name.EndsWith("Request") || t.Name.EndsWith("Repository"))
+                .Where(t => t.Name.EndsWith("Request") || t.Name.EndsWith("Repository") || t.Name.EndsWith("Updater"))
                 .AsSelf()
                 .SingleInstance();
 
@@ -102,6 +107,11 @@ namespace TfsAdvanced
             app.UseApplicationInsightsExceptionTelemetry();
             app.UseApplicationInsightsRequestTelemetry();
             app.UseMvc();
+
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
+
+            Hangfire.BackgroundJob.Enqueue<Updater>(updater => updater.Start());
         }
     }
 }

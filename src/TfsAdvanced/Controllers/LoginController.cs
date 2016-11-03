@@ -24,12 +24,10 @@ namespace TfsAdvanced.Controllers
     public class LoginController : Controller
     {
         private readonly AuthorizationRequest authorizationRequest;
-        private readonly CacheStats cacheStats;
 
-        public LoginController(AuthorizationRequest authorizationRequest, CacheStats cacheStats)
+        public LoginController(AuthorizationRequest authorizationRequest)
         {
             this.authorizationRequest = authorizationRequest;
-            this.cacheStats = cacheStats;
         }
 
         [HttpGet]
@@ -47,9 +45,7 @@ namespace TfsAdvanced.Controllers
 
             this.
             HttpContext.Session.Set("AuthToken", ASCIIEncoding.ASCII.GetBytes(JsonConvert.SerializeObject(token)));
-
-            cacheStats.UserLogin();
-
+            
             return Redirect("/");
         }
 
@@ -74,9 +70,7 @@ namespace TfsAdvanced.Controllers
                 Path = "/",
                 Domain = HttpContext.Request.Host.ToString()
             });
-
-            cacheStats.UserLogin();
-
+            
             return Redirect("/");
         }
 

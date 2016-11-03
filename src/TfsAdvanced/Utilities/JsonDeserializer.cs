@@ -10,7 +10,7 @@ namespace TfsAdvanced.Utilities
 {
     public class JsonDeserializer
     {
-        public static async Task<T> Deserialie<T>(HttpResponseMessage responseMessage)
+        public static async Task<T> Deserialize<T>(HttpResponseMessage responseMessage)
         {
             var content = await responseMessage.Content.ReadAsStringAsync();
             try

@@ -13,6 +13,8 @@
     "Autofac": "4.0.0",
     "Autofac.Configuration": "4.0.0",
     "Autofac.Extensions.DependencyInjection": "4.0.0",
+    "Hangfire": "1.6.6",
+    "Hangfire.MemoryStorage.Core": "1.4.0",
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "Microsoft.Extensions.Caching.Abstractions": "1.0.0",
     "Microsoft.Extensions.Caching.Memory": "1.0.0",

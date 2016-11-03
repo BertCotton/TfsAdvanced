@@ -17,7 +17,7 @@ namespace TfsAdvanced.Data.PullRequests
         public string mergeStatusstatus { get; set; }
         public int pullRequestId { get; set; }
         public string remoteUrl { get; set; }
-        public Repository repository { get; set; }
+        public Repositories.Repository repository { get; set; }
         public Reviewer[] reviewers { get; set; }
         public string sourceRefName { get; set; }
         public string targetRefName { get; set; }

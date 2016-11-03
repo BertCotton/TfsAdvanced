@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Projects;
+using TfsAdvanced.Repository;
 using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
@@ -11,19 +12,18 @@ namespace TfsAdvanced.Controllers
     [Route("/data/Projects")]
     public class ProjectsController : Controller
     {
-        private readonly RequestData requestData;
-        private readonly ProjectServiceRequest projectServiceRequests;
+        private readonly ProjectRepository projectRepository;
 
-        public ProjectsController(RequestData requestData, ProjectServiceRequest projectServiceRequests)
+        public ProjectsController(ProjectRepository projectRepository)
         {
-            this.requestData = requestData;
-            this.projectServiceRequests = projectServiceRequests;
+            this.projectRepository = projectRepository;
         }
 
+
         [HttpGet]
-        public List<Project> GetProjects()
+        public IList<Project> GetProjects()
         {
-            return projectServiceRequests.GetProjects(requestData);
+            return projectRepository.GetProjects();
         }
     }
 }

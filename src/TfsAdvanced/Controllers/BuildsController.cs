@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
+using TfsAdvanced.Repository;
 using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced.Controllers
@@ -11,19 +12,18 @@ namespace TfsAdvanced.Controllers
     [Route("data/Builds")]
     public class BuildsController : Controller
     {
-        private readonly BuildRequest buildRequest;
-        private readonly RequestData requestData;
+        private readonly BuildRepository buildRepository;
 
-        public BuildsController(RequestData requestData, BuildRequest buildRequest)
+        public BuildsController(BuildRepository buildRepository)
         {
-            this.requestData = requestData;
-            this.buildRequest = buildRequest;
+            this.buildRepository = buildRepository;
         }
+
 
         [HttpGet]
         public IList<Build> Index()
         {
-            return buildRequest.GetAllBuilds(requestData);
+            return buildRepository.GetBuilds();
         }
     }
 }
