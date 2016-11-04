@@ -1,0 +1,24 @@
+﻿<div class="container-fluid" ng-controller="BuildStatisticsController">
+    <div class="row">
+        <div class="col-lg-12" id="waitTimes">
+            <h2>Wait Times</h2>
+            <h4>Max: {{convertRunTime(maxWaitTime)}}</h4>
+            <svg class="chart" role="img" ng:attr:width="{{getChartWidth()}}">
+                <g class="bar">
+                    <rect width="1" height="100" x="0" ng:attr:y="0"></rect>
+                    <rect ng:attr:width="{{getChartWidth()}}" height="1" x="0" y="0"></rect>
+                    <rect width="1" height="100" ng:attr:x="{{getChartWidth()-1}}" ng:attr:y="0"></rect>
+                </g>
+                <a href="{{waitTime.url}}" target="_blank" ng-repeat="waitTime in waitTimes">
+                    <g class="bar">
+                        <title>{{waitTime.launchedTime | date : 'medium'}} | {{convertRunTime(waitTime.waitingTime)}}</title>
+                        <rect width="2" ng:attr:height="{{getHeight(waitTime)}}" ng:attr:x="{{$index * 2}}" ng:attr:y="{{100-((waitTime.waitingTime/maxWaitTime)* 100)}}"></rect>
+                        <rect ng-if="$index %100 === 0" class="textIndicator" width="2" height="27" ng:attr:x="{{$index*2}}" y="100"></rect>
+                        <rect ng-if="$index % 100 === 0" class="textIndicator" width="100" height="2" ng:attr:x="{{$index*2}}" y="127"></rect>
+                        <text ng-if="$index % 100 === 0" ng:attr:x="{{$index * 2 + 2}}" y="125">{{waitTime.launchedTime | date: 'medium'}}</text>
+                    </g>
+                </a>
+            </svg>
+        </div>
+    </div>
+</div>

@@ -29,16 +29,16 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpGet("WaitTimes")]
-        public IList<QueuedTime> GetWaitTimes()
+        public IList<BuildRun> GetWaitTimes([FromQuery] int NumberOfDaysBack  = 14)
         {
             return buildRepository.GetBuilds()
-                .Where(b => b.status == BuildStatus.completed && b.startTime.HasValue)
-                .OrderByDescending(b => b.id)
-                .Select(b => new QueuedTime
+                .Where(b => b.status == BuildStatus.completed && b.startTime.HasValue && b.queueTime > DateTime.Now.AddDays(-NumberOfDaysBack))
+                .OrderBy(b => b.id)
+                .Select(b => new BuildRun
                 {
                     Id = b.id,
                     LaunchedTime = b.queueTime,
-                    Url = b.buildUrl,
+                    Url = b._links.web.href,
                     WaitingTime = Convert.ToInt32((b.startTime.Value - b.queueTime).TotalSeconds)
                 })
                 .ToList();

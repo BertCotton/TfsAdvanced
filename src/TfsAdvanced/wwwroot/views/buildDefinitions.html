@@ -3,16 +3,6 @@
         <div class="loader"></div>
     </div>
     <div class="row" ng-if="IsLoaded">
-        <div class="col-lg-8 col-lg-offset-2" id="waitTimes">
-            <svg class="chart" role="img" width="100%">
-                <a href="{{waitTime._links.web}}" target="_blank"  ng-repeat="waitTime in waitTimes">
-                    <g class="bar">
-                        <title>{{waitTime.time | date : 'medium'}} | {{waitTime.waitingTime | number}} seconds</title>
-                        <rect width="2" ng:attr:height="{{waitTime.waitingTime}}" ng:attr:x="{{$index * 4}}" ng:attr:y="{{150-waitTime.waitingTime}}"></rect>
-                    </g>
-                </a>
-            </svg>
-        </div>
         <table ng-table="tableParams" class="table table-striped table-bordered table-condensed" id="buildsTable" show-filter="true">
             <thead>
             <tr>
@@ -33,13 +23,14 @@
                 <td title="'Definition Name'" sortable="'definition.name'" filter="{definition: 'text'}" ng-class="{buildStarted: definition.launched}">{{definition.name}}</td>
                 <td title="'Default Branch'" ng-class="{buildStarted: definition.launched}">{{definition.defaultBranch | buildDefaultBranch}}</td>
                 <td title="'Latest Build Status'" ng-bind-html="definition.latestBuilds | latestBuildStatus" ng-class="{buildStarted: definition.launched}"></td>
-                <td title="'Average Run Time'">
-                    {{definition.runTimes.length}}
-                    <svg class="chart" width="100" height="50" role="img">
-                        <title id="title">{{definition.runTimes | average }}</title>
-                        <g class="bar" ng-repeat="runTime in definition.runTimes">
-                            <rect width="10" height="30" ng:attr:x="{{$index + x}}" ng:attr:y="{{runTime}}"></rect>
-                        </g>
+                <td title="'Average Run Time'" style="padding: 1px;vertical-align:bottom">
+                    <svg class="chart" width="130" height="20" role="img">
+                        <a href="{{build._links.web.href}}" target="_blank" ng-repeat="build in definition.latestBuilds">
+                            <g ng:attr:class="bar {{build.result}}" >
+                                <title>{{build.result}}{{convertRunTime(getRunTime(build))}}</title>
+                                <rect width="12" ng:attr:height="{{getHeight(definition.latestBuilds, build)}}" ng:attr:x="{{$index * 13}}" ng:attr:y="{{20 - getHeight(definition.latestBuilds, build)}}"></rect>
+                            </g>
+                        </a>
                     </svg>
                 </td>
             </tr>

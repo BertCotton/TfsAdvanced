@@ -24,6 +24,11 @@ app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, $httpPr
         url: '/buildDefinitions',
         templateUrl: 'views/buildDefinitions.html'
     })
+    .state("buildStatistics",
+    {
+        url: '/buildStatistics',
+        templateUrl: 'views/buildStatistics.html'
+    })
     .state('builds', {
         url: '/builds',
         templateUrl: 'views/builds.html'
