@@ -56,7 +56,7 @@
 
             $scope.$watchCollection(buildDefinitionService.buildDefintions,
                 function () {
-                    if ($scope.IsLoaded && $scope.buildDefinitions.length === 0) {
+                    if ($scope.IsLoaded) {
                         $scope.tableParams.reload();
                     }
                 });
