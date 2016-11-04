@@ -27,7 +27,7 @@ angular.module('TFS.Advanced').service('buildDefinitionService', ['$http', '$q',
                     cached = response.data || [];
                     isLoaded = true;
                     if (!isCancelled)
-                        $timeout(buildDefintions, 3000);
+                        $timeout(buildDefintions, 10000);
                     return response;
                 });
         }
