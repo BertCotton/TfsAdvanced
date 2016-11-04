@@ -27,7 +27,7 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
                 cached = response.data || [];
                 isLoaded = true;
                 if(!isCancelled)
-                    $timeout(builds, 3000);
+                    $timeout(builds, 10000);
                 return response;
             });
     }
@@ -37,7 +37,7 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
         return $http.get("data/Builds/WaitTimes")
             .then(function (response) {
                 cachedWaitTimes = response.data;
-                $timeout(waitTimes, 3000);
+                $timeout(waitTimes, 10000);
                 return response;
             });
     }
