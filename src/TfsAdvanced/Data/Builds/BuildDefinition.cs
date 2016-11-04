@@ -13,5 +13,6 @@ namespace TfsAdvanced.Data.Builds
         public BuildQueue queue { get; set; }
 
         public IList<Build> LatestBuilds { get; set; }
+        
     }
 }

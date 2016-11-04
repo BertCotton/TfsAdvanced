@@ -8,7 +8,7 @@
             $scope.IsLaunching = false;
             $scope.buildDefinitions = [];
             $scope.selectedDefinitions = [];
-            
+
             $scope.tableParams = new NgTableParams({
                 count: 20,
                 page: 1,
@@ -56,11 +56,50 @@
 
             $scope.$watchCollection(buildDefinitionService.buildDefintions,
                 function () {
-                    if ($scope.IsLoaded) {
+                    if ($scope.IsLoaded && $scope.buildDefinitions.length === 0) {
                         $scope.tableParams.reload();
                     }
                 });
 
+            $scope.getHeight = function (builds, build) {
+                var maxRunTime = 0;
+                for (var i = 0; i < builds.length; i++) {
+                    maxRunTime = Math.max(maxRunTime, $scope.getRunTime(builds[i]));
+                }
+
+                var percent = 1 - ((maxRunTime - $scope.getRunTime(build)) / maxRunTime);
+                var height = percent * 20;
+                if (isNaN(height) || height < 2)
+                    height = 2;
+                return height;
+            };
+
+            $scope.getRunTime = function(build) {
+                if (build.startTime === undefined || build.finishTime === undefined)
+                    return 1;
+                
+                var startedTime = new Date(build.startTime);
+                var finishedTime = new Date(build.finishTime);
+                return (finishedTime.getTime() - startedTime.getTime());
+            }
+
+
+            $scope.convertRunTime = function (runTime) {
+                
+                var secs = Math.round((runTime/1000) % 60);
+                var mins = Math.trunc(((runTime / 1000) / 60));
+                var time = "";
+                if (mins > 0)
+                    time += mins + " mins ";
+                if (secs > 0)
+                    time += secs + " seconds";
+
+                return " | " + time;
+            };
+
+            $scope.getChartWidth = function (runTimes) {
+                return runTimes.length * 2;
+            };
 
             $scope.noneChecked = function () {
                 return $filter('filter')($scope.selectedDefinitions, function (def) {
@@ -88,6 +127,7 @@
                 else
                     $scope.selectedDefinitions[def.id] = def.id;
             };
+
 
             $scope.queueDefinitions = function () {
                 var submitIds = [];

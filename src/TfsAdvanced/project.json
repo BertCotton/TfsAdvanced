@@ -28,7 +28,8 @@
     "Microsoft.EntityFrameworkCore.InMemory": "1.0.1",
     "Microsoft.EntityFrameworkCore": "1.0.1",
     "System.IdentityModel.Tokens.Jwt": "5.0.0",
-    "Microsoft.AspNetCore.Session": "1.0.0"
+    "Microsoft.AspNetCore.Session": "1.0.0",
+    "MathNet.Numerics": "3.13.1"
   },
 
   "tools": {

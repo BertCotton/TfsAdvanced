@@ -46,7 +46,7 @@ namespace TfsAdvanced.Tasks
             buildDefinitionRepository.Update(buildDefinitions.ToList());
             Parallel.ForEach(buildDefinitions, new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, buildDefinition =>
             {
-                buildDefinition.LatestBuilds = buildRepository.GetLatestBuildOnDefaultBranch(buildDefinition, 5);
+                buildDefinition.LatestBuilds = buildRepository.GetLatestBuildOnDefaultBranch(buildDefinition, 8);
             });
 
             buildDefinitionRepository.Update(buildDefinitions.ToList());

@@ -22,9 +22,14 @@ namespace TfsAdvanced.Repository
             return builds.ToList();
         }
 
+        public IList<Build> GetBuilds(BuildDefinition buildDefinition)
+        {
+            return builds.Where(b => b.definition.id == buildDefinition.id).ToList();
+        }
+
         public IList<Build> GetLatestBuildOnDefaultBranch(BuildDefinition buildDefinition, int limit)
         {
-            return builds.Where(b => b.definition.id == buildDefinition.id && b.sourceBranch == buildDefinition.defaultBranch).OrderByDescending(b => b.id).Take(limit).ToList();
+            return builds.Where(b => b.definition.id == buildDefinition.id && b.sourceBranch == buildDefinition.defaultBranch).OrderByDescending(b => b.id).Take(limit).OrderBy(b =>b.id).ToList();
 
         }
 
