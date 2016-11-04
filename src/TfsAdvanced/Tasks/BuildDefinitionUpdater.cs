@@ -46,6 +46,9 @@ namespace TfsAdvanced.Tasks
             buildDefinitionRepository.Update(buildDefinitions.ToList());
             Parallel.ForEach(buildDefinitions, new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, buildDefinition =>
             {
+                var succeededBuilds = buildRepository.GetBuilds(buildDefinition).Where(b => b.status == BuildStatus.completed && b.result == BuildResult.succeeded).ToList();
+                buildDefinition.RunTimes = succeededBuilds.Select(b => Convert.ToInt64(((b.finishTime - b.startTime).Value).TotalMilliseconds)).ToList();
+                buildDefinition.QueuedTimes = succeededBuilds.Select(b => Convert.ToInt64(((b.startTime - b.queueTime).Value).TotalMilliseconds)).ToList();
                 buildDefinition.LatestBuilds = buildRepository.GetLatestBuildOnDefaultBranch(buildDefinition, 5);
             });
 

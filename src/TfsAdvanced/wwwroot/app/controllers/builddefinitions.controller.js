@@ -1,14 +1,15 @@
 ﻿angular.module('TFS.Advanced')
     .controller('BuildDefinitionController',
     [
-        '$window', '$scope', '$location', '$interval', '$notification', '$filter', 'NgTableParams', 'buildDefinitionService',
-        function ($window, $scope, $location, $interval, $notification, $filter, NgTableParams, buildDefinitionService) {
+        '$window', '$scope', '$location', '$interval', '$notification', '$filter', 'NgTableParams', 'buildDefinitionService', 'buildsService',
+        function ($window, $scope, $location, $interval, $notification, $filter, NgTableParams, buildDefinitionService, buildsService) {
             'use strict';
 
             $scope.IsLaunching = false;
             $scope.buildDefinitions = [];
             $scope.selectedDefinitions = [];
-            
+            $scope.waitTimes = {};
+
             $scope.tableParams = new NgTableParams({
                 count: 20,
                 page: 1,
@@ -52,6 +53,11 @@
                    }
                });
 
+            $scope.$watchCollection(buildsService.waitTimes,
+                function (waitTimes) {
+                    $scope.waitTimes = waitTimes;
+                });
+            
             $scope.$watch(buildDefinitionService.isLoaded, function (isLoaded) { $scope.IsLoaded = isLoaded; });
 
             $scope.$watchCollection(buildDefinitionService.buildDefintions,

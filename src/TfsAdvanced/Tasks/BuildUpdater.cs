@@ -34,7 +34,9 @@ namespace TfsAdvanced.Tasks
             {
                 var projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2").Result;
                 if (projectBuilds != null && projectBuilds.Any())
+                {
                     builds.PushRange(projectBuilds.ToArray());
+                }   
             });
 
             buildRepository.Update(builds.ToList());

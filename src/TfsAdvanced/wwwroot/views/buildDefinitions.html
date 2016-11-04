@@ -3,25 +3,45 @@
         <div class="loader"></div>
     </div>
     <div class="row" ng-if="IsLoaded">
+        <div class="col-lg-8 col-lg-offset-2" id="waitTimes">
+            <svg class="chart" role="img" width="100%">
+                <a href="{{waitTime._links.web}}" target="_blank"  ng-repeat="waitTime in waitTimes">
+                    <g class="bar">
+                        <title>{{waitTime.time | date : 'medium'}} | {{waitTime.waitingTime | number}} seconds</title>
+                        <rect width="2" ng:attr:height="{{waitTime.waitingTime}}" ng:attr:x="{{$index * 4}}" ng:attr:y="{{150-waitTime.waitingTime}}"></rect>
+                    </g>
+                </a>
+            </svg>
+        </div>
         <table ng-table="tableParams" class="table table-striped table-bordered table-condensed" id="buildsTable" show-filter="true">
             <thead>
-                <tr>
-                    <th style="width:225px">
-                        <button ng-click="toggle()" type="button" class="btn btn-default" ng-disabled="IsLaunching">Toggle</button>
-                        <button ng-click="queueDefinitions()" class="btn btn-success" id="launch" ng-disabled="noneChecked() || IsLaunching">Launch Selected</button>
-                    </th>
-                    <th>Repository Name</th>
-                    <th>Build Definition Name</th>
-                    <th>Default Branch</th>
-                    <th>Latest Build Status</th>
-                </tr>
+            <tr>
+                <th style="width: 225px">
+                    <button ng-click="toggle()" type="button" class="btn btn-default" ng-disabled="IsLaunching">Toggle</button>
+                    <button ng-click="queueDefinitions()" class="btn btn-success" id="launch" ng-disabled="noneChecked() || IsLaunching">Launch Selected</button>
+                </th>
+                <th>Repository Name</th>
+                <th>Build Definition Name</th>
+                <th>Default Branch</th>
+                <th>Latest Build Status</th>
+                <th>Average Run Time</th>
+            </tr>
             </thead>
             <tr ng-repeat="definition in $data">
-                <td title="''" ng-class="{buildStarted: definition.launched}"><input type="checkbox" name="definitionIds" value="{{definition.id}}" ng-checked="isSelected(definition)" ng-click="select(definition)" ng-disabled="IsLaunching" ng-if="!definition.launched" /><span ng-if="definition.launched">Launched</span></td>
+                <td title="''" ng-class="{buildStarted: definition.launched}"><input type="checkbox" name="definitionIds" value="{{definition.id}}" ng-checked="isSelected(definition)" ng-click="select(definition)" ng-disabled="IsLaunching" ng-if="!definition.launched"/><span ng-if="definition.launched">Launched</span></td>
                 <td title="'Project Name'" sortable="'project.name'" filter="{project : 'text'}" ng-class="{buildStarted: definition.launched}">{{definition.project.name}}</td>
                 <td title="'Definition Name'" sortable="'definition.name'" filter="{definition: 'text'}" ng-class="{buildStarted: definition.launched}">{{definition.name}}</td>
                 <td title="'Default Branch'" ng-class="{buildStarted: definition.launched}">{{definition.defaultBranch | buildDefaultBranch}}</td>
                 <td title="'Latest Build Status'" ng-bind-html="definition.latestBuilds | latestBuildStatus" ng-class="{buildStarted: definition.launched}"></td>
+                <td title="'Average Run Time'">
+                    {{definition.runTimes.length}}
+                    <svg class="chart" width="100" height="50" role="img">
+                        <title id="title">{{definition.runTimes | average }}</title>
+                        <g class="bar" ng-repeat="runTime in definition.runTimes">
+                            <rect width="10" height="30" ng:attr:x="{{$index + x}}" ng:attr:y="{{runTime}}"></rect>
+                        </g>
+                    </svg>
+                </td>
             </tr>
         </table>
     </div>

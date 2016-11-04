@@ -18,5 +18,6 @@ namespace TfsAdvanced.Data.Builds
         public BuildStatus status { get; set; }
         public string sourceBranch { get; set; }
         public string url { get; set; }
+        public BuildLinks _links { get; set; }
     }
 }
