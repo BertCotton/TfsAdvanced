@@ -1,4 +1,3 @@
-/// <binding Clean='clean' ProjectOpened='concat:js' />
 "use strict";
 
 var gulp = require("gulp");
@@ -47,6 +46,9 @@ gulp.task("concat:js",
                 "./node_modules/angular-datatables/dist/angular-datatables.js",
                 "./node_modules/angular-notification/angular-notification.js",
                 "./node_modules/angular-route/angular-route.js",
+                "./bower_components/d3/d3.js",
+                "./bower_components/nvd3/build/nv.d3.js",
+                "./bower_components/angular-nvd3/dist/angular-nvd3.js",
                 "./node_modules/ng-table/dist/ng-table.js/",
                 "./wwwroot/app/lib/angular-appinsights.js",
                 "./wwwroot/app/site.js",
@@ -75,6 +77,7 @@ gulp.task("copy:css",
                 "./node_modules/bootstrap/dist/css/bootstrap.min.css",
                 "./node_modules/angular-datatables/dist/css/angular-datatables.min.css",
                 "./node_modules/ng-table/dist/ng-table.css",
+                "./bower_components/nvd3/build/nv3.d3.min.css",
                 "./wwwroot/app/css/**.css"
         ])
             .pipe(debug())

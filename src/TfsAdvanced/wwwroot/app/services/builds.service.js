@@ -3,7 +3,7 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
     'use strict';
 
     var cached = [];
-    var cachedWaitTimes = [];
+    var cachedStatistics = [];
     var isLoaded = false;
     var isRunning = false;
     var isCancelled = false;
@@ -12,8 +12,8 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
         return cached;
     };
 
-    this.waitTimes = function() {
-        return cachedWaitTimes;
+    this.statistics = function() {
+        return cachedStatistics;
     };
 
     this.isLoaded = function() {
@@ -32,12 +32,12 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
             });
     }
 
-    function waitTimes()
+    function getStatistics()
     {
-        return $http.get("data/Builds/WaitTimes")
+        return $http.get("data/Builds/Statistics")
             .then(function (response) {
-                cachedWaitTimes = response.data;
-                $timeout(waitTimes, 10000);
+                cachedStatistics = response.data;
+                $timeout(getStatistics, 10000);
                 return response;
             });
     }
@@ -46,7 +46,7 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
         isCancelled = false;
         if (!isRunning) {
             builds();
-            waitTimes();
+            getStatistics();
         } else {
             console.log("Builds Request Service Started Multiple Times.");
         }

@@ -108,7 +108,10 @@ namespace TfsAdvanced
             app.UseApplicationInsightsRequestTelemetry();
             app.UseMvc();
 
-            app.UseHangfireDashboard();
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new []{new HangfireAuthorizationFilter()}
+            });
             app.UseHangfireServer();
 
             Hangfire.BackgroundJob.Enqueue<Updater>(updater => updater.Start());
