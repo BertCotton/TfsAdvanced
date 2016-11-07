@@ -10,7 +10,8 @@ var app = angular.module('TFS.Advanced', [
     'notification',
     'datatables',
     'ngTable',
-    "angular-appinsights"
+    "angular-appinsights",
+    'nvd3'
 ]);
 
 app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, $httpProvider, insightsProvider) {

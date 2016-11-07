@@ -28,20 +28,26 @@ namespace TfsAdvanced.Controllers
             return buildRepository.GetBuilds();
         }
 
-        [HttpGet("WaitTimes")]
-        public IList<BuildRun> GetWaitTimes([FromQuery] int NumberOfDaysBack  = 14)
+        [HttpGet("statistics")]
+        public IEnumerable<DailyBuildStatistic> GetWaitTimes([FromQuery] int NumberOfDaysBack  = 14)
         {
-            return buildRepository.GetBuilds()
+            var builds = buildRepository.GetBuilds()
                 .Where(b => b.status == BuildStatus.completed && b.startTime.HasValue && b.queueTime > DateTime.Now.AddDays(-NumberOfDaysBack))
-                .OrderBy(b => b.id)
-                .Select(b => new BuildRun
-                {
-                    Id = b.id,
-                    LaunchedTime = b.queueTime,
-                    Url = b._links.web.href,
-                    WaitingTime = Convert.ToInt32((b.startTime.Value - b.queueTime).TotalSeconds)
-                })
-                .ToList();
+                .OrderBy(b => b.id);
+
+            Dictionary<DateTime, DailyBuildStatistic> dailyBuildStatistics = new Dictionary<DateTime, DailyBuildStatistic>();
+
+            foreach (var build in builds)
+            {
+                DateTime day = build.queueTime.Date;
+                DailyBuildStatistic statistic = dailyBuildStatistics.ContainsKey(day) ? dailyBuildStatistics[day] : new DailyBuildStatistic(day);
+                statistic.AddQueueTime(build.queueTime, build.startTime);
+                statistic.AddRunTime(build.startTime, build.finishTime);
+
+                dailyBuildStatistics[day] = statistic;
+            }
+
+            return dailyBuildStatistics.Values;
         }
     }
 }

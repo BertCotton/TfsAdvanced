@@ -1,39 +1,78 @@
 ﻿angular.module('TFS.Advanced')
     .controller('BuildStatisticsController',
     [
-        '$window', '$scope', 'buildsService',
-        function ($window, $scope, buildsService) {
+        '$window', '$scope', '$filter', 'buildsService',
+        function ($window, $scope, $filter, buildsService) {
             'use strict';
 
-            $scope.waitTimes = {};
-            $scope.maxWaitTime = 0.0;
+            $scope.statistics = [];
+            $scope.maxWaitTime = 0;
+            $scope.maxRunTime = 0;
+            $scope.waitTimeLabels = [];
+            $scope.waitTimeSeries = [];
+            $scope.waitTimes = [];
+            $scope.data = {};
 
-            $scope.$watchCollection(buildsService.waitTimes,
-                function (waitTimes) {
-                    for (var i = 0; i < waitTimes.length; i++) {
-                        $scope.maxWaitTime = Math.max($scope.maxWaitTime, waitTimes[i].waitingTime);
+            $scope.options = {
+                chart: {
+                    type: "boxPlotChart",
+                    height: 450,
+                    maxBoxWidth : 75,
+                    margin: {
+                        top: 20,
+                        right: 20,
+                        bottom: 100,
+                        left: 100
+                    },
+                    x: function (d) {
+                        return $filter('date')(d.label);
+                    },
+                    yDomain: [0, $scope.maxWaitTime],
+                    xAxis: {
+                        axisLabel: "",
+                        rotateLabels: -45
+                    },
+                    yAxis: {
+                        axisLabel: "Queue Time"
                     }
+                }
+            };
+            
 
-                    $scope.waitTimes = waitTimes;
+            $scope.$watchCollection(buildsService.statistics,
+                function (statistics) {
+                    $scope.statistics = statistics;
+                    var waitTimes = [];
+                    var waitTimeLabels = [];
+
+
+                    $scope.maxWaitTime = 0;
+                    for(var index in statistics)
+                    {
+                        var stat = statistics[index];
+                        $scope.maxWaitTime = Math.max($scope.maxWaitTime, stat.queueTimeMax);
+                        $scope.maxRunTime = Math.max($scope.maxRunTime, stat.runTimeMax);
+                        waitTimes.push({
+                            label: new Date(stat.day),
+                            values: {
+                                Q1: stat.queueTimesLowerPercentile,
+                                Q2: stat.queueTimeAverage,
+                                Q3: stat.queueTimesUpperPercentile,
+                                whisker_low: stat.queueTimeMin,
+                                whisker_high: stat.queueTimeMax,
+                                outliers: [stat.queueTimeAverage]
+                            }
+                        });
+                    
+                        waitTimeLabels.push(new Date(stat.day));
+                    }
+                    $scope.options.chart.yDomain = [0, $scope.maxWaitTime];
+                    $scope.data = waitTimes;
+                    $scope.waitTimeLabels = waitTimeLabels;
                 });
 
-            $scope.getHeight = function(waitTime) {
-                var percent = 1 - (($scope.maxWaitTime - waitTime.waitingTime) / $scope.maxWaitTime);
-                var height = percent * 100;
-                return height+2;
-            };
-
-            $scope.getChartWidth = function () {
-                return $scope.waitTimes.length * 2;
-            };
-
-            $scope.shouldShowClass = function (index, waitTime) {
-                if (index % 100 === 0)
-                    return "";
-                else
-                    return "display:none";
-            };
-
+            
+            
             $scope.convertRunTime = function (runTime) {
 
                 var secs = Math.round((runTime) % 60);
@@ -47,5 +86,4 @@
                 return  time;
             };
 
-        }
-    ]);
+        }]);
