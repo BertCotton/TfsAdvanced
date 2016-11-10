@@ -5,6 +5,7 @@
         failed,
         succeeded,
         partiallySucceeded,
-        canceled
+        canceled,
+        abandoned
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
 using TfsAdvanced.Data.Errors;
@@ -25,7 +26,8 @@ namespace TfsAdvanced.Utilities
             if (!response.IsSuccessStatusCode)
                 throw new BadRequestException(url, response.StatusCode);
 
-            var items = await JsonDeserializer.Deserialize<Response<IEnumerable<T>>>(response);
+            var responseContext = await response.Content.ReadAsStringAsync();
+            var items = JsonConvert.DeserializeObject<Response<IEnumerable<T>>>(responseContext);
             return items.value.ToList();
         }
     }

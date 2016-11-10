@@ -1,9 +1,9 @@
-﻿<div class="container" ng-controller="BuildsController">
+﻿<div class="container-fluid" ng-controller="BuildsController">
     <div id="Loading" ng-if="!IsLoaded">
         <div class="loader"></div>
     </div>
     <div class="row" ng-if="IsLoaded">
-        <table ng-table="tableParams" class="table table-striped table-bordered table-condensed" id="buildsTable" show-filter="true" >
+        <table ng-table="tableParams" class="table table-condensed" id="buildsTable" show-filter="true" >
             <tr ng-repeat="build in $data">
                 <td title="'Build ID'" sortable="'id'" ><a href="{{build.buildUrl}}" target="_blank">{{build.id}}</a></td>
                 <td title="'Project Name'" sortable="'project.name'" filter="{project : 'text'}">{{build.project.name}}</td>
