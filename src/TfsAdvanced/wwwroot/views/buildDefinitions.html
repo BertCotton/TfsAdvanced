@@ -1,9 +1,9 @@
-﻿<div class="container" ng-controller="BuildDefinitionController">
+﻿<div class="container-fluid" ng-controller="BuildDefinitionController">
     <div id="Loading" ng-if="!IsLoaded">
         <div class="loader"></div>
     </div>
     <div class="row" ng-if="IsLoaded">
-        <table ng-table="tableParams" class="table table-striped table-bordered table-condensed" id="buildsTable" show-filter="true">
+        <table ng-table="tableParams" class="table table-condensed" id="buildsTable" show-filter="true">
             <thead>
             <tr>
                 <th style="width: 225px">
@@ -18,7 +18,7 @@
             </tr>
             </thead>
             <tr ng-repeat="definition in $data">
-                <td title="''" ng-class="{buildStarted: definition.launched}"><input type="checkbox" name="definitionIds" value="{{definition.id}}" ng-checked="isSelected(definition)" ng-click="select(definition)" ng-disabled="IsLaunching" ng-if="!definition.launched"/><span ng-if="definition.launched">Launched</span></td>
+                <td title="''" ng-class="{buildStarted: definition.launched}" style="text-align: center"><input type="checkbox" name="definitionIds" value="{{definition.id}}" ng-checked="isSelected(definition)" ng-click="select(definition)" ng-disabled="IsLaunching" ng-if="!definition.launched"/><span ng-if="definition.launched">Launched</span></td>
                 <td title="'Project Name'" sortable="'project.name'" filter="{project : 'text'}" ng-class="{buildStarted: definition.launched}">{{definition.project.name}}</td>
                 <td title="'Definition Name'" sortable="'definition.name'" filter="{definition: 'text'}" ng-class="{buildStarted: definition.launched}">{{definition.name}}</td>
                 <td title="'Default Branch'" ng-class="{buildStarted: definition.launched}">{{definition.defaultBranch | buildDefaultBranch}}</td>

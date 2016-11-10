@@ -11,9 +11,9 @@ namespace TfsAdvanced.Tasks
 {
     public class Updater
     {
-        private Timer timer;
-        private IServiceProvider serviceProvider;
-
+        private Timer tenSecondTimer;
+        private readonly IServiceProvider serviceProvider;
+        
         public Updater(IServiceProvider serviceProvider)
         {
             this.serviceProvider = serviceProvider;
@@ -27,23 +27,29 @@ namespace TfsAdvanced.Tasks
             serviceProvider.GetService<BuildUpdater>().Update();
             serviceProvider.GetService<BuildDefinitionUpdater>().Update();
             serviceProvider.GetService<PullRequestUpdater>().Update();
+            serviceProvider.GetService<PoolUpdater>().Update();
+            serviceProvider.GetService<JobRequestUpdater>().Update();
 
-            timer = new Timer(state =>
+            // Slow moving things only need to be updated once an hour
+            RecurringJob.AddOrUpdate<ProjectUpdater>(updater => updater.Update(), Cron.Hourly);
+            RecurringJob.AddOrUpdate<RepositoryUpdater>(updater => updater.Update(), Cron.Hourly);
+            RecurringJob.AddOrUpdate<PoolUpdater>(updater => updater.Update(), Cron.Hourly);
+            RecurringJob.AddOrUpdate<BuildDefinitionUpdater>(updater => updater.Update(), Cron.Hourly);
+
+
+            tenSecondTimer = new Timer(state =>
             {
-                Debug.WriteLine("Timer Tick");
-                BackgroundJob.Enqueue<BuildDefinitionUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<BuildUpdater>(updater => updater.Update());
-                BackgroundJob.Enqueue<ProjectUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<PullRequestUpdater>(updater => updater.Update());
-                BackgroundJob.Enqueue<RepositoryUpdater>(updater => updater.Update());
+                BackgroundJob.Enqueue<JobRequestUpdater>(updater => updater.Update());
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
             
         }
 
         public void Stop()
         {
-            if (timer != null)
-                timer.Change(-1, -1);
+            if (tenSecondTimer != null)
+                tenSecondTimer.Change(-1, -1);
         }
         
     }

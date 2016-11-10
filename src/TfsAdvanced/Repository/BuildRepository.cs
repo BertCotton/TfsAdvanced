@@ -39,5 +39,9 @@ namespace TfsAdvanced.Repository
         }
 
 
+        public Build GetBuild(int buildId)
+        {
+            return this.builds.FirstOrDefault(b => b.id == buildId);
+        }
     }
 }
