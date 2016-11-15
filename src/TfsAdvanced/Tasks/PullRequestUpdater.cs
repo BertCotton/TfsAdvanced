@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.PullRequests;
 using TfsAdvanced.Repository;
@@ -24,31 +25,42 @@ namespace TfsAdvanced.Tasks
             this.pullRequestRepository = pullRequestRepository;
         }
 
+        [AutomaticRetry(Attempts = 0)]
         public void Update()
         {
             if (IsRunning)
                 return;
 
             IsRunning = true;
-
-            ConcurrentBag<PullRequest> allPullRequests = new ConcurrentBag<PullRequest>();
-            Parallel.ForEach(repositoryRepository.GetRepositories(), new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, repository =>
+            try
             {
-                if (repository._links.pullRequests == null)
-                    return;
-                var pullRequests = GetAsync.FetchResponseList<PullRequest>(requestData, repository._links.pullRequests.href).Result;
-                if (pullRequests == null)
-                    return;
-                Parallel.ForEach(pullRequests, new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, pullRequest =>
+                ConcurrentBag<PullRequest> allPullRequests = new ConcurrentBag<PullRequest>();
+                Parallel.ForEach(repositoryRepository.GetRepositories(), new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, repository =>
                 {
-                    pullRequest.repository = repository;
-                    pullRequest.remoteUrl = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
-                    allPullRequests.Add(pullRequest);
+                    if (repository._links.pullRequests == null)
+                        return;
+                    var pullRequests = GetAsync.FetchResponseList<PullRequest>(requestData, repository._links.pullRequests.href).Result;
+                    if (pullRequests == null)
+                        return;
+                    Parallel.ForEach(pullRequests, new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, pullRequest =>
+                    {
+                        pullRequest.repository = repository;
+                        pullRequest.remoteUrl = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
+                        allPullRequests.Add(pullRequest);
+                    });
                 });
-            });
-            pullRequestRepository.UpdatePullRequests(allPullRequests.ToList());
+                pullRequestRepository.UpdatePullRequests(allPullRequests.ToList());
 
-            IsRunning = false;
+
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Error runnign Pull Request Updater", ex);
+            }
+            finally
+            {
+                IsRunning = false;
+            }
         }
 
         public string BuildPullRequestUrl(PullRequest pullRequest, string baseUrl)

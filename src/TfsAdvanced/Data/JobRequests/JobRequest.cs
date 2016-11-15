@@ -12,6 +12,7 @@ namespace TfsAdvanced.Data.JobRequests
         public DateTime queueTime { get; set; }
         public DateTime? assignTime { get; set; }
         public DateTime? receiveTime { get; set; }
+        public DateTime? startedTime { get; set; }
         public DateTime? finishTime { get; set; }
         public DateTime? lockedUntil { get; set; }
         public Guid serviceOwner { get; set; }

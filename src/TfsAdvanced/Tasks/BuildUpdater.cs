@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
 using TfsAdvanced.Repository;
@@ -24,24 +25,37 @@ namespace TfsAdvanced.Tasks
             this.projectRepository = projectRepository;
         }
 
+        [AutomaticRetry(Attempts = 0)]
         public void Update()
         {
             if (IsRunning)
                 return;
             IsRunning = true;
-            var builds = new ConcurrentStack<Build>();
-            Parallel.ForEach(projectRepository.GetProjects(), new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, project =>
+            try
             {
-                var projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2").Result;
-                if (projectBuilds != null && projectBuilds.Any())
+
+                var builds = new ConcurrentStack<Build>();
+                Parallel.ForEach(projectRepository.GetProjects(), new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
-                    builds.PushRange(projectBuilds.ToArray());
-                }   
-            });
+                    var projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2").Result;
+                    if (projectBuilds != null && projectBuilds.Any())
+                    {
+                        builds.PushRange(projectBuilds.ToArray());
+                    }
+                });
 
-            buildRepository.Update(builds.ToList());
+                buildRepository.Update(builds.ToList());
 
-            IsRunning = false;
+
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Error running build updater", ex);
+            }
+            finally
+            {
+                IsRunning = false;
+            }
         }
     }
 }

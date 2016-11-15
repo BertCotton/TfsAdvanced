@@ -3,9 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Hangfire;
 using TfsAdvanced.Data;
 using TfsAdvanced.Data.Builds;
 using TfsAdvanced.Repository;
+using TfsAdvanced.ServiceRequests;
 using TfsAdvanced.Utilities;
 
 namespace TfsAdvanced.Tasks
@@ -26,31 +28,61 @@ namespace TfsAdvanced.Tasks
             this.buildRepository = buildRepository;
         }
 
+        [AutomaticRetry(Attempts = 0)]
         public void Update()
         {
             if (IsRunning)
                 return;
             IsRunning = true;
-            var buildDefinitions = new ConcurrentBag<BuildDefinition>();
-            Parallel.ForEach(projectRepository.GetProjects(), new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, project =>
+            try
             {
-                var definitions = GetAsync.FetchResponseList<BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/definitions?api=2.2").Result;
-                if (definitions == null)
-                    return;
-                foreach (var definition in definitions)
+
+                var buildDefinitions = new ConcurrentBag<BuildDefinition>();
+                Parallel.ForEach(projectRepository.GetProjects(), new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
-                    buildDefinitions.Add(definition);
-                }
-            });
+                    var definitions = GetAsync.FetchResponseList<BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/definitions?api=2.2").Result;
+                    if (definitions == null)
+                        return;
+                    foreach (var definition in definitions)
+                    {
+                        buildDefinitions.Add(definition);
+                    }
+                });
 
-            buildDefinitionRepository.Update(buildDefinitions.ToList());
-            Parallel.ForEach(buildDefinitions, new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, buildDefinition =>
+                buildDefinitionRepository.Update(buildDefinitions.ToList());
+                Parallel.ForEach(buildDefinitions, new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, buildDefinition =>
+                {
+                    IList<Build> latestBuilds;
+                    if (buildDefinition.path.Contains("CI"))
+                    {
+                        latestBuilds = buildRepository.GetLatestBuildOnDefaultBranch(buildDefinition, 8);
+                    }
+                    else
+                    {
+                        latestBuilds = buildRepository.GetLatestBuildOnAllBranches(buildDefinition, 8);
+                    }
+
+                    buildDefinition.LatestBuilds = latestBuilds;
+                    if (latestBuilds.Any())
+                    {
+                        buildDefinition.LatestBuild = latestBuilds.OrderByDescending(b => b.id).FirstOrDefault();
+                    }
+                });
+
+                buildDefinitionRepository.Update(buildDefinitions.ToList());
+
+            }
+            catch (Exception ex)
             {
-                buildDefinition.LatestBuilds = buildRepository.GetLatestBuildOnDefaultBranch(buildDefinition, 8);
-            });
+                throw new InvalidOperationException("Error processing the build definition updater.", ex);
+            }
+            finally
 
-            buildDefinitionRepository.Update(buildDefinitions.ToList());
-            IsRunning = false;
+            {
+                IsRunning = false;
+            }
+
+
         }
     }
 }
