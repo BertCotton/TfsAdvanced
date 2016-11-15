@@ -8,6 +8,14 @@
             $scope.IsLaunching = false;
             $scope.buildDefinitions = [];
             $scope.selectedDefinitions = [];
+            $scope.buildStatuses = [
+                    { "id": "succeeded", 'title': "Succeeded" },
+                    { "id": "partiallySucceeded", 'title': "Partially Succeeded" },
+                    { "id": "canceled", 'title': "Cancelled" },
+                    { "id": "neverBuilt", 'title': "Never Build" },
+                    { "id": "abandoned", 'title': "Abandoned" },
+                    { "id": "failed", 'title': "Failed" }
+            ];
 
             $scope.tableParams = new NgTableParams({
                 count: 20,
@@ -34,12 +42,29 @@
                                            }
                                        });
                                        break;
+                                   case 'latestBuildResult':
+                                       if (filters[key] === "neverBuilt") {
+                                           newFilters["latestBuild"] = "null";
+                                       } else {
+
+                                           angular.extend(newFilters,
+                                           {
+                                               latestBuild: {
+                                                   result: filters[key]
+                                               }
+                                           });
+
+                                       }
+                                       break;
                                    default:
                                        newFilters[key] = filters[key];
                                }
                            }
                        }
+                       console.log(newFilters);
+
                        var filteredData = params.filter() ? $filter('filter')(data, newFilters) : data;
+                       console.log(filteredData);
                        $scope.buildDefinitions = data;
                        var orderedData = params.sorting()
                            ? $filter('orderBy')(filteredData, params.orderBy())
@@ -60,6 +85,8 @@
                         $scope.tableParams.reload();
                     }
                 });
+
+            
 
             $scope.getHeight = function (builds, build) {
                 var maxRunTime = 0;
@@ -127,7 +154,6 @@
                 else
                     $scope.selectedDefinitions[def.id] = def.id;
             };
-
 
             $scope.queueDefinitions = function () {
                 var submitIds = [];

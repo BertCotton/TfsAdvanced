@@ -48,8 +48,7 @@ namespace TfsAdvanced.Tasks
 
         public void Stop()
         {
-            if (tenSecondTimer != null)
-                tenSecondTimer.Change(-1, -1);
+            tenSecondTimer?.Change(-1, -1);
         }
         
     }
