@@ -27,44 +27,56 @@ gulp.task("clean:fonts",
 
 gulp.task("clean", ["clean:js", "clean:css"]);
 
-gulp.task("concat:js",
+gulp.task("concat:js-app",
     ["clean:js"],
-    function () {
+    function() {
         return gulp.src([
-                "./bower_components/jquery/dist/jquery.js",
-                "./bower_components/bootstrap/dist/js/bootstrap.js",
-                "./bower_components/angular/angular.js",
-                "./bower_components/angular-bootstrap/ui-bootstrap.js",
-                "./bower_components/angular-cookies/angular-cookies.js",
-                "./bower_components/angular-sanitize/angular-sanitize.js",
-                "./bower_components/angular-resource/angular-resource.js",
-                "./bower_components/angular-route/angular-route.js",
-                "./bower_components/angular-animate/angular-animate.js",
-                "./bower_components/angular-ui-router/release/angular-ui-router.js",
-                "./bower_components/angular-datatables/dist/angular-datatables.js",
-                "./bower_components/angular-notification/angular-notification.js",
-                "./bower_components/angular-route/angular-route.js",
-                "./bower_components/d3/d3.js",
-                "./bower_components/nvd3/build/nv.d3.js",
-                "./bower_components/angular-nvd3/dist/angular-nvd3.js",
-                "./wwwroot/app/lib/angular-appinsights.js",
-                "./node_modules/ng-table/bundles/ng-table.js",
                 "./wwwroot/app/site.js",
                 "./wwwroot/app/filters/*.js",
                 "./wwwroot/app/services/*.js",
-                "./wwwroot/app/controllers/*.js"
-        ])
+                "./wwwroot/app/controllers/*.js",
+                "./wwwroot/app/lib/*.js"
+            ])
             .pipe(debug())
-            .pipe(concat("./wwwroot/js/app.js"))
+            .pipe(concat("./wwwroot/js/app-only.js"))
             .pipe(gulp.dest("."));
     });
 
-gulp.task("minify:js",
-    ["concat:js"],
-    function() {
-        return gulp.src("./wwwroot/js/app.js")
+gulp.task("minify:js-app",
+    ["concat:js-app"],
+    function () {
+        return gulp.src("./wwwroot/js/app-only.js")
+            .pipe(concat("./wwwroot/js/app-only.min.js"))
+            .pipe(uglify())
+            .pipe(gulp.dest("."));
+    });
+
+gulp.task("concat:js",
+    ["minify:js-app"],
+    function () {
+        return gulp.src([
+                "./bower_components/jquery/dist/jquery.min.js",
+                "./bower_components/bootstrap/dist/js/bootstrap.min.js",
+                "./bower_components/angular/angular.js",
+                "./bower_components/angular-bootstrap/ui-bootstrap.min.js",
+                "./bower_components/angular-cookies/angular-cookies.min.js",
+                "./bower_components/angular-sanitize/angular-sanitize.min.js",
+                "./bower_components/angular-resource/angular-resource.min.js",
+                "./bower_components/angular-route/angular-route.min.js",
+                "./bower_components/angular-animate/angular-animate.min.js",
+                "./bower_components/angular-ui-router/release/angular-ui-router.min.js",
+                "./bower_components/angular-datatables/dist/angular-datatables.min.js",
+                "./bower_components/angular-notification/angular-notification.min.js",
+                "./bower_components/angular-route/angular-route.min.js",
+                "./bower_components/d3/d3.min.js",
+                "./bower_components/nvd3/build/nv.d3.min.js",
+                "./bower_components/angular-nvd3/dist/angular-nvd3.min.js",
+                "./wwwroot/app/lib/angular-appinsights.min.js",
+                "./node_modules/ng-table/bundles/ng-table.min.js",
+                "./wwwroot/js/app-only.js"
+        ])
+            .pipe(debug())
             .pipe(concat("./wwwroot/js/app.min.js"))
-          //  .pipe(uglify())
             .pipe(gulp.dest("."));
     });
 
@@ -93,7 +105,7 @@ gulp.task("copy:fonts", ["clean:fonts"],
            .pipe(gulp.dest("./wwwroot/fonts/"));
     });
 
-gulp.task("build", ["concat:js", "minify:js", "copy:css", "copy:fonts"]);
+gulp.task("build", ["concat:js", "copy:css", "copy:fonts"]);
 
 gulp.task("watch",
     function () {

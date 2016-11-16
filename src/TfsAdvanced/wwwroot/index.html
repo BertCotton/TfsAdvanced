@@ -57,7 +57,7 @@
         </div>
     </div>
 </div>
-<div ng-if="IsLoaded" class="ng-hide">
+<div ng-if="IsLoaded" >
     <div ui-view=""></div>
     <div class="updater" ng-controller="UpdaterController"></div>
 </div>
@@ -86,6 +86,6 @@
         };
     window.appInsights = appInsights;
 </script>
-<script src="/js/app.js"></script>
+<script src="/js/app.min.js"></script>
 </body>
 </html>
