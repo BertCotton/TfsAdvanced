@@ -21,7 +21,7 @@
                 count: 20,
                 page: 1,
                 sorting: {
-                    id: 'name'
+                    name: 'desc'
                 }
             },
                {
@@ -43,8 +43,10 @@
                                        });
                                        break;
                                    case 'latestBuildResult':
+                                       if (filters[key] === "")
+                                           break;
                                        if (filters[key] === "neverBuilt") {
-                                           newFilters["latestBuild"] = "null";
+                                           newFilters["latestBuild"] = null;
                                        } else {
 
                                            angular.extend(newFilters,
@@ -64,7 +66,6 @@
                        console.log(newFilters);
 
                        var filteredData = params.filter() ? $filter('filter')(data, newFilters) : data;
-                       console.log(filteredData);
                        $scope.buildDefinitions = data;
                        var orderedData = params.sorting()
                            ? $filter('orderBy')(filteredData, params.orderBy())

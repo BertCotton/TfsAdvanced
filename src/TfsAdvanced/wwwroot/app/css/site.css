@@ -72,8 +72,12 @@ textarea {
     background-color: #007acc;
 }
 
- .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
-    background-color: #0095e8;
+  .navbar-nav > li > a, 
+  .navbar-nav > li > a:hover,
+  .navbar-nav > li > a:focus,
+  .navbar-nav > li:focus
+   {
+    background-color: #007acc;
     color: white;
 }
 

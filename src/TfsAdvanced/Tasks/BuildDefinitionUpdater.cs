@@ -55,11 +55,11 @@ namespace TfsAdvanced.Tasks
                     IList<Build> latestBuilds;
                     if (buildDefinition.path.Contains("CI"))
                     {
-                        latestBuilds = buildRepository.GetLatestBuildOnDefaultBranch(buildDefinition, 8);
+                        latestBuilds = buildRepository.GetLatestBuildOnAllBranches(buildDefinition, 8);
                     }
                     else
                     {
-                        latestBuilds = buildRepository.GetLatestBuildOnAllBranches(buildDefinition, 8);
+                        latestBuilds = buildRepository.GetLatestBuildOnDefaultBranch(buildDefinition, 8);
                     }
 
                     buildDefinition.LatestBuilds = latestBuilds;

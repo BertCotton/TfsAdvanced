@@ -8,7 +8,6 @@ var app = angular.module('TFS.Advanced', [
     'ui.router',
     'ui.bootstrap',
     'notification',
-    'datatables',
     'ngTable',
     "angular-appinsights",
     'nvd3'

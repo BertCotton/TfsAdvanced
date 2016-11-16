@@ -34,14 +34,13 @@ namespace TfsAdvanced.Tasks
             RecurringJob.AddOrUpdate<ProjectUpdater>(updater => updater.Update(), Cron.Hourly);
             RecurringJob.AddOrUpdate<RepositoryUpdater>(updater => updater.Update(), Cron.Hourly);
             RecurringJob.AddOrUpdate<PoolUpdater>(updater => updater.Update(), Cron.Hourly);
-            RecurringJob.AddOrUpdate<BuildDefinitionUpdater>(updater => updater.Update(), Cron.Hourly);
-
-
+       
             tenSecondTimer = new Timer(state =>
             {
                 BackgroundJob.Enqueue<BuildUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<PullRequestUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<JobRequestUpdater>(updater => updater.Update());
+                BackgroundJob.Enqueue<BuildDefinitionUpdater>(updater => updater.Update());
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
             
         }

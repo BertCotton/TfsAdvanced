@@ -15,17 +15,25 @@
         <li ng-class="{active : isActive('/pullRequests')}">
             <a class="nav-link" href="#/pullRequests">Pull Requests</a>
         </li>
-        <li ng-class="{active : isActive('/buildDefinitions')}">
-            <a class="nav-link" href="#/buildDefinitions">Build Definitions</a>
-        </li>
-        <li ng-class="{active : isActive('/buildStatistics')}">
-            <a class="nav-link" href="#/buildStatistics">Build Statistics</a>
-        </li>
         <li ng-class="{active : isActive('/builds')}">
             <a class="nav-link" href="#/builds">Builds</a>
         </li>
+        <li ng-class="{active : isActive('/buildDefinitions')}">
+            <a class="nav-link" href="#/buildDefinitions">Build Definitions</a>
+        </li>
+        
         <li ng-class="{active : isActive('/jobRequests')}">
             <a class="nav-link" href="#/jobRequests">Build & Release Jobs</a>
+        </li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle nav-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
+                Statistics<span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li ng-class="{active : isActive('/buildStatistics')}">
+                    <a class="nav-link" href="#/buildStatistics">Build</a>
+                </li>
+            </ul>
         </li>
     </ul>
 </nav>
@@ -38,6 +46,6 @@
     };
     window.appInsights = appInsights;
     </script>
-<script src="/js/app.min.js"></script>
+<script src="/js/app.js"></script>
 </body>
 </html>
