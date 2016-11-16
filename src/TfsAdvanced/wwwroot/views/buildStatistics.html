@@ -5,7 +5,7 @@
                 <div class="panel-heading">
                     <h2>Wait Times</h2> 
                     <label for="daysBack">Days Back</label>       
-                    <select id="daysBack" ng-model="daysBack">
+                    <select id="daysBack" ng-model="daysBack" ng-change="updateDaysBack()">
                         <option value="7">7</option>
                         <option value="14">14</option>
                         <option value="30">30</option>
@@ -16,8 +16,6 @@
                     </span>
                 </div>
             </div>
-            
-            
             <nvd3 options="options" data="data"></nvd3>
         </div>
     </div>

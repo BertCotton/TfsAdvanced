@@ -16,6 +16,7 @@
 
             $scope.options = {
                 chart: {
+                    reduceXTicks : true,
                     type: "boxPlotChart",
                     height: 450,
                     maxBoxWidth : 75,
@@ -23,26 +24,26 @@
                         top: 20,
                         right: 20,
                         bottom: 100,
-                        left: 100
+                        left: 150
                     },
                     x: function (d) {
                         return $filter('date')(d.label);
                     },
-                    yDomain: [0, $scope.maxWaitTime],
+                    yDomain: [0, 1000],
                     xAxis: {
                         axisLabel: "",
                         rotateLabels: -45
                     },
                     yAxis: {
-                        axisLabel: "Queue Time"
+                        axisLabel: "",
+                        tickFormat: function (d) { return $scope.convertRunTime(d); }
                     }
                 }
             };
 
-            $scope.$watch(daysBack,
-                function() {
-                    buildsService.daysBack($scope.daysBack);
-                });
+            $scope.updateDaysBack = function () {
+                buildsService.daysBack($scope.daysBack);
+            };
             
 
             $scope.$watchCollection(buildsService.statistics,
@@ -50,7 +51,6 @@
                     $scope.statistics = statistics;
                     var waitTimes = [];
                     var waitTimeLabels = [];
-
 
                     $scope.maxWaitTime = 0;
                     for(var index in statistics)

@@ -31,9 +31,11 @@ namespace TfsAdvanced.Controllers
         [HttpGet("statistics")]
         public IEnumerable<DailyBuildStatistic> GetWaitTimes([FromQuery] int NumberOfDaysBack  = 14)
         {
-            var builds = buildRepository.GetBuilds()
-                .Where(b => b.status == BuildStatus.completed && b.startTime.HasValue && b.queueTime > DateTime.Now.AddDays(-NumberOfDaysBack))
-                .OrderBy(b => b.id);
+            IEnumerable<Build> builds = buildRepository.GetBuilds();
+            if(NumberOfDaysBack > 0)
+                builds = builds.Where(b => b.status == BuildStatus.completed && b.startTime.HasValue && b.queueTime > DateTime.Now.AddDays(-NumberOfDaysBack));
+
+            builds = builds.OrderBy(b => b.id);
 
             Dictionary<DateTime, DailyBuildStatistic> dailyBuildStatistics = new Dictionary<DateTime, DailyBuildStatistic>();
 
