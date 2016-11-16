@@ -8,10 +8,10 @@
     <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="/css/site.min.css" />
 </head>
-<body>
+<body ng-controller="MainController">
 <nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
     <span class="navbar-brand nav-link">TFS Advanced</span>
-    <ul class="nav navbar-nav">
+    <ul class="nav navbar-nav ng-cloak" ng-show="IsLoaded">
         <li ng-class="{active : isActive('/pullRequests')}">
             <a class="nav-link" href="#/pullRequests">Pull Requests</a>
         </li>
@@ -21,7 +21,7 @@
         <li ng-class="{active : isActive('/buildDefinitions')}">
             <a class="nav-link" href="#/buildDefinitions">Build Definitions</a>
         </li>
-        
+
         <li ng-class="{active : isActive('/jobRequests')}">
             <a class="nav-link" href="#/jobRequests">Build & Release Jobs</a>
         </li>
@@ -37,15 +37,55 @@
         </li>
     </ul>
 </nav>
-<div ui-view=""></div>
-    <div class="updater" ng-controller="UpdaterController"></div>
-    <script type="text/javascript">
+<div ng-if="!IsLoaded" style="margin-top: 100px">
+    <div class="container">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h2 class="text-center">TFS Advanced is Loading</h2>
+            </div>
+            <div class="panel-body">
+                <div class="progress">
+                    <span class="progress-value" style="color:black">
+                        Please wait while the app is finished loading. ({{LoadedPercent | number : 0}}%)
+                    </span>
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" ng-style="{ 'width' : LoadedPercent + '%' }">
 
-    var appInsights = window.appInsights || function (config) {
-        function s(config) { t[config] = function () { var i = arguments; t.queue.push(function () { t[config].apply(t, i) }) } } var t = { config: config }, r = document, f = window, e = "script", o = r.createElement(e), i, u; for (o.src = config.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(e)[0].parentNode.appendChild(o), t.cookie = r.cookie, t.queue = [], i = ["Event", "Exception", "Metric", "PageView", "Trace"]; i.length;) s("track" + i.pop()); return config.disableExceptionTracking || (i = "onerror", s("_" + i), u = f[i], f[i] = function (config, r, f, e, o) { var s = u && u(config, r, f, e, o); return s !== !0 && t["_" + i](config, r, f, e, o), s }), t
-    };
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+<div ng-if="IsLoaded" class="ng-hide">
+    <div ui-view=""></div>
+    <div class="updater" ng-controller="UpdaterController"></div>
+</div>
+<script type="text/javascript">
+
+    var appInsights = window.appInsights ||
+        function(config) {
+            function s(config) {
+                t[config] = function() {
+                    var i = arguments;
+                    t.queue.push(function() { t[config].apply(t, i) })
+                }
+            }
+
+            var t = { config: config }, r = document, f = window, e = "script", o = r.createElement(e), i, u;
+            for (o.src = config.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(e)[0]
+                    .parentNode.appendChild(o), t.cookie = r
+                    .cookie, t.queue = [], i = ["Event", "Exception", "Metric", "PageView", "Trace"];
+                i.length;
+            ) s("track" + i.pop());
+            return config.disableExceptionTracking ||
+            (i = "onerror", s("_" + i), u = f[i], f[i] = function(config, r, f, e, o) {
+                var s = u && u(config, r, f, e, o);
+                return s !== !0 && t["_" + i](config, r, f, e, o), s
+            }), t
+        };
     window.appInsights = appInsights;
-    </script>
+</script>
 <script src="/js/app.js"></script>
 </body>
 </html>

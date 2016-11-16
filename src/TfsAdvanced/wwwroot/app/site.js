@@ -43,4 +43,26 @@ app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, $httpPr
 
     $urlRouterProvider.otherwise('/pullRequests');
     $httpProvider.interceptors.push("Interceptor");
+
+    
 });
+
+
+app.controller("MainController",
+    ['$scope', 'healthService',
+    function ($scope, healthService) {
+        $scope.IsLoaded = false;
+        $scope.LoadedPercent = 1;
+
+        var watcher = $scope.$watch(healthService.LoadedStatus,
+            function (loadedStatus) {
+                console.log(loadedStatus);
+                $scope.IsLoaded = loadedStatus.isLoaded;
+                $scope.LoadedPercent = (loadedStatus.loadedPercent * 100.0);
+                $scope.LoadedPercent = Math.max(1, $scope.LoadedPercent);
+                    
+                if ($scope.IsLoaded) {
+                    watcher();
+                }
+            });
+    }]);

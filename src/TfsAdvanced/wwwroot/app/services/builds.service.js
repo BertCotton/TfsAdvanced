@@ -7,6 +7,7 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
     var isLoaded = false;
     var isRunning = false;
     var isCancelled = false;
+    var daysBackStatistics = 7;
 
     this.builds = function() {
         return cached;
@@ -18,6 +19,10 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
 
     this.isLoaded = function() {
         return isLoaded;
+    };
+
+    this.daysBack = function(daysBack) {
+        daysBackStatistics = daysBack;
     };
 
     function builds() {
@@ -32,9 +37,10 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
             });
     }
 
+    
     function getStatistics()
     {
-        return $http.get("data/Builds/Statistics")
+        return $http.get("data/Builds/Statistics?NumberOfDaysBack=" + daysBackStatistics)
             .then(function (response) {
                 cachedStatistics = response.data;
                 $timeout(getStatistics, 10000);

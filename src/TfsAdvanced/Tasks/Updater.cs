@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
+using TfsAdvanced.Repository;
 
 namespace TfsAdvanced.Tasks
 {
@@ -22,13 +23,32 @@ namespace TfsAdvanced.Tasks
         public void Start()
         {
             // Initialize the updaters in order
+            double stepSize = 1.0/7.0;
+            double percentLoaded = 0.0;
+            var hangFireStatusRepository = serviceProvider.GetService<HangFireStatusRepository>();
             serviceProvider.GetService<ProjectUpdater>().Update();
+            percentLoaded += stepSize;
+            hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<RepositoryUpdater>().Update();
+            percentLoaded += stepSize;
+            hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<BuildUpdater>().Update();
+            percentLoaded += stepSize;
+            hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<BuildDefinitionUpdater>().Update();
+            percentLoaded += stepSize;
+            hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<PullRequestUpdater>().Update();
+            percentLoaded += stepSize;
+            hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<PoolUpdater>().Update();
+            percentLoaded += stepSize;
+            hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<JobRequestUpdater>().Update();
+            percentLoaded += stepSize;
+            hangFireStatusRepository.SetPercentLoaded(1);
+
+            hangFireStatusRepository.SetIsLoaded(true);
 
             // Slow moving things only need to be updated once an hour
             RecurringJob.AddOrUpdate<ProjectUpdater>(updater => updater.Update(), Cron.Hourly);

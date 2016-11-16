@@ -12,6 +12,7 @@
             $scope.waitTimeSeries = [];
             $scope.waitTimes = [];
             $scope.data = {};
+            $scope.daysBack = 7;
 
             $scope.options = {
                 chart: {
@@ -37,6 +38,11 @@
                     }
                 }
             };
+
+            $scope.$watch(daysBack,
+                function() {
+                    buildsService.daysBack($scope.daysBack);
+                });
             
 
             $scope.$watchCollection(buildsService.statistics,
