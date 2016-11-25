@@ -16,12 +16,14 @@ namespace TfsAdvanced.Tasks
         private readonly RequestData requestData;
         private readonly PullRequestRepository pullRequestRepository;
         private readonly RepositoryRepository repositoryRepository;
+        private readonly UpdateStatusRepository updateStatusRepository;
         private bool IsRunning;
 
-        public PullRequestUpdater(PullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository)
+        public PullRequestUpdater(PullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, UpdateStatusRepository updateStatusRepository)
         {
             this.requestData = requestData;
             this.repositoryRepository = repositoryRepository;
+            this.updateStatusRepository = updateStatusRepository;
             this.pullRequestRepository = pullRequestRepository;
         }
 
@@ -49,7 +51,9 @@ namespace TfsAdvanced.Tasks
                         allPullRequests.Add(pullRequest);
                     });
                 });
-                pullRequestRepository.UpdatePullRequests(allPullRequests.ToList());
+                var pullRequestsList = allPullRequests.ToList();
+                pullRequestRepository.UpdatePullRequests(pullRequestsList);
+                updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pullRequestsList.Count, UpdaterName = nameof(PullRequestUpdater)});
 
 
             }

@@ -17,14 +17,16 @@ namespace TfsAdvanced.Tasks
     {
         private readonly ProjectRepository projectRepository;
         private readonly RepositoryRepository repositoryRepository;
+        private readonly UpdateStatusRepository updateStatusRepository;
         private readonly RequestData requestData;
         private bool IsRunning;
 
-        public RepositoryUpdater(ProjectRepository projectRepository, RequestData requestData, RepositoryRepository repositoryRepository)
+        public RepositoryUpdater(ProjectRepository projectRepository, RequestData requestData, RepositoryRepository repositoryRepository, UpdateStatusRepository updateStatusRepository)
         {
             this.projectRepository = projectRepository;
             this.requestData = requestData;
             this.repositoryRepository = repositoryRepository;
+            this.updateStatusRepository = updateStatusRepository;
         }
 
         [AutomaticRetry(Attempts = 0)]
@@ -47,9 +49,9 @@ namespace TfsAdvanced.Tasks
                         populatedRepositories.Add(populatedRepository);
                     });
                 });
-                repositoryRepository.UpdateRepositories(populatedRepositories.ToList());
-
-
+                var repositoryList = populatedRepositories.ToList();
+                repositoryRepository.UpdateRepositories(repositoryList);
+                updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = repositoryList.Count, UpdaterName = nameof(RepositoryUpdater)});
             }
             catch (Exception ex)
             {

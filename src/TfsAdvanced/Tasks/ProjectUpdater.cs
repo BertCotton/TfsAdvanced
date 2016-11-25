@@ -16,13 +16,15 @@ namespace TfsAdvanced.Tasks
     {
 
         private readonly ProjectRepository projectRepository;
+        private readonly UpdateStatusRepository updateStatusRepository;
         private readonly RequestData requestData;
         private bool IsRunning;
 
-        public ProjectUpdater(ProjectRepository projectRepository, RequestData requestData)
+        public ProjectUpdater(ProjectRepository projectRepository, RequestData requestData, UpdateStatusRepository updateStatusRepository)
         {
             this.projectRepository = projectRepository;
             this.requestData = requestData;
+            this.updateStatusRepository = updateStatusRepository;
         }
 
         [AutomaticRetry(Attempts = 0)]
@@ -35,7 +37,10 @@ namespace TfsAdvanced.Tasks
             {
                 var projects = GetAsync.FetchResponseList<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects?api-version=1.0").Result;
                 if (projects != null)
+                {
                     projectRepository.Update(projects.ToList());
+                    updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = projects.Count, UpdaterName = nameof(ProjectUpdater)});
+                }
 
 
             }

@@ -35,6 +35,7 @@ gulp.task("concat:js-app",
                 "./wwwroot/app/filters/*.js",
                 "./wwwroot/app/services/*.js",
                 "./wwwroot/app/controllers/*.js",
+                "./wwwroot/app/updateStatus/*.js",
                 "./wwwroot/app/lib/*.js"
             ])
             .pipe(debug())
@@ -105,14 +106,37 @@ gulp.task("copy:fonts", ["clean:fonts"],
            .pipe(gulp.dest("./wwwroot/fonts/"));
     });
 
+gulp.task("copy:html", [],
+    function() {
+        return gulp.src([
+                "./wwwroot/app/updateStatistics/*.html",
+            ])
+            .pipe(debug())
+            .pipe(gulp.dest("./wwwroot/views/"));
+    });
+
 gulp.task("build", ["concat:js", "copy:css", "copy:fonts"]);
 
 gulp.task("watch",
+    function() {
+        gulp.watch("wwwroot/app/**/*.css", ["copy:css"]);
+        gulp.watch("wwwroot/app/**/*.js", ["concat:js"]);
+        gulp.watch("wwwroot/app/**/*.html", ["copy:html"]);
+    });
+
+
+gulp.task("watch:js",
     function () {
         return gulp.watch("wwwroot/app/**/*.js", ["concat:js"]);
     });
 
+
 gulp.task("watch:css",
     function () {
         return gulp.watch("wwwroot/app/**/*.css", ["copy:css"]);
+    });
+
+gulp.task("watch:html",
+    function() {
+        return gulp.watch("wwwroot/app/**/*.html", ["copy:html"]);
     });

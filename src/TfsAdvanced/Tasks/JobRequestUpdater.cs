@@ -16,18 +16,20 @@ namespace TfsAdvanced.Tasks
     public class JobRequestUpdater
     {
         private readonly JobRequestRepository jobRequestRepository;
+        private readonly UpdateStatusRepository updateStatusRepository;
         private readonly PoolRepository poolRepository;
         private readonly BuildRepository buildRepository;
         private readonly RequestData requestData;
         private bool IsRunning;
 
 
-        public JobRequestUpdater(JobRequestRepository jobRequestRepository, RequestData requestData, PoolRepository poolRepository, BuildRepository buildRepository)
+        public JobRequestUpdater(JobRequestRepository jobRequestRepository, RequestData requestData, PoolRepository poolRepository, BuildRepository buildRepository, UpdateStatusRepository updateStatusRepository)
         {
             this.jobRequestRepository = jobRequestRepository;
             this.requestData = requestData;
             this.poolRepository = poolRepository;
             this.buildRepository = buildRepository;
+            this.updateStatusRepository = updateStatusRepository;
         }
 
         [AutomaticRetry(Attempts = 0)]
@@ -67,7 +69,9 @@ namespace TfsAdvanced.Tasks
                     }
                 });
 
-                jobRequestRepository.UpdateJobRequests(jobRequests.ToList());
+                var jobRequestsLists = jobRequests.ToList();
+                jobRequestRepository.UpdateJobRequests(jobRequestsLists);
+                updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = jobRequestsLists.Count, UpdaterName = nameof(JobRequestUpdater)});
 
             }
             catch (Exception ex)

@@ -14,15 +14,17 @@ namespace TfsAdvanced.Tasks
     public class BuildUpdater
     {
         private readonly BuildRepository buildRepository;
+        private readonly UpdateStatusRepository updateStatusRepository;
         private readonly ProjectRepository projectRepository;
         private readonly RequestData requestData;
         private bool IsRunning;
 
-        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository)
+        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository)
         {
             this.buildRepository = buildRepository;
             this.requestData = requestData;
             this.projectRepository = projectRepository;
+            this.updateStatusRepository = updateStatusRepository;
         }
 
         [AutomaticRetry(Attempts = 0)]
@@ -44,7 +46,9 @@ namespace TfsAdvanced.Tasks
                     }
                 });
 
-                buildRepository.Update(builds.ToList());
+                var buildLists = builds.ToList();
+                buildRepository.Update(buildLists);
+                updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = buildLists.Count, UpdaterName = nameof(BuildUpdater)});
 
 
             }

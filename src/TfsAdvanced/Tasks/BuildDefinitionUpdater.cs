@@ -15,17 +15,19 @@ namespace TfsAdvanced.Tasks
     public class BuildDefinitionUpdater
     {
         private readonly BuildDefinitionRepository buildDefinitionRepository;
+        private readonly UpdateStatusRepository updateStatusRepository;
         private readonly BuildRepository buildRepository;
         private readonly ProjectRepository projectRepository;
         private readonly RequestData requestData;
         private bool IsRunning;
 
-        public BuildDefinitionUpdater(BuildDefinitionRepository buildDefinitionRepository, RequestData requestData, ProjectRepository projectRepository, BuildRepository buildRepository)
+        public BuildDefinitionUpdater(BuildDefinitionRepository buildDefinitionRepository, RequestData requestData, ProjectRepository projectRepository, BuildRepository buildRepository, UpdateStatusRepository updateStatusRepository)
         {
             this.buildDefinitionRepository = buildDefinitionRepository;
             this.requestData = requestData;
             this.projectRepository = projectRepository;
             this.buildRepository = buildRepository;
+            this.updateStatusRepository = updateStatusRepository;
         }
 
         [AutomaticRetry(Attempts = 0)]
@@ -69,9 +71,11 @@ namespace TfsAdvanced.Tasks
                     }
                 });
 
-                buildDefinitionRepository.Update(buildDefinitions.ToList());
+                var buildDefinitionsList = buildDefinitions.ToList();
+                buildDefinitionRepository.Update(buildDefinitionsList);
+                updateStatusRepository.UpdateStatus(new UpdateStatus { LastUpdate = DateTime.Now, UpdatedRecords = buildDefinitionsList.Count, UpdaterName = nameof(BuildDefinitionUpdater)});
 
-            }
+    }
             catch (Exception ex)
             {
                 throw new InvalidOperationException("Error processing the build definition updater.", ex);
