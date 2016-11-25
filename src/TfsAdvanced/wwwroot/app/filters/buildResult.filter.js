@@ -39,7 +39,7 @@
                 break;
             case "canceled":
                 text = "Cancelled";
-                color = "yellow";
+                color = "black";
                 break;
             }
         }
