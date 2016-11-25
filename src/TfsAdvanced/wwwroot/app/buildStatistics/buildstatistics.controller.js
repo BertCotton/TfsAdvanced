@@ -1,8 +1,8 @@
 ﻿angular.module('TFS.Advanced')
     .controller('BuildStatisticsController',
     [
-        '$window', '$scope', '$filter', 'buildsService',
-        function ($window, $scope, $filter, buildsService) {
+        '$window', '$scope', '$filter', 'buildStatisticService',
+        function ($window, $scope, $filter, buildStatisticService) {
             'use strict';
 
             $scope.statistics = [];
@@ -42,11 +42,11 @@
             };
 
             $scope.updateDaysBack = function () {
-                buildsService.daysBack($scope.daysBack);
+                buildStatisticService.daysBack($scope.daysBack);
             };
             
 
-            $scope.$watchCollection(buildsService.statistics,
+            $scope.$watchCollection(buildStatisticService.statistics,
                 function (statistics) {
                     $scope.statistics = statistics;
                     var waitTimes = [];

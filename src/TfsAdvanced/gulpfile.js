@@ -25,7 +25,13 @@ gulp.task("clean:fonts",
             .pipe(clean());
     });
 
-gulp.task("clean", ["clean:js", "clean:css"]);
+gulp.task("clean:html",
+    function () {
+        return gulp.src("./wwwroot/views/*")
+            .pipe(clean());
+    });
+
+gulp.task("clean", ["clean:js", "clean:css", "clean:html"]);
 
 gulp.task("concat:js-app",
     ["clean:js"],
@@ -35,6 +41,12 @@ gulp.task("concat:js-app",
                 "./wwwroot/app/filters/*.js",
                 "./wwwroot/app/services/*.js",
                 "./wwwroot/app/controllers/*.js",
+                "./wwwroot/app/buildDefinitions/*.js",
+                "./wwwroot/app/builds/*.js",
+                "./wwwroot/app/buildStatistics/*.js",
+                "./wwwroot/app/jobRequests/*.js",
+                "./wwwroot/app/pullRequests/*.js",
+                "./wwwroot/app/updater/*.js",
                 "./wwwroot/app/updateStatus/*.js",
                 "./wwwroot/app/lib/*.js"
             ])
@@ -106,16 +118,22 @@ gulp.task("copy:fonts", ["clean:fonts"],
            .pipe(gulp.dest("./wwwroot/fonts/"));
     });
 
-gulp.task("copy:html", [],
+gulp.task("copy:html", ["clean:html"],
     function() {
         return gulp.src([
-                "./wwwroot/app/updateStatistics/*.html",
+                "./wwwroot/app/buildDefinitions/*.html",
+                "./wwwroot/app/builds/*.html",
+                "./wwwroot/app/buildStatistics/*.html",
+                "./wwwroot/app/jobRequests/*.html",
+                "./wwwroot/app/pullRequests/*.html",
+                "./wwwroot/app/updater/*.html",
+                "./wwwroot/app/updateStatus/*.html"
             ])
             .pipe(debug())
             .pipe(gulp.dest("./wwwroot/views/"));
     });
 
-gulp.task("build", ["concat:js", "copy:css", "copy:fonts"]);
+gulp.task("build", ["concat:js", "copy:css", "copy:fonts", "copy:html"]);
 
 gulp.task("watch",
     function() {
