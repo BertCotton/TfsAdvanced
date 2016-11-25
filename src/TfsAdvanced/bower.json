@@ -2,23 +2,27 @@
   "name": "tfs-advanced",
   "private": true,
   "dependencies": {
-    "bootstrap": "3.3.5",
-    "jquery": "2.1.4",
-    "jquery-validation": "1.14.0",
-    "jquery-validation-unobtrusive": "3.2.4",
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.1.1",
+    "jquery-validation": "^1.15.1",
+    "jquery-validation-unobtrusive": "^3.2.6",
     "angular-nvd3": "^1.0.9",
     "datatables.net": "^1.10.12",
-    "angular": "^1.5.8",
+    "angular": "^1.5.9",
     "angular-bootstrap": "^2.2.0",
-    "angular-cookies": "^1.5.8",
-    "angular-sanitize": "^1.5.8",
-    "angular-resource": "^1.5.8",
-    "angular-route": "^1.5.8",
-    "angular-animate": "^1.5.8",
+    "angular-cookies": "^1.5.9",
+    "angular-sanitize": "^1.5.9",
+    "angular-resource": "^1.5.9",
+    "angular-route": "^1.5.9",
+    "angular-animate": "^1.5.9",
     "angular-ui-router": "^0.3.2",
-    "angular-notification": "^1.1.0"
+    "angular-notification": "^1.1.1"
   },
   "resolutions": {
-    "angular": "1.5.8"
+    "angular": "^1.0.8",
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.1.1",
+    "jquery-validation": "^1.15.1",
+    "jquery-validation-unobtrusive": "^3.2.6"
   }
 }
