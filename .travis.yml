@@ -1,2 +1,7 @@
 language: csharp
+#sudo: required
 solution: TfsAdvanced.sln
+dotnet: 1.0.0-preview2-003121
+install:
+  - dotnet restore
+  - dotnet build src/TfsAdvanced/
