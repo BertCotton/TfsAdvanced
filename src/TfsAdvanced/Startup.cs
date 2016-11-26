@@ -39,7 +39,7 @@ namespace TfsAdvanced
 
             builder.AddApplicationInsightsSettings(developerMode: true);
 
-            Configuration = builder.Build();
+            Configuration = builder.Build()
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -79,7 +79,7 @@ namespace TfsAdvanced
 
             builder.RegisterType<AuthenticationTokenProvider>();
 
-            
+
             builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
 
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
@@ -89,7 +89,7 @@ namespace TfsAdvanced
 
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
 
-            
+
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
