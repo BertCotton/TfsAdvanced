@@ -79,7 +79,7 @@ namespace TfsAdvanced
 
             builder.RegisterType<AuthenticationTokenProvider>();
 
-            
+
             builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
 
             builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
@@ -89,7 +89,7 @@ namespace TfsAdvanced
 
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
 
-            
+
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
