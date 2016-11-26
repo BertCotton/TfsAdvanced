@@ -19,7 +19,7 @@
                 break;
             case "cancelled":
                 text = "Cancelled";
-                color = "yellow";
+                color = "black";
                 break;
         }
         return $sce.trustAs('html', "<span style='color:" + color + "'>" + text + "</span>");
