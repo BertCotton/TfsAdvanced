@@ -39,7 +39,7 @@ namespace TfsAdvanced
 
             builder.AddApplicationInsightsSettings(developerMode: true);
 
-            Configuration = builder.Build()
+            Configuration = builder.Build();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
