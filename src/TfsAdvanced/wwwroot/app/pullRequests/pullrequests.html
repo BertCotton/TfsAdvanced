@@ -33,6 +33,7 @@
                     /<a href="{{pr.repository.remoteUrl}}" target="_blank">{{pr.repository.name}}</a>
                     | [Merge Status: <span ng-bind-html="pr.mergeStatus | mergeStatus"></span>]
                 </h5>
+                <span ng-if="pr.build.status ">Build Status: <a href="{{pr.build._links.web.href}}" target="_blank"><span ng-bind-html="pr.build.status | buildStatus"></span></a></span><br/>
                 <b>Created: {{pr.creationDate | date : "MM/dd/yyyy h:mm a"}}</b>
             </div>
             <div class="col-lg-2 padding col-md-12">

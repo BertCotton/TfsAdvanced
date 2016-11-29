@@ -1,4 +1,5 @@
 ﻿using System;
+using TfsAdvanced.Data.Builds;
 using TfsAdvanced.Data.Repositories;
 
 namespace TfsAdvanced.Data.PullRequests
@@ -23,5 +24,7 @@ namespace TfsAdvanced.Data.PullRequests
         public string targetRefName { get; set; }
         public string title { get; set; }
         public string url { get; set; }
+
+        public Build build { get; set; }
     }
 }

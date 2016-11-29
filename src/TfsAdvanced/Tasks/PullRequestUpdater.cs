@@ -17,13 +17,15 @@ namespace TfsAdvanced.Tasks
         private readonly PullRequestRepository pullRequestRepository;
         private readonly RepositoryRepository repositoryRepository;
         private readonly UpdateStatusRepository updateStatusRepository;
+        private readonly BuildRepository buildRepository;
         private bool IsRunning;
 
-        public PullRequestUpdater(PullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, UpdateStatusRepository updateStatusRepository)
+        public PullRequestUpdater(PullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository)
         {
             this.requestData = requestData;
             this.repositoryRepository = repositoryRepository;
             this.updateStatusRepository = updateStatusRepository;
+            this.buildRepository = buildRepository;
             this.pullRequestRepository = pullRequestRepository;
         }
 
@@ -48,6 +50,8 @@ namespace TfsAdvanced.Tasks
                     {
                         pullRequest.repository = repository;
                         pullRequest.remoteUrl = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
+                        if(pullRequest.lastMergeCommit != null)
+                            pullRequest.build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
                         allPullRequests.Add(pullRequest);
                     });
                 });

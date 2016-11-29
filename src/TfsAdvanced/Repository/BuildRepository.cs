@@ -47,5 +47,10 @@ namespace TfsAdvanced.Repository
         {
             return this.builds.FirstOrDefault(b => b.id == buildId);
         }
+
+        public Build GetBuildBySourceVersion(string commitId)
+        {
+            return this.builds.Where(b => b.sourceVersion == commitId).OrderByDescending(b => b.id).FirstOrDefault();
+        }
     }
 }
