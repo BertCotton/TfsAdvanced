@@ -22,7 +22,8 @@
         <div ng-if="pullRequests.length == 0">No Pull Requests.</div>
 
         <div class="row striped pullRequest" ng-repeat="pr in pullRequests">
-            <div class="col-lg-4 col-md-12">
+            <div class="col-lg-4 col-md-12" style="padding:5px">
+                <b>Created: {{pr.creationDate | date : "MM/dd/yyyy h:mm a"}}</b>
                 <span class="prID" style="visibility: hidden">{{pr.pullRequestId}}</span>
                 <span class="prTitle" style="visibility: hidden">{{pr.title}}</span>
                 <h3>
@@ -33,8 +34,21 @@
                     /<a href="{{pr.repository.remoteUrl}}" target="_blank">{{pr.repository.name}}</a>
                     | [Merge Status: <span ng-bind-html="pr.mergeStatus | mergeStatus"></span>]
                 </h5>
-                <span ng-if="pr.build.status ">Build Status: <a href="{{pr.build._links.web.href}}" target="_blank"><span ng-bind-html="pr.build.status | buildStatus"></span></a></span><br/>
-                <b>Created: {{pr.creationDate | date : "MM/dd/yyyy h:mm a"}}</b>
+                <div>
+                    <span ng-if="RequiresBuilds(pr)">Build Status: 
+                        <span ng-if="!pr.build" class="glyphicon glyphicon-remove" style="color: red">No Build Queued</span>
+                        <a href="{{pr.build._links.web.href}}" target="_blank">
+                            <span ng-if="pr.build.status == 'inProgresss'" class="glyphicon glyphicon-plane" style="color: blue"> In Progress</span>
+                            <span ng-if="pr.build.status == 'notStarted'" class="glyphicon glyphicon-plane" style="color: gray"> Not Started</span>
+                            <span ng-if="pr.build.status == 'completed'" ng-switch="pr.build.result">
+                                <i ng-switch-when="succeeded" class="glyphicon glyphicon-check" style="color: green">Completed</i>
+                                <i ng-switch-when="failed" class="glyphicon glyphicon-remove" style="color: red">Failed</i>
+                                <i ng-switch-default>{{pr.build.result}}</i>
+                            </span>
+                        </a>
+                    </span><br/>
+                    <span ng-if="GetRequiredReviewerCount(pr)">Required Reviewers:<span ng-switch="HasEnoughReviewers(pr)"><i ng-switch-when="true" class="glyphicon glyphicon-check" style="color:green"></i><i ng-switch-when="false" class="glyphicon glyphicon-remove" style="color:red"></i></span> {{getReviewersCount(pr)}} of {{GetRequiredReviewerCount(pr)}}</span>   
+                </div>
             </div>
             <div class="col-lg-2 padding col-md-12">
                 <div class="media">
@@ -47,17 +61,14 @@
                 </div>
             </div>
             <div class="col-lg-6 col-md-12 padding">
-                <div class="container" ng-if="pr.reviewers">
-                    <div class="row">
-                        <div class="col-lg-6 col-md-3 col-sm-2" ng-repeat="reviewer in pr.reviewers">
-                            <div class="media">
-                                <div class="media-left"><img class="media-object" ng-src="{{reviewer.imageUrl}}" alt="User Photo" height="50" width="50"></div>
-                                <div class="media-body">
-                                    <span ng-bind-html="reviewer | voteStatus"></span>
-                                </div>
-                            </div>
+                <div ng-repeat="reviewer in pr.reviewers | filter : {isContainer: false} ">
+                    <div class="media">
+                        <div class="media-left"><img class="media-object" ng-src="{{reviewer.imageUrl}}" alt="User Photo" height="50" width="50"></div>
+                        <div class="media-body">
+                            <span ng-bind-html="reviewer | voteStatus"></span>
                         </div>
                     </div>
+                
                 </div>
             </div>
         </div>

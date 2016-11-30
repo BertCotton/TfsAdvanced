@@ -49,6 +49,43 @@
                 }
             }
 
+            $scope.GetRequiredReviewerCount = function (pullRequest) {
+                for (var index in pullRequest.repository.policyConfigurations) {
+                    if (pullRequest.repository.policyConfigurations[index].type.displayName === "Minimum number of reviewers")
+                        return pullRequest.repository.policyConfigurations[index].settings.minimumApproverCount;
+                }
+                return undefined;
+
+            }
+
+            $scope.getReviewersCount = function (pullRequest) {
+                var count = 0;
+                var createdBy = pullRequest.createdBy;
+                for (var index in pullRequest.reviewers) {
+                    var reviewer = pullRequest.reviewers[index];
+                    if (reviewer.isContainer === false && reviewer.id !== createdBy.id && reviewer.vote === 10) {
+                        count++;
+                    }
+                }
+                return count;
+            };
+
+            $scope.RequiresBuilds = function(pullRequest) {
+                for (var index in pullRequest.repository.policyConfigurations) {
+                    if (pullRequest.repository.policyConfigurations[index].type.displayName === "Build")
+                        return true;
+                }
+                return false;
+            }
+
+            $scope.HasEnoughReviewers = function (pullRequest) {
+                var requiredReviewers = $scope.GetRequiredReviewerCount(pullRequest);
+                var reviewersCount = $scope.getReviewersCount(pullRequest);
+                if(requiredReviewers)
+                    return reviewersCount >= requiredReviewers;
+                return undefined;
+            }
+
             $scope.UpdateSelectedProject = function () {
                 filterPullRequests($scope.RawPullRequests);
             };

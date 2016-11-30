@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TfsAdvanced.Data.Policy;
 using TfsAdvanced.Data.Projects;
 
 namespace TfsAdvanced.Data.Repositories
@@ -12,5 +13,6 @@ namespace TfsAdvanced.Data.Repositories
         public string remoteUrl { get; set; }
         public string url { get; set; }
         public ProjectLinks _links { get; set; }
+        public IList<PolicyConfiguration> policyConfigurations { get; set; }
     }
 }
