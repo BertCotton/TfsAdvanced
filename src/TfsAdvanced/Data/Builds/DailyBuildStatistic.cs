@@ -60,5 +60,7 @@ namespace TfsAdvanced.Data.Builds
         public double RunTimesMin => RunTimes.Min();
 
         public double RunTimesMax => RunTimes.Max();
+
+        public int RunCount => RunTimes.Count;
     }
 }

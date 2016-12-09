@@ -16,7 +16,6 @@
 
             $scope.options = {
                 chart: {
-                    reduceXTicks : true,
                     type: "boxPlotChart",
                     height: 450,
                     maxBoxWidth : 75,
@@ -66,7 +65,7 @@
                                 Q3: stat.queueTimesUpperPercentile,
                                 whisker_low: stat.queueTimeMin,
                                 whisker_high: stat.queueTimeMax,
-                                outliers: [stat.queueTimeAverage]
+                                outliers: [stat.runCount]
                             }
                         });
                     

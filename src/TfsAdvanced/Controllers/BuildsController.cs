@@ -39,6 +39,7 @@ namespace TfsAdvanced.Controllers
 
             Dictionary<DateTime, DailyBuildStatistic> dailyBuildStatistics = new Dictionary<DateTime, DailyBuildStatistic>();
 
+            
             foreach (var build in builds)
             {
                 DateTime day = build.queueTime.Date;
