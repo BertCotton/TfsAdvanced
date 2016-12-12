@@ -14,9 +14,9 @@
     "angular-sanitize": "^1.5.9",
     "angular-resource": "^1.5.9",
     "angular-route": "^1.5.9",
-    "angular-animate": "^1.5.9",
     "angular-ui-router": "^0.3.2",
-    "angular-web-notification": "^1.0.21"
+    "angular-web-notification": "^1.0.21",
+    "angular-animate": "^1.6.0"
   },
   "resolutions": {
     "angular": "^1.6.0",

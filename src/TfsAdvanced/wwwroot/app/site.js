@@ -61,7 +61,6 @@ app.controller("MainController",
 
         var watcher = $scope.$watch(healthService.LoadedStatus,
             function (loadedStatus) {
-                console.log(loadedStatus);
                 $scope.IsLoaded = loadedStatus.isLoaded;
                 $scope.LoadedPercent = (loadedStatus.loadedPercent * 100.0);
                 $scope.LoadedPercent = Math.max(1, $scope.LoadedPercent);

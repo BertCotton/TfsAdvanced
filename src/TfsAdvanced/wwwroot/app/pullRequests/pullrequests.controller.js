@@ -1,8 +1,8 @@
 ﻿angular.module('TFS.Advanced')
     .controller('PullRequestsController',
     [
-        '$scope', '$notification', '$filter', 'pullrequestsService', 'ProjectService',
-        function ($scope, $notification, $filter, pullrequestsService, ProjectService) {
+        '$scope', '$filter', 'pullrequestsService', 'ProjectService',
+        function ($scope, $filter, pullrequestsService, ProjectService) {
             'use strict';
 
             $scope.SelectedProject = "-1";
