@@ -1,8 +1,8 @@
 ﻿angular.module('TFS.Advanced')
     .controller('BuildDefinitionController',
     [
-        '$window', '$scope', '$location', '$interval', '$notification', '$filter', 'NgTableParams', 'buildDefinitionService',
-        function ($window, $scope, $location, $interval, $notification, $filter, NgTableParams, buildDefinitionService) {
+        '$window', '$scope', '$location', '$interval', '$filter', 'NgTableParams', 'buildDefinitionService',
+        function ($window, $scope, $location, $interval, $filter, NgTableParams, buildDefinitionService) {
             'use strict';
 
             $scope.IsLaunching = false;

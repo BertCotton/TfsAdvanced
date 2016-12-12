@@ -97,7 +97,7 @@ textarea {
     font-weight: bold;
 }
 
-div[ui-view] {
+div[ng-view] {
     margin-top: 51px;
 }
 

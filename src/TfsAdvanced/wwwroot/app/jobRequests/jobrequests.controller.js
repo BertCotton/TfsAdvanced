@@ -1,8 +1,8 @@
 ﻿angular.module('TFS.Advanced')
     .controller('JobRequestsController',
     [
-        '$window', '$scope', '$location', '$interval', '$notification', '$filter', 'NgTableParams', 'tasksService',
-        function ($window, $scope, $location, $interval, $notification, $filter, NgTableParams, tasksService) {
+        '$window', '$scope', '$location', '$interval', '$filter', 'NgTableParams', 'tasksService',
+        function ($window, $scope, $location, $interval, $filter, NgTableParams, tasksService) {
             'use strict';
 
             

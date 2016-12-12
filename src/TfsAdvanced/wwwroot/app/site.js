@@ -13,40 +13,26 @@ var app = angular.module('TFS.Advanced', [
     'nvd3'
 ]);
 
-app.config(function ($stateProvider, $urlRouterProvider, $routeProvider, $httpProvider, insightsProvider) {
+app.config(function ($locationProvider, $routeProvider, $httpProvider, insightsProvider) {
     'use strict';
 
-    $stateProvider.state('pullRequests', {
-        url: '/pullRequests',
-        templateUrl: 'views/pullrequests.html'
-    })
-    .state('buildDefinitions', {
-        url: '/buildDefinitions',
-        templateUrl: 'views/buildDefinitions.html'
-    })
-    .state("buildStatistics",
-    {
-        url: '/buildStatistics',
-        templateUrl: 'views/buildStatistics.html'
-    })
-    .state("updateStatus",
-    {
-        url: '/updateStatus',
-        templateUrl: 'views/updateStatus.html'
-    })
-    .state('builds', {
-        url: '/builds',
-        templateUrl: 'views/builds.html'
-    })
-    .state('jobRequests',
-        {
-            url: '/jobRequests',
-            templateUrl: 'views/jobRequests.html'
-        });
+    $locationProvider.html5Mode({
+        enabled: true,
+        requireBase: false
+    });
+
+    $routeProvider
+        .when("/pullRequests", { templateUrl: 'views/pullrequests.html' })
+        .when("/buildDefinitions", { templateUrl: 'views/buildDefinitions.html' })
+        .when("/buildStatistics", { templateUrl: 'views/buildStatistics.html' })
+        .when("/updateStatus", { templateUrl: 'views/updateStatus.html' })
+        .when("/builds", { templateUrl: 'views/builds.html' })
+        .when("/jobRequests", { templateUrl: 'views/jobRequests.html' })
+        .otherwise({ redirectTo: '/pullRequests' });
+
 
     insightsProvider.start('61137fb3-e654-4fb7-88d3-242de0edf9d6');
 
-    $urlRouterProvider.otherwise('/pullRequests');
     $httpProvider.interceptors.push("Interceptor");
 
     

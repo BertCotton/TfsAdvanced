@@ -6,7 +6,7 @@
     <title>TFS Advanced</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/css/site.min.css" />
+    <link rel="stylesheet" href="/css/site.min.css"/>
 </head>
 <body ng-controller="MainController">
 <nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
@@ -19,11 +19,11 @@
             <a class="nav-link" href="#/builds">Builds</a>
         </li>
         <li ng-class="{active : isActive('/buildDefinitions')}">
-            <a class="nav-link" href="#/buildDefinitions">Build Definitions</a>
+            <a class="nav-link" href="/buildDefinitions">Build Definitions</a>
         </li>
 
         <li ng-class="{active : isActive('/jobRequests')}">
-            <a class="nav-link" href="#/jobRequests">Build & Release Jobs</a>
+            <a class="nav-link" href="/jobRequests">Build & Release Jobs</a>
         </li>
         <li class="dropdown">
             <a class="dropdown-toggle nav-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
@@ -31,10 +31,10 @@
             </a>
             <ul class="dropdown-menu">
                 <li ng-class="{active : isActive('/buildStatistics')}">
-                    <a class="nav-link" href="#/buildStatistics">Build</a>
+                    <a class="nav-link" href="/buildStatistics">Build</a>
                 </li>
                 <li ng-class="{active : isActive('/updateStatus')}">
-                    <a class="nav-link" href="#/updateStatus">Update Statuses</a>
+                    <a class="nav-link" href="/updateStatus">Update Statuses</a>
                 </li>
             </ul>
         </li>
@@ -61,7 +61,7 @@
     </div>
 </div>
 <div ng-if="IsLoaded" >
-    <div ui-view=""></div>
+    <div ng-view></div>
     <div class="updater" ng-controller="UpdaterController"></div>
 </div>
 <script type="text/javascript">
