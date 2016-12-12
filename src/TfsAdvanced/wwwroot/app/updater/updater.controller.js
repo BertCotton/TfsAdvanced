@@ -1,6 +1,6 @@
 ﻿angular.module('TFS.Advanced').controller('UpdaterController',
-    ['$scope', '$interval', '$notification', "$filter", 'buildsService', 'pullrequestsService', 'buildDefinitionService', 'tasksService', 'updateStatusService', 'buildStatisticService',
-function ($scope, $interval, $notification, $filter, buildsService, pullrequestsService, buildDefinitionService, tasksService, updateStatusService, buildStatisticService) {
+    ['$scope', '$interval', 'webNotification', "$filter", 'buildsService', 'pullrequestsService', 'buildDefinitionService', 'tasksService', 'updateStatusService', 'buildStatisticService',
+function ($scope, $interval, webNotification, $filter, buildsService, pullrequestsService, buildDefinitionService, tasksService, updateStatusService, buildStatisticService) {
             'use strict';
 
             var isBuildsLoaded = true;
@@ -55,22 +55,22 @@ function ($scope, $interval, $notification, $filter, buildsService, pullrequests
                 });
 
             function newPrNotification(pr) {
-                $notification('New PR From  ' + pr.createdBy.displayName,
+                webNotification.showNotification('New PR From  ' + pr.createdBy.displayName,
                 {
                     body: pr.title + " | " + pr.repository.name,
                     icon: 'images/site.png',
                     focusWindowOnClick: true,
-                    delay: 10000
+                    autoClose: 10000
                 });
             }
 
             function removedPrNotification(pr) {
-                $notification('Completed PR From  ' + pr.createdBy.displayName,
+                webNotification.showNotification('Completed PR From  ' + pr.createdBy.displayName,
                 {
                     body: pr.title + " | " + pr.repository.name,
                     icon: 'images/site.png',
                     focusWindowOnClick: true,
-                    delay: 10000
+                    autoClose: 10000
                 });
             }
 
@@ -106,12 +106,12 @@ function ($scope, $interval, $notification, $filter, buildsService, pullrequests
 
             function newFailedBuildNotification(build) {
                 console.log(build);
-                $notification('Failed Build',
+                webNotification.showNotification('Failed Build',
                 {
                     body: "(" + build.project.name + ") " + build.definition.name,
                     icon: 'images/site.png',
                     focusWindowOnClick: true,
-                    delay: 10000
+                    autoClose: 10000
                 });
             }
 

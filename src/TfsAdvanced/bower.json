@@ -16,10 +16,10 @@
     "angular-route": "^1.5.9",
     "angular-animate": "^1.5.9",
     "angular-ui-router": "^0.3.2",
-    "angular-notification": "^1.1.1"
+    "angular-web-notification": "^1.0.21"
   },
   "resolutions": {
-    "angular": "^1.0.8",
+    "angular": "^1.6.0",
     "bootstrap": "^3.3.7",
     "jquery": "^3.1.1",
     "jquery-validation": "^1.15.1",

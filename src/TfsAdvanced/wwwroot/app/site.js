@@ -7,7 +7,7 @@ var app = angular.module('TFS.Advanced', [
     'ngRoute',
     'ui.router',
     'ui.bootstrap',
-    'notification',
+    'angular-web-notification',
     'ngTable',
     "angular-appinsights",
     'nvd3'
