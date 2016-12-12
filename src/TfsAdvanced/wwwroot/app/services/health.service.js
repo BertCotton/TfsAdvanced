@@ -1,9 +1,11 @@
 ﻿/*globals angular */
-angular.module('TFS.Advanced').service('healthService', ['$http', '$q', '$timeout', function ($http, $q, $timeout) {
+angular.module('TFS.Advanced').service('healthService', ['$resource', '$q', '$timeout', function ($resource, $q, $timeout) {
     'use strict';
 
     var loadedStatus = {};
     var isLoading = false;
+
+    var resource = $resource("/health/LoadedStatus");
 
     this.LoadedStatus = function () {
         if (!isLoading)
@@ -13,11 +15,10 @@ angular.module('TFS.Advanced').service('healthService', ['$http', '$q', '$timeou
 
     function Check() {
         isLoading = true;
-        return $http.get("/health/LoadedStatus")
-            .then(function (response) {
-                loadedStatus = response.data;
+        return resource.get(function (data) {
+                loadedStatus = data;
                 if(!response.data.isLoaded)
                     $timeout(Check, 1000);
-            });
+        }, function (error) { console.log(error); }).$promise;
     }
 }]);

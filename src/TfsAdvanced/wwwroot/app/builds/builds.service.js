@@ -1,11 +1,13 @@
 ﻿/*globals angular */
-angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeout', function ($http, $q, $timeout) {
+angular.module('TFS.Advanced').service('buildsService', ['$resource', '$q', '$timeout', function ($resource, $q, $timeout) {
     'use strict';
 
     var cached = [];
     var isLoaded = false;
     var isRunning = false;
     var isCancelled = false;
+
+    var resource = $resource("data/Builds");
     
     this.builds = function() {
         return cached;
@@ -17,14 +19,13 @@ angular.module('TFS.Advanced').service('buildsService', ['$http', '$q', '$timeou
 
     function builds() {
         isRunning = true;
-        return $http.get('data/Builds', { cache: false })
-            .then(function(response) {
-                cached = response.data || [];
+        return resource.query(function (data) {
+                cached = data || [];
                 isLoaded = true;
                 if(!isCancelled)
                     $timeout(builds, 10000);
-                return response;
-            });
+                return data;
+        }, function (error) { console.log(error); }).$promise;
     }
 
     this.start = function () {

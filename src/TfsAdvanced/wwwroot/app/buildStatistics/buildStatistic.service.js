@@ -1,5 +1,5 @@
 ﻿/*globals angular */
-angular.module('TFS.Advanced').service('buildStatisticService', ['$http', '$q', '$timeout', function ($http, $q, $timeout) {
+angular.module('TFS.Advanced').service('buildStatisticService', ['$resource', '$q', '$timeout', function ($resource, $q, $timeout) {
     'use strict';
 
     var cachedStatistics = [];
@@ -8,6 +8,8 @@ angular.module('TFS.Advanced').service('buildStatisticService', ['$http', '$q', 
     var isCancelled = false;
     var daysBackStatistics = 7;
     var statisticsTimeout = undefined;
+
+    var resource = $resource("/data/builds/Statistics?NumberOfDaysBack=:daysBackStatistics");
 
     this.statistics = function() {
         return cachedStatistics;
@@ -26,12 +28,11 @@ angular.module('TFS.Advanced').service('buildStatisticService', ['$http', '$q', 
     };
 
     function getStatistics() {
-        return $http.get("data/Builds/Statistics?NumberOfDaysBack=" + daysBackStatistics)
-            .then(function (response) {
-                cachedStatistics = response.data;
+        return resource.query({ daysBackStatistics: daysBackStatistics }, function (data) {
+                cachedStatistics = data;
                 statisticsTimeout = $timeout(getStatistics, 10000);
-                return response;
-            });
+                return data;
+        }, function (error) { console.log(error); }).$promise;
     }
 
     this.start = function () {

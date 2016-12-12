@@ -1,10 +1,12 @@
 ﻿/*globals angular */
-angular.module('TFS.Advanced').service('buildDefinitionService', ['$http', '$q', '$timeout', function ($http, $q, $timeout) {
+angular.module('TFS.Advanced').service('buildDefinitionService', ['$resource', '$q', '$timeout', function ($resource, $q, $timeout) {
         'use strict';
         var cached = [];
         var isLoaded = false;
         var isRunning = false;
         var isCancelled = false;
+
+        var resource = $resource("data/BuildDefinitions");
 
         this.buildDefintions = function () {
             return cached;
@@ -14,22 +16,21 @@ angular.module('TFS.Advanced').service('buildDefinitionService', ['$http', '$q',
             return isLoaded;
         };
 
-        this.startBuild = function(data) {
-            return $http.post('data/BuildDefinitions', data).then(function(response) {
-                    return response.data;
-                });
+        this.startBuild = function() {
+            return resource.post(function (data) {
+                    return data;
+            }).$promise;
         };
 
         function buildDefintions() {
             isRunning = true;
-            return $http.get('data/BuildDefinitions', { cache: false })
-                .then(function(response) {
-                    cached = response.data || [];
+            return resource.query(function (data) {
+                    cached = data || [];
                     isLoaded = true;
                     if (!isCancelled)
                         $timeout(buildDefintions, 10000);
-                    return response;
-                });
+                    return data;
+            }, function (error) { console.log(error); }).$promise;
         }
 
         this.start = function() {

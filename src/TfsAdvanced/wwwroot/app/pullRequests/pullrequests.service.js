@@ -1,12 +1,14 @@
 ﻿/*globals angular */
-angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$timeout',
-    function ($http, $q, $timeout) {
+angular.module('TFS.Advanced').service('pullrequestsService', ['$resource', '$q', '$timeout',
+    function ($resource, $q, $timeout) {
         'use strict';
 
         var cached = [];
         var isLoaded = false;
         var isRunning = false;
         var isCancelled = false;
+
+        var resource = $resource('data/PullRequests');
 
         this.pullRequests = function() {
             return cached;
@@ -18,18 +20,15 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
 
         function requests() {
             isRunning = true;
-            return $http.get('data/PullRequests', { cache: false })
-                .then(function(response) {
-                    cached = response.data || [];
+            return resource.query(function (data) {
+                    cached = data || [];
                     isLoaded = true;
                     if(!isCancelled)
                         $timeout(requests, 3000);
                     else {
                         isRunning = false;
                     };
-                }).error(function(error, status) {
-                    isRunning = false;
-                });
+            }, function (error) { console.log(error); }).$promise;
         }
 
 

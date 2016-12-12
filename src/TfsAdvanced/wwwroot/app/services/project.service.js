@@ -1,7 +1,11 @@
 ﻿/*globals angular */
-angular.module('TFS.Advanced').service('ProjectService', ['$http', function ($http) {
+angular.module('TFS.Advanced').service('projectService', ['$resource', function ($resource) {
     'use strict';
-    return {
-        GET: $http.get('data/Projects')
-    };
+
+    var resource = $resource("data/Projects");
+
+    this.getProject = function() {
+        return resource.query(function (data) { return data; }, function (error) { console.log(error); }).$promise;
+    }
+        
 }]);

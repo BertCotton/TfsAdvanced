@@ -1,8 +1,8 @@
 ﻿angular.module('TFS.Advanced')
     .controller('PullRequestsController',
     [
-        '$scope', '$filter', 'pullrequestsService', 'ProjectService',
-        function ($scope, $filter, pullrequestsService, ProjectService) {
+        '$scope', '$filter', 'pullrequestsService', 'projectService',
+        function ($scope, $filter, pullrequestsService, projectService) {
             'use strict';
 
             $scope.SelectedProject = "-1";
@@ -32,7 +32,7 @@
                 filterPullRequests(data);
             }
 
-            ProjectService.GET.success(function (data) {
+            projectService.getProject().then(function (data) {
                 $scope.projects = [{ "id": "-1", "name": "[Teams Filter]" }].concat(data);
             });
 
