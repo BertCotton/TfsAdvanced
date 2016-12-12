@@ -19,8 +19,8 @@ angular.module('TFS.Advanced').service('pullrequestsService', ['$http', '$q', '$
         function requests() {
             isRunning = true;
             return $http.get('data/PullRequests', { cache: false })
-                .success(function(data) {
-                    cached = data || [];
+                .then(function(response) {
+                    cached = response.data || [];
                     isLoaded = true;
                     if(!isCancelled)
                         $timeout(requests, 3000);
