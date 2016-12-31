@@ -18,9 +18,13 @@ namespace TfsAdvanced.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetJobRequests()
+        public IActionResult GetJobRequests([FromQuery] DateTime? fromtDate, [FromQuery] DateTime? toDate )
         {
-            return Ok(jobRequestRepository.GetJobRequests());
+            if (!toDate.HasValue)
+                toDate = DateTime.Now;
+            if (!fromtDate.HasValue)
+                fromtDate = toDate.Value.AddDays(-2);
+            return Ok(jobRequestRepository.GetJobRequests(fromtDate.Value, toDate.Value));
         }
     }
 }

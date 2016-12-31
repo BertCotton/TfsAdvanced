@@ -16,8 +16,15 @@ namespace TfsAdvanced.Repository
             this.jobRequests = new ConcurrentBag<JobRequest>();
         }
 
-        public IList<JobRequest> GetJobRequests()
+        public IList<JobRequest> GetJobRequests(DateTime? fromDate = null, DateTime? toDate = null)
         {
+            if(fromDate.HasValue && toDate.HasValue)
+              return jobRequests.Where(x => x.queueTime >= fromDate.Value && x.queueTime <= toDate.Value).ToList();
+            if (fromDate.HasValue)
+                return jobRequests.Where(x => x.queueTime >= fromDate.Value).ToList();
+            if(toDate.HasValue)
+                return jobRequests.Where(x => x.queueTime <= toDate.Value).ToList();
+
             return jobRequests.ToList();
         }
 

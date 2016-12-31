@@ -52,9 +52,9 @@
                     var waitTimeLabels = [];
 
                     $scope.maxWaitTime = 0;
-                    for(var index in statistics)
-                    {
+                    for (var index = 0; index < statistics.length; index++) {
                         var stat = statistics[index];
+                        console.log(stat);
                         $scope.maxWaitTime = Math.max($scope.maxWaitTime, stat.queueTimeMax);
                         $scope.maxRunTime = Math.max($scope.maxRunTime, stat.runTimeMax);
                         waitTimes.push({
@@ -74,6 +74,7 @@
                     $scope.options.chart.yDomain = [0, $scope.maxWaitTime];
                     $scope.data = waitTimes;
                     $scope.waitTimeLabels = waitTimeLabels;
+
                 });
 
             
