@@ -26,8 +26,7 @@ app.config(function ($locationProvider, $routeProvider, $httpProvider, insightsP
         .when("/buildDefinitions", { templateUrl: 'views/buildDefinitions.html' })
         .when("/buildStatistics", { templateUrl: 'views/buildStatistics.html' })
         .when("/updateStatus", { templateUrl: 'views/updateStatus.html' })
-        .when("/jobRequests", { templateUrl: 'views/jobRequests.html' })
-        .otherwise({ redirectTo: '/pullRequests' });
+        .when("/jobRequests", { templateUrl: 'views/jobRequests.html' });
 
 
     insightsProvider.start('61137fb3-e654-4fb7-88d3-242de0edf9d6');
