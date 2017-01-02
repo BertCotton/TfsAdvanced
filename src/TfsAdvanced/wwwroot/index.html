@@ -1,26 +1,32 @@
 ﻿<!doctype html>
 <meta charset="utf-8">
-<html data-ng-app="TFS.Advanced">
+<html>
 <head>
     <meta charset="utf-8">
     <title>TFS Advanced</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="/css/site.min.css"/>
+    <link rel="stylesheet" href="http://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
+    <style type="text/css">
+        .nav li {
+            cursor: pointer
+        }
+    </style>
 </head>
 <body ng-controller="MainController">
 <nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
     <span class="navbar-brand nav-link">TFS Advanced</span>
-    <ul class="nav navbar-nav ng-cloak" ng-show="IsLoaded">
-        <li ng-class="{active : isActive('/pullRequests')}">
-            <a class="nav-link" href="/pullRequests">Pull Requests</a>
+    <ul class="nav navbar-nav" style="display: none" >
+        <li>
+            <a id="pullRequestLink" class="nav-link" onclick="navigateTo(this, '/views/pullRequests.html')">Pull Requests</a>
         </li>
-       <li ng-class="{active : isActive('/buildDefinitions')}">
-            <a class="nav-link" href="/buildDefinitions">Build Definitions</a>
+        <li>
+            <a class="nav-link" onclick="navigateTo(this, '/views/buildDefinitions.html')">Build Definitions</a>
         </li>
 
-        <li ng-class="{active : isActive('/jobRequests')}">
-            <a class="nav-link" href="/jobRequests">Build & Release Jobs</a>
+        <li>
+            <a class="nav-link" onclick="navigateTo(this, '/views/jobRequests.html')">Build & Release Jobs</a>
         </li>
         <li class="dropdown">
             <a class="dropdown-toggle nav-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
@@ -28,16 +34,16 @@
             </a>
             <ul class="dropdown-menu">
                 <li ng-class="{active : isActive('/buildStatistics')}">
-                    <a class="nav-link" href="/buildStatistics">Build</a>
+                    <a class="nav-link" onclick="navigateTo(this, '/views/buildStatistics.html')">Build</a>
                 </li>
                 <li ng-class="{active : isActive('/updateStatus')}">
-                    <a class="nav-link" href="/updateStatus">Update Statuses</a>
+                    <a class="nav-link" onclick="navigateTo(this, '/views/updateStatus.html')">Update Statuses</a>
                 </li>
             </ul>
         </li>
     </ul>
 </nav>
-<div ng-if="!IsLoaded" style="margin-top: 100px">
+<div style="margin-top: 52px" id="mainPage">
     <div class="container">
         <div class="panel panel-default">
             <div class="panel-heading">
@@ -46,9 +52,9 @@
             <div class="panel-body">
                 <div class="progress">
                     <span class="progress-value" style="color:black">
-                        Please wait while the app is finished loading. ({{LoadedPercent | number : 0}}%)
+                        Please wait while the app is finished loading. (<span id="loadPercent">0</span>%)
                     </span>
-                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" ng-style="{ 'width' : LoadedPercent + '%' }">
+                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" >
 
                     </div>
                 </div>
@@ -87,5 +93,77 @@
     window.appInsights = appInsights;
 </script>
 <script src="/js/app.min.js"></script>
+<script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
+<script type="text/javascript" src="http://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-dateFormat/1.0/jquery.dateFormat.min.js" ></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
+
+<script>
+    function navigateTo(caller, url) {
+        $("li.active").removeClass("active");
+        $("#mainPage").load(url);
+        $(caller).parent().addClass("active");
+    }
+
+
+    function checkStatus() {
+        $.get("/health/LoadedStatus",
+            function (data) {
+                var isLoaded = data.isLoaded;
+                var loadedPercent = (data.loadedPercent * 100.0);
+                if (loadedPercent > 100)
+                    loadedPercent = 100;
+            
+                $("#loadPercent").html(loadedPercent);
+                $(".progress-bar").width(loadedPercent + "%");
+
+                if (!isLoaded)
+                    window.setTimeout(checkStatus, 5000);
+                else {
+                    $("#pullRequestLink").click();
+                    $("ul.nav").show();
+                }
+            });
+    }
+
+    var latestPullRequestId = 0;
+    function newPRCheck() {
+        $.get("/data/PullRequests/newCheck/" + latestPullRequestId,
+            function (data) {
+                
+                if (data == null)
+                    return;
+                var skipNotification = latestPullRequestId == 0;
+                
+                for (var i = 0; i < data.length; i++) {
+                    var pullRequest = data[i];
+                    latestPullRequestId = Math.max(latestPullRequestId, pullRequest.id);
+                    if (skipNotification)
+                        continue;
+
+                    var notification = new Notification('New Pull Request from ' + pullRequest.author,
+                    {
+                        icon: '/images/site.png',
+                        body: pullRequest.repository + " | " + pullRequest.title
+                    });
+                }
+
+                window.setTimeout(newPRCheck, 1000);
+            });
+    }
+
+    $(document)
+        .ready(function () {
+
+            if (Notification.permission !== "granted")
+                Notification.requestPermission();
+            else {
+                newPRCheck();
+            }
+            checkStatus();
+        });
+</script>
 </body>
 </html>

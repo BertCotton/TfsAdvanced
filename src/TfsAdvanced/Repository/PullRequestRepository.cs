@@ -25,6 +25,12 @@ namespace TfsAdvanced.Repository
             return pullRequests.ToList();
         }
 
+        public IList<PullRequest> GetPullRequestsAfter(int id)
+        {
+
+            return pullRequests.Where(x => x.pullRequestId > id).ToList();
+        }
+
         public void UpdatePullRequests(IList<PullRequest> updatedPullRequests)
         {
             this.pullRequests = new ConcurrentBag<PullRequest>(updatedPullRequests);

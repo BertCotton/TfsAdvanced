@@ -25,6 +25,7 @@ namespace TfsAdvanced.Data.JobRequests
         public BuildDefinition definition { get; set; }
         public Build owner { get; set; }
         public BuildResult result { get; set; }
+        public JobRequestStatus status { get; set; }
 
     }
 }

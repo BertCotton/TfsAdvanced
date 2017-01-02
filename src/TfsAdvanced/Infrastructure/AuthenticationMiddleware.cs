@@ -26,7 +26,7 @@ namespace TfsAdvanced.Infrastructure
         {
             var path = context.Request.GetUri().LocalPath;
 
-            if (path.EndsWith("/data/Login"))
+            if (path.Contains("/data/Login"))
             {
                 await _next.Invoke(context);
                 return;

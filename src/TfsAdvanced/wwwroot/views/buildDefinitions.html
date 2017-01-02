@@ -1,0 +1,170 @@
+<div class="container-fluid" >
+    <div class="row">
+        <div class="col-lg-3">
+            <button onClick="toggle(true)" type="button" class="btn btn-default" >Select All</button>
+            <button onClick="toggle(false)" type="button" class="btn btn-default">Unselect All</button>
+        </div>
+        <div class="col-lg-1">
+            <button onClick="queueDefinitions()" class="btn btn-success" id="launch">Launch Selected</button>
+        </div>
+    </div>
+    <div class="row" >
+        
+        <table class="table table-condensed" id="buildsTable" show-filter="true">
+            <thead>
+            <tr>
+                <th sortable="false"></th>
+                <th>Project Name</th>
+                <th>Folder</th>
+                <th>Definition Name</th>
+                <th>Default Branch</th>
+                <th>Latest Build Status</th>
+                <th>Average Run Time</th>
+            </tr>
+            </thead>
+            <tbody id="buildsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+
+    $(document)
+        .ready(function() {
+            fetchData();
+        });
+
+    function toggle(select) {
+        $("input[type='checkbox']")
+            .each(function () {
+                var checkBox = $(this);
+                if (checkBox.is(':visible')) {
+                    if (select)
+                        checkBox.prop("checked", true);
+                    else
+                        checkBox.prop("checked", false);
+                } else {
+                    checkBox.prop("checked", false);
+                }
+                    
+            });
+
+    }
+
+    function queueDefinitions() {
+        $("input[type='checkbox']:checked")
+            .each(function () {
+                var checkBox = $(this);
+                var buildDefinitionId = checkBox.val();
+                checkBox.prop("checked", false);
+                $("td", checkBox.closest("tr")).addClass("launching");
+                $.post("data/BuildDefinitions/" + buildDefinitionId, function (data) {
+                    console.log("Launched: ", data);
+                    var buildDefinitionId = data.definition.id;
+                    var checkBox = $("#checkbox-" + buildDefinitionId);
+                    $("td", checkBox.closest("tr")).removeClass("launching");
+                    $("td.BuildStatus", checkBox.closest("tr")).html("Launched");
+                });
+            });
+    }
+
+    var dataTable = undefined;
+
+    function fetchData() {
+        $.get("/data/BuildDefinitions",
+            function (data) {
+                var pageNumber = 0;
+                if (dataTable !== undefined && dataTable.page.info() !== undefined)
+                    pageNumber = dataTable.page.info().page;
+
+                $("#buildsTableBody").html($("#buildDefinitionTemplate").tmpl(data));
+                dataTable = $("#buildsTable").DataTable();
+                dataTable.order([3, 'asc']).draw();
+                dataTable.page(pageNumber).draw('page');
+
+                formatPage();
+                for (var i = 0; i < data; i++) {
+                    var buildDefinition = data[i];
+                    var ctx = document.getElementById("chart-" + buildDefinition.id);
+                    var chartData = [];
+                    for (var j = 0; j < buildDefinition.latestBuilds; j++) {
+                        var build = buildDefinition.latestBuilds[j];
+                        if (build.finishTime)
+                            data.push(build.finishTime - build.startTime);
+                    }
+                    console.log(data);
+                    var chart = new Chart(ctx,
+                    {
+                        type: 'bar',
+                        data: {
+                            datasets: [
+                                {
+                                    data: chartData
+                                }
+                            ]
+                        }
+                    });
+                }
+            });
+        
+    }
+</script>
+
+<script id="buildDefinitionTemplate" type="text/x-jQuery-tmpl">
+    <tr>
+        <td>
+            <input type="checkbox" name="definitionIds" value="${id}" id="checkbox-${id}" />
+        </td>
+        <td>
+            ${project.name}
+        </td>
+        <td>
+            ${path}
+        </td>
+        <td>
+            ${name}
+        </td>
+        <td>
+            ${defaultBranch}
+        </td>
+        <td class="BuildStatus">
+            {{if latestBuild}}
+            {{tmpl(latestBuild) "#buildStatusTemplate"}}
+            {{else}}
+            No successful build
+            {{/if}}
+        </td>
+        <td title="'Average Run Time'" style="padding: 1px;vertical-align:bottom">
+            <canvas id="chart-${project.id}" width="130" height="20">
+
+            </canvas>
+        </td>
+    </tr>
+</script>
+
+<script id="buildGraphTemplate" type="text/x-jQuery-tmpl">
+    <a href="${build._links.web.href}" target="_blank">
+        <g ng:attr:class="bar ${build.result}">
+            <rect width="12" ng:attr:height="{{getHeight(latestBuilds, build)}}" ng:attr:x="{{$index * 13}}" ng:attr:y="{{20 - getHeight(latestBuilds, build)}}"></rect>
+        </g>
+    </a>
+</script>
+
+<script id="buildStatusTemplate" type="text/x-JQuery-tmpl">
+    {{if status == 'completed'}}
+    {{tmpl(status) "#buildStatusTemplate"}}
+    {{else status == 'inProgress'}}
+    <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>
+    {{else}}
+    <span style="color:orangered"><i class="glyphicon glyphicon-remove"></i> ${build}</span>
+    {{/if}}
+</script>
+
+<script id="buildResultTemplate" type="text/x-JQuery-tmpl">
+    {{if result == 'succeeded'}}
+    <span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>
+    {{else result == 'failed'}}
+    <span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>
+    {{else}}
+    <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${result}</span>
+    {{/if}}
+</script>

@@ -25,12 +25,6 @@ gulp.task("clean:fonts",
             .pipe(clean());
     });
 
-gulp.task("clean:html",
-    function () {
-        return gulp.src("./wwwroot/views/*")
-            .pipe(clean());
-    });
-
 gulp.task("clean", ["clean:js", "clean:css", "clean:html"]);
 
 gulp.task("concat:js-app",
@@ -70,24 +64,7 @@ gulp.task("concat:js",
         return gulp.src([
                 "./bower_components/jquery/dist/jquery.min.js",
                 "./bower_components/bootstrap/dist/js/bootstrap.min.js",
-                "./bower_components/angular/angular.js",
-                "./bower_components/angular-bootstrap/ui-bootstrap.min.js",
-                "./bower_components/angular-cookies/angular-cookies.min.js",
-                "./bower_components/angular-sanitize/angular-sanitize.min.js",
-                "./bower_components/angular-resource/angular-resource.min.js",
-                "./bower_components/angular-route/angular-route.min.js",
-                "./bower_components/angular-animate/angular-animate.min.js",
-                "./bower_components/angular-ui-router/release/angular-ui-router.min.js",
-                "./bower_components/angular-datatables/dist/angular-datatables.min.js",
-                "./bower_components/angular-web-notification/angular-web-notification.js",
-                "./bower_components/angular-route/angular-route.min.js",
-                "./bower_components/d3/d3.min.js",
-                "./bower_components/nvd3/build/nv.d3.min.js",
-                "./bower_components/angular-nvd3/dist/angular-nvd3.min.js",
-                "./bower_components/angular-animate/angular-animate.min.js",
-                "./wwwroot/app/lib/angular-appinsights.min.js",
-                "./node_modules/ng-table/bundles/ng-table.min.js",
-                "./wwwroot/js/app-only.js"
+                "./bower_components/d3/d3.min.js"
         ])
             .pipe(debug())
             .pipe(concat("./wwwroot/js/app.min.js"))
@@ -119,22 +96,8 @@ gulp.task("copy:fonts", ["clean:fonts"],
            .pipe(gulp.dest("./wwwroot/fonts/"));
     });
 
-gulp.task("copy:html", ["clean:html"],
-    function() {
-        return gulp.src([
-                "./wwwroot/app/buildDefinitions/*.html",
-                "./wwwroot/app/builds/*.html",
-                "./wwwroot/app/buildStatistics/*.html",
-                "./wwwroot/app/jobRequests/*.html",
-                "./wwwroot/app/pullRequests/*.html",
-                "./wwwroot/app/updater/*.html",
-                "./wwwroot/app/updateStatus/*.html"
-            ])
-            .pipe(debug())
-            .pipe(gulp.dest("./wwwroot/views/"));
-    });
 
-gulp.task("build", ["concat:js", "copy:css", "copy:fonts", "copy:html"]);
+gulp.task("build", ["concat:js", "copy:css", "copy:fonts"]);
 
 gulp.task("watch",
     function() {

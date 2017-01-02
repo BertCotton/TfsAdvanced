@@ -26,5 +26,13 @@ namespace TfsAdvanced.Data.PullRequests
         public string url { get; set; }
 
         public Build build { get; set; }
+
+        public int requiredReviewers { get; set; }
+
+        public int acceptedReviewers { get; set; }
+
+        public bool hasEnoughReviewers => acceptedReviewers >= requiredReviewers;
+        
+
     }
 }

@@ -1,0 +1,82 @@
+<div class="container-fluid" ng-controller="JobRequestsController">
+    <div class="row">
+        <table class="table table-condensed" id="jobRequestsTable" show-filter="true" >
+            <thead>
+            <tr>
+                <th>Request ID</th>
+                <th>Job Type</th>
+                <th>Project Name</th>
+                <th>Result</th>
+                <th>Queued Time</th>
+                <th>Assigned Time</th>
+                <th>Started Time</th>
+                <th>Finished Time</th>
+            </tr>
+            </thead>
+            <tbody id="jobRequestsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+
+    $(document)
+        .ready(function() {
+            fetchData();
+        });
+    var dataTable = undefined;
+    function fetchData() {
+    
+        $.get("/data/Jobrequests",
+            function (data) {
+                var pageNumber = 0;
+                if (dataTable !== undefined)
+                    pageNumber = dataTable.page.info().page;
+                $("#jobRequestsTableBody").html($("#jobRequestsTemplate").tmpl(data));
+                formatPage();
+
+                dataTable = $("#jobRequestsTable").DataTable();
+                dataTable.order([0, 'desc']).draw();
+                dataTable.page(pageNumber).draw('page');
+                
+                window.setTimeout(fetchData, 2000);
+            });
+
+    }
+</script>
+<script id="jobRequestsTemplate" type="text/x-jQuery-tmpl">
+    <tr>
+        <td>
+            <a href="${owner._links.web.href}" target="_blank">${requestId}</a>
+        </td>
+        <td>
+            {{if planType == 'release'}}
+            <span class="glyphicon glyphicon-plane" style="color:blue"></span>
+            {{/if}}
+            {{if planType == 'build'}}
+            <span class="glyphicon glyphicon-gift" style="color:green"></span>
+            {{/if}}
+            ${planType}
+        </td>
+        <td >${definition.name}</td>
+        {{if status == 'succeeded'}} <td style="color:green">Succeeded</td>
+        {{else status == 'failed'}} <td style="color:red">Failed</td>
+        {{else status == 'queued'}} <td style="color:blue">Queued</td>
+        {{else status == 'assigned'}} <td style="color:blue">Assigned</td>
+        {{else status == 'started'}} <td style="color:blue">Started</td>
+        {{else status == 'failed'}} <td style="color:red">Failed</td>
+        {{else status == 'abandoned'}} <td style="color:gray">Abandoned</td>
+        {{else status == 'canceled'}} <td style="color:orange">Cancelled</td>
+        {{else}} <td style="color:pink"> ${status} </td>
+        {{/if}}
+        <td class="datetime">${queueTime}</td>
+        <td class="datetime">${assignTime}</td>
+        <td class="datetime">
+            {{if planType == 'release'}}
+            ---
+            {{else}}
+            ${startedTime}
+            {{/if}}
+        </td>
+        <td class="datetime">${finishTime}</td>
+    </tr>
+</script>

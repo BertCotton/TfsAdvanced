@@ -52,6 +52,19 @@ namespace TfsAdvanced.Tasks
                         pullRequest.remoteUrl = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
                         if(pullRequest.lastMergeCommit != null)
                             pullRequest.build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
+                        
+                        foreach (var configuration in repository.policyConfigurations)
+                        {
+                            if (configuration.type.displayName == "Minimum number of reviewers")
+                            {
+                                pullRequest.requiredReviewers = configuration.settings.minimumApproverCount;
+                            }
+                        }
+                        foreach (var reviewer in pullRequest.reviewers)
+                        {
+                            if (reviewer.vote == (int) Vote.Approved)
+                                pullRequest.acceptedReviewers++;
+                        }
                         allPullRequests.Add(pullRequest);
                     });
                 });

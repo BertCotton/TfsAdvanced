@@ -149,3 +149,7 @@ div[ng-view] {
 .bar:focus text {
   fill: black;
 }
+
+.launching {
+    background-color: lightblue;
+}
