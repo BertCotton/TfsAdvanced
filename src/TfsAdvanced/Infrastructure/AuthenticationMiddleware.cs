@@ -21,9 +21,9 @@ namespace TfsAdvanced.Infrastructure
 
         public async Task Invoke(HttpContext context)
         {
-            var path = context.Request.PathBase;
+            var path = context.Request.Path;
 
-            if (path.Value.Contains("/data/Login"))
+            if (path.Value.StartsWith("/data/Login"))
             {
                 await _next.Invoke(context);
                 return;
