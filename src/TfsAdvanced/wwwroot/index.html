@@ -109,21 +109,29 @@
                 
                 if (data == null)
                     return;
-                var skipNotification = latestPullRequestId == 0;
-                
-                for (var i = 0; i < data.length; i++) {
-                    var pullRequest = data[i];
-                    latestPullRequestId = Math.max(latestPullRequestId, pullRequest.id);
-                    if (skipNotification)
-                        continue;
+                var skipNotification = latestPullRequestId === 0;
 
-                    var notification = new Notification('New Pull Request from ' + pullRequest.author,
-                    {
-                        icon: '/images/site.png',
-                        body: pullRequest.repository + " | " + pullRequest.title
+                $.each(data,
+                    function(index, pullRequest) {
+                        latestPullRequestId = Math.max(latestPullRequestId, pullRequest.id);
+                        if (skipNotification)
+                            return;
+
+                        var notification = new Notification('New Pull Request from ' + pullRequest.author,
+                        {
+                            icon: '/images/site.png',
+                            body: pullRequest.repository + " | " + pullRequest.title
+
+                        });
+
+                        notification.onclick = function (event) {
+                            event.preventDefault();
+                            window.open(pullRequest.url, '_blank');
+                            notification.close().bind(notification);
+                        };
+
+
                     });
-                }
-
                 window.setTimeout(newPRCheck, 1000);
             });
     }

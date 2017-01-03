@@ -1,0 +1,153 @@
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Set widths on the form inputs since otherwise they're 100% wide */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+/* Carousel */
+.carousel-caption {
+    z-index: 10 !important;
+}
+
+    .carousel-caption p {
+        font-size: 20px;
+        line-height: 1.4;
+    }
+
+@media (min-width: 768px) {
+    .carousel-caption {
+        z-index: 10 !important;
+    }
+}
+
+#Loading {
+    margin-left: 50%;
+    margin-right: 50%;
+    width:100%
+}
+
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+.loader {
+ border-top: 16px solid blue;
+ border-bottom: 16px solid blue;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.striped {
+    border: 1px solid #ddd;
+}
+.striped:nth-of-type(odd) {
+    background: #e0e0e0;
+}
+
+.padding {
+    padding: 5px;
+}
+
+.buildStarted {
+    background-color: lightblue;
+}
+
+.navbar {
+    background-color: #007acc;
+}
+
+  .navbar-nav > li > a, 
+  .navbar-nav > li > a:hover,
+  .navbar-nav > li > a:focus,
+  .navbar-nav > li:focus
+   {
+    background-color: #007acc;
+    color: white;
+}
+
+.nav-link {
+    color: white;
+}
+.nav li.active {
+     background-color: #007acc;
+    font-weight: bold;
+}
+
+div[ng-view] {
+    margin-top: 51px;
+}
+
+.sub-nav {
+    background-color: #f3f3f3;
+    
+}
+.sub-nav select {
+    background-color: #f3f3f3;
+    border: #f3f3f3;
+}
+
+.bar {
+  fill: blue; /* changes the background */
+  height: 21px;
+  transition: fill .3s ease;
+  cursor: pointer;
+  font-family: Helvetica, sans-serif;
+}
+
+.progress {
+    text-align:center;
+}
+.progress-value {
+    position:absolute;
+    right:0;
+    left:0;
+}
+
+.bar.succeeded {
+    fill: green;
+}
+
+.bar.failed {
+    fill: red;
+}
+
+.bar.partiallySucceeded {
+    fill: orange;
+}
+
+.bar.canceled {
+    fill: gray;
+}
+
+.bar text {
+  color: black;
+    fill: black;
+}
+
+.bar .textIndicator,
+.bar:hover,
+.bar:focus {
+  fill: black;
+}
+.bar:hover text,
+.bar:focus text {
+  fill: black;
+}
+
+.launching {
+    background-color: lightblue;
+}
