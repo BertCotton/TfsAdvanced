@@ -21,7 +21,7 @@ namespace TfsAdvanced.Controllers
         public IActionResult GetJobRequests([FromQuery] DateTime? fromtDate, [FromQuery] DateTime? toDate )
         {
             if (!toDate.HasValue)
-                toDate = DateTime.Now;
+                toDate = DateTime.Now.AddMinutes(10);
             if (!fromtDate.HasValue)
                 fromtDate = toDate.Value.AddDays(-2);
             return Ok(jobRequestRepository.GetJobRequests(fromtDate.Value, toDate.Value));

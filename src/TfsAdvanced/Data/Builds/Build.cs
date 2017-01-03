@@ -20,5 +20,6 @@ namespace TfsAdvanced.Data.Builds
         public string sourceVersion { get; set; }
         public string url { get; set; }
         public BuildLinks _links { get; set; }
+        public RequestedFor requestedFor { get; set; }
     }
 }
