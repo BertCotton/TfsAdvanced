@@ -128,13 +128,26 @@
         </td>
         <td class="BuildStatus">
             {{if latestBuild}}
-            {{tmpl(latestBuild) "#buildStatusTemplate"}}
+                {{if latestBuild.status == 'completed'}}
+                    {{if latestBuild.result == 'succeeded'}}
+                        <span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>
+                    {{else latestBuild.result == 'failed'}}
+                        <span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>
+                    {{else}}
+                        <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.result}</span>
+                    {{/if}}
+                {{else latestBuild.status == 'inProgress'}}
+                    <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>
+                {{else}}
+                    <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.status}</span>
+                {{/if}}
             {{else}}
-            No successful build
+                    <span style="color:gray"><i class="glyphicon glyphicon-remove"></i> No Build?</span>
             {{/if}}
         </td>
         <td title="'Average Run Time'" style="padding: 1px;vertical-align:bottom">
             <canvas id="chart-${project.id}" width="130" height="20">
+                
 
             </canvas>
         </td>
@@ -147,24 +160,4 @@
             <rect width="12" ng:attr:height="{{getHeight(latestBuilds, build)}}" ng:attr:x="{{$index * 13}}" ng:attr:y="{{20 - getHeight(latestBuilds, build)}}"></rect>
         </g>
     </a>
-</script>
-
-<script id="buildStatusTemplate" type="text/x-JQuery-tmpl">
-    {{if status == 'completed'}}
-    {{tmpl(status) "#buildStatusTemplate"}}
-    {{else status == 'inProgress'}}
-    <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>
-    {{else}}
-    <span style="color:orangered"><i class="glyphicon glyphicon-remove"></i> ${build}</span>
-    {{/if}}
-</script>
-
-<script id="buildResultTemplate" type="text/x-JQuery-tmpl">
-    {{if result == 'succeeded'}}
-    <span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>
-    {{else result == 'failed'}}
-    <span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>
-    {{else}}
-    <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${result}</span>
-    {{/if}}
 </script>

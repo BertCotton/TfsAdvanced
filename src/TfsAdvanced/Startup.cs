@@ -8,11 +8,9 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
-using System.Linq;
 using System.Reflection;
 using Hangfire;
 using Hangfire.MemoryStorage;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using TfsAdvanced.Data;
@@ -36,8 +34,6 @@ namespace TfsAdvanced
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{siteName}.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
-
-            builder.AddApplicationInsightsSettings(developerMode: true);
 
             Configuration = builder.Build();
         }
@@ -65,7 +61,6 @@ namespace TfsAdvanced
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                 options.SerializerSettings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
             }).AddMvcOptions(options => options.Filters.Add(new ExceptionHandler()));
-            services.AddApplicationInsightsTelemetry(Configuration);
             services.AddHangfire(configuration =>
             {
                 configuration.UseStorage(new MemoryStorage());
@@ -104,8 +99,6 @@ namespace TfsAdvanced
             app.UseStaticFiles();
             app.UseSession();
             app.UseAuthenticationMiddleware();
-            app.UseApplicationInsightsExceptionTelemetry();
-            app.UseApplicationInsightsRequestTelemetry();
             app.UseMvc();
 
             app.UseHangfireDashboard("/hangfire", new DashboardOptions

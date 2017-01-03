@@ -29,7 +29,7 @@
         $.get("/data/Jobrequests",
             function (data) {
                 var pageNumber = 0;
-                if (dataTable !== undefined)
+                if (dataTable !== undefined && dataTable.page.info() !== undefined)
                     pageNumber = dataTable.page.info().page;
                 $("#jobRequestsTableBody").html($("#jobRequestsTemplate").tmpl(data));
                 formatPage();

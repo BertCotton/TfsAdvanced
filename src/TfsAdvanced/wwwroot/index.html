@@ -6,7 +6,8 @@
     <title>TFS Advanced</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/css/site.min.css"/>
+    <link rel="stylesheet" href="/css/site.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="http://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
     <style type="text/css">
         .nav li {
@@ -63,36 +64,9 @@
         </div>
     </div>
 </div>
-<div ng-if="IsLoaded" >
-    <div ng-view></div>
-    <div class="updater" ng-controller="UpdaterController"></div>
-</div>
-<script type="text/javascript">
 
-    var appInsights = window.appInsights ||
-        function(config) {
-            function s(config) {
-                t[config] = function() {
-                    var i = arguments;
-                    t.queue.push(function() { t[config].apply(t, i) })
-                }
-            }
-
-            var t = { config: config }, r = document, f = window, e = "script", o = r.createElement(e), i, u;
-            for (o.src = config.url || "//az416426.vo.msecnd.net/scripts/a/ai.0.js", r.getElementsByTagName(e)[0]
-                    .parentNode.appendChild(o), t.cookie = r
-                    .cookie, t.queue = [], i = ["Event", "Exception", "Metric", "PageView", "Trace"];
-                i.length;
-            ) s("track" + i.pop());
-            return config.disableExceptionTracking ||
-            (i = "onerror", s("_" + i), u = f[i], f[i] = function(config, r, f, e, o) {
-                var s = u && u(config, r, f, e, o);
-                return s !== !0 && t["_" + i](config, r, f, e, o), s
-            }), t
-        };
-    window.appInsights = appInsights;
-</script>
-<script src="/js/app.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="http://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
 <script type="text/javascript" src="http://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
