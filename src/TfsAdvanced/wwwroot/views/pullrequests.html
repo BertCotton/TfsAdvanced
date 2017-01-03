@@ -1,0 +1,144 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12 sub-nav">
+            <!--<select class="form-control projectSelector" ng-change="UpdateSelectedProject()">
+                <option value="-1">[All]</option>
+            </select>-->
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6 visible-lg"></div>
+        <div class="col-lg-2 visible-lg">
+            <b>Developer</b>
+        </div>
+        <div class="col-lg-4 visible-lg">
+            <b>Reviewers</b>
+        </div>
+    </div>
+    <div id="pullRequests"></div>
+</div>
+
+
+<script type="text/javascript">
+    $.get("data/Projects", function (data) {
+        var selector = $(".projectSelector");
+        $(data)
+            .each(function (index) {
+                var project = data[index];
+                selector.append("<option  value='" + project.id + "'>" + project.name + "</option>");
+            });
+    });
+
+    fetchData();
+
+    function fetchData() {
+        $.get("data/PullRequests",
+        function (data) {
+            data.sort(function (a, b) {
+                var aDate = new Date(a.creationDate).getTime();
+                var bDate = new Date(b.creationDate).getTime();
+                if (aDate === bDate)
+                    return 0;
+                if (aDate > bDate)
+                    return 1;
+                else 
+                    return -1;
+
+            });
+            $("#pullRequests").html($("#pullRequestTemplate").tmpl(data));
+            formatPage();
+            window.setTimeout(fetchData, 1000);
+        });
+    };
+    
+</script>
+<script id="pullRequestTemplate" type="text/x-jQuery-tmpl">
+    <div class="row striped">
+        <div class="col-lg-6 col-md-12" style="padding: 5px">
+            <h3>
+                <a style="color:darkslategray" href="${remoteUrl}" target="_blank">${title}</a>
+            </h3>
+            <hr/>
+            <h5>
+                <a href="${repository.project.remoteUrl}" target="_blank">${repository.project.name}</a>
+                /<a href="${repository.remoteUrl}" target="_blank">${repository.name}</a>
+                | [Merge Status: 
+                {{if mergeStatus == 'succeeded'}}
+                <span style="color:green"><i class="glyphicon glyphicon-check"></i> Succedded</span>
+                {{else mergeStatus == 'failed'}}
+                <span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>
+                {{/if}}
+            </h5>
+            <div>
+                <span >
+                Build Status:
+                    {{if build == null}}
+                        <span class="glyphicon glyphicon-remove" style="color: red">No Build Queued</span>
+                    {{/if}}
+                    {{if build != null}}
+                        <a href="${build._links.web.href}" target="_blank">
+                            {{if build.status == 'inProgress'}}
+                                In Progress
+                            {{else build.result == 'succeeded'}}
+                                <span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>
+                            {{else}}
+                            <span style="color:red"><i class="glyphicon glyphicon-remove"></i> ${build.result}</span>
+                            {{/if}}
+                      </a>
+                    {{/if}}
+            </span><br/>
+                <span >Required Reviewers:
+                {{if hasEnoughReviewers}}
+                    <i class="glyphicon glyphicon-check" style="color: green"></i>
+                {{else}}
+                    <i class="glyphicon glyphicon-remove" style="color: red"></i>
+                {{/if}}
+            </span> ${acceptedReviewers} of ${requiredReviewers}</span>
+            </div>
+        </div>
+        <div class="col-lg-2 padding col-md-12">
+            <span class="datetime-pretty">${creationDate}</span>
+            <div class="media">
+                <div class="media-left">
+                    <img class="media-object" src="${createdBy.imageUrl}" alt="User Photo" height="30" width="30">
+                </div>
+                <div class="media-body">
+                    <h5 class="media-heading">
+                        ${createdBy.displayName}
+                    </h5>
+                </div>
+            </div>
+    </div>
+    <div class="col-lg-4 col-md-12 padding reviewers">
+        {{tmpl(reviewers) "#reviewersTemplate"}}
+    </div>
+    </div>
+</script>
+
+<script id="reviewersTemplate" type="text/x-jQuery-tmpl">
+    {{if isContainer == false}}
+    <div>
+        <div class="media">
+            <div class="media-left"><img class="media-object" src="${imageUrl}" alt="User Photo" height="30" width="30">
+                
+            </div>
+            
+            <div class="media-body">
+                ${displayName} | 
+                <span>
+                    {{if vote == 10}}<span style="color: green"><b>Approved</b></span>
+                    {{else vote == 5}}
+                        <span style="color: orange"><b>Approved With Suggestions</b></span>
+                    {{else vote == 0}}
+                        <span style="color: gray"><b>No Response</b></span>
+                    {{else vote == -5}}
+                        <span style="color: orangered"><b>Waiting For Author</b></span>
+                    {{else vote == -10}}
+                        <span style="color: red"><b>Rejected</b></span>
+                    {{/if}}
+                </span>
+            </div>
+        </div>
+    </div>
+    {{/if}}
+</script>

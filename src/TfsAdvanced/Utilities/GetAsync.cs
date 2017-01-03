@@ -27,7 +27,10 @@ namespace TfsAdvanced.Utilities
                 throw new BadRequestException(url, response.StatusCode);
 
             var responseContext = await response.Content.ReadAsStringAsync();
-            var items = JsonConvert.DeserializeObject<Response<IEnumerable<T>>>(responseContext);
+            var items = JsonConvert.DeserializeObject<Response<IEnumerable<T>>>(responseContext, new JsonSerializerSettings
+            {
+                DateTimeZoneHandling = DateTimeZoneHandling.Local
+            });
             return items.value.ToList();
         }
     }

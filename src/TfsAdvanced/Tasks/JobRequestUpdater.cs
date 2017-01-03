@@ -58,12 +58,61 @@ namespace TfsAdvanced.Tasks
                                 {
                                     poolJobRequest.owner = build;
                                     poolJobRequest.startedTime = build.startTime;
+                                    if (build.status == BuildStatus.completed)
+                                    {
+                                        switch (build.result)
+                                        {
+                                            case BuildResult.succeeded:
+                                                poolJobRequest.status = JobRequestStatus.succeeded;
+                                                break;
+                                            case BuildResult.abandoned:
+                                                poolJobRequest.status = JobRequestStatus.abandoned;
+                                                break;
+                                            case BuildResult.canceled:
+                                                poolJobRequest.status = JobRequestStatus.canceled;
+                                                break;
+                                            case BuildResult.failed:
+                                            case BuildResult.partiallySucceeded:
+                                                poolJobRequest.status = JobRequestStatus.failed;
+                                                break;
+                                        }
+                                    }
+                                    else if (build.status == BuildStatus.inProgress)
+                                    {
+                                        if (build.startTime.HasValue)
+                                            poolJobRequest.status = JobRequestStatus.started;
+                                        else
+                                            poolJobRequest.status = JobRequestStatus.queued;
+                                    }
+
                                 }
+
                             }
                             else if (poolJobRequest.planType == PlanTypes.Release)
                             {
-
+                                if (poolJobRequest.finishTime.HasValue)
+                                {
+                                    switch (poolJobRequest.result)
+                                    {
+                                        case BuildResult.succeeded:
+                                            poolJobRequest.status = JobRequestStatus.succeeded;
+                                            break;
+                                        case BuildResult.abandoned:
+                                            poolJobRequest.status = JobRequestStatus.abandoned;
+                                            break;
+                                        case BuildResult.canceled:
+                                            poolJobRequest.status = JobRequestStatus.canceled;
+                                            break;
+                                        case BuildResult.failed:
+                                        case BuildResult.partiallySucceeded:
+                                            poolJobRequest.status = JobRequestStatus.failed;
+                                            break;
+                                    }
+                                }
                             }
+
+
+
                             jobRequests.Add(poolJobRequest);
                         }
                     }

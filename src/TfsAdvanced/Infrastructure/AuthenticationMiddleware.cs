@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using TfsAdvanced.Data;
 
@@ -24,15 +21,15 @@ namespace TfsAdvanced.Infrastructure
 
         public async Task Invoke(HttpContext context)
         {
-            var path = context.Request.GetUri().LocalPath;
+            var path = context.Request.PathBase;
 
-            if (path.EndsWith("/data/Login"))
+            if (path.Value.Contains("/data/Login"))
             {
                 await _next.Invoke(context);
                 return;
             }
 
-            if (context.Request.GetUri().Host.Contains("localhost"))
+            if (context.Request.Host.Value.Contains("localhost"))
             {
                 await _next.Invoke(context);
                 return;

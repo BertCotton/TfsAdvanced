@@ -21,6 +21,11 @@ namespace TfsAdvanced.Repository
             return buildDefinitions.ToList();
         }
 
+        public BuildDefinition GetBuildDefinition(int definitionId)
+        {
+            return buildDefinitions.FirstOrDefault(x => x.id == definitionId);
+        }
+
         public void Update(IList<BuildDefinition> buildDefinitions)
         {
             this.buildDefinitions = new ConcurrentBag<BuildDefinition>(buildDefinitions);

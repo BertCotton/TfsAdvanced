@@ -1,0 +1,124 @@
+<div class="container-fluid" >
+    <div class="row">
+        <div class="col-lg-3">
+            <button onClick="toggle(true)" type="button" class="btn btn-default" >Select All</button>
+            <button onClick="toggle(false)" type="button" class="btn btn-default">Unselect All</button>
+        </div>
+        <div class="col-lg-1">
+            <button onClick="queueDefinitions()" class="btn btn-success" id="launch">Launch Selected</button>
+        </div>
+    </div>
+    <div class="row" >
+        
+        <table class="table table-condensed" id="buildsTable" show-filter="true">
+            <thead>
+            <tr>
+                <th></th>
+                <th>Project Name</th>
+                <th>Folder</th>
+                <th>Definition Name</th>
+                <th>Default Branch</th>
+                <th>Latest Build Status</th>
+            </tr>
+            </thead>
+            <tbody id="buildsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+
+    $(document)
+        .ready(function() {
+            var dataTable = $("#buildsTable").DataTable({
+                "order": [3, "asc"],
+                "ajax": {
+                    "url": "/data/BuildDefinitions",
+                    "dataSrc": function (json) {
+                        for (var i = 0, ien = json.length; i < ien; i++) {
+                            var buildDefinition = json[i];
+                            json[i][0] = '<input type="checkbox" name="definitionIds" value="' + buildDefinition.id + '" id="checkbox-' + buildDefinition.id +'" />';
+                            json[i][1] = buildDefinition.project.name;
+                            json[i][2] = buildDefinition.path;
+                            json[i][3] = buildDefinition.name;
+                            json[i][4] = buildDefinition.defaultBranch;
+
+                            if (buildDefinition.latestBuild) {
+                                if (buildDefinition.latestBuild.status === 'completed') {
+                                    if(buildDefinition.latestBuild.result === 'succeeded')
+                                        json[i][5] = '<span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>';
+                                    else if (buildDefinition.latestBuild.result === 'failed')
+                                        json[i][5] = '<span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>';
+                                    else 
+                                        json[i][5] = '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.result}</span>';
+                                }
+                                else if (buildDefinition.latestBuild.status === 'inProgress')
+                                    json[i][5] = '<span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>';
+                                else
+                                    json[i][5] = '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.status}</span>';
+                            }
+                            else
+                                json[i][5] = '<span style="color:gray"><i class="glyphicon glyphicon-remove"></i> No Build?</span>';
+
+                        }
+                        return json;
+                    }
+                }
+
+            });
+            formatPage();
+        });
+
+    function toggle(select) {
+        $("input[type='checkbox']")
+            .each(function () {
+                var checkBox = $(this);
+                if (checkBox.is(':visible')) {
+                    if (select)
+                        checkBox.prop("checked", true);
+                    else
+                        checkBox.prop("checked", false);
+                } else {
+                    checkBox.prop("checked", false);
+                }
+                    
+            });
+
+    }
+
+    function queueDefinitions() {
+        $("input[type='checkbox']:checked")
+            .each(function () {
+                var checkBox = $(this);
+                var buildDefinitionId = checkBox.val();
+                checkBox.prop("checked", false);
+                $("td", checkBox.closest("tr")).addClass("launching");
+                $.post("data/BuildDefinitions/" + buildDefinitionId, function (data) {
+                    console.log("Launched: ", data);
+                    var buildDefinitionId = data.definition.id;
+                    var checkBox = $("#checkbox-" + buildDefinitionId);
+                    $("td", checkBox.closest("tr")).removeClass("launching");
+                    if (data.buildNumber === "Failed To Start Build") {
+                        $("td.BuildStatus", checkBox.closest("tr"))
+                           .html("<span style='color:red'><i class='glyphicon glyphicon-remove'></i> Failed To Launch<span>");
+                    } else {
+                        
+                        $("td.BuildStatus", checkBox.closest("tr"))
+                            .html("<a href='" +
+                                data._links.web.href +
+                                "' style='color:blue' target='_blank'><i class='glyphicon glyphicon-fire'></i> Launched<a>");
+                    }
+                });
+            });
+    }
+
+</script>
+
+<script id="buildGraphTemplate" type="text/x-jQuery-tmpl">
+    <canvas id="chart-${project.id}" width="130" height="20">
+        <a href="${build._links.web.href}" target="_blank">
+            <g ng:attr:class="bar ${build.result}">
+                <rect width="12" ng:attr:height="{{getHeight(latestBuilds, build)}}" ng:attr:x="{{$index * 13}}" ng:attr:y="{{20 - getHeight(latestBuilds, build)}}"></rect>
+            </g>
+        </a>
+    </canvas>
+</script>

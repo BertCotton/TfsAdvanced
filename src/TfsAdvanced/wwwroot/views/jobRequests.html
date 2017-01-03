@@ -1,0 +1,88 @@
+<div class="container-fluid" ng-controller="JobRequestsController">
+    <div class="row">
+        <table class="table table-condensed" id="jobRequestsTable" show-filter="true" >
+            <thead>
+            <tr>
+                <th>Request ID</th>
+                <th>Job Type</th>
+                <th>Project Name</th>
+                <th>Launched By</th>
+                <th>Result</th>
+                <th>Queued Time</th>
+                <th>Assigned Time</th>
+                <th>Started Time</th>
+                <th>Finished Time</th>
+            </tr>
+            </thead>
+            
+        </table>
+    </div>
+</div>
+<script type="text/javascript">
+    var longDateFormat = 'MM/dd/yyyy hh:mm:ss a';
+
+    $(document)
+        .ready(function() {
+            var dataTable = $("#jobRequestsTable").DataTable({
+                "order" : [0, "desc"],
+                "ajax": {
+                    "url": "/data/JobRequests",
+                    "dataSrc": function(json) {
+                        for (var i = 0, ien = json.length; i < ien; i++) {
+                            var jobRequest = json[i];
+                            json[i][0] = "<a href=" + jobRequest.owner._links.web.href + " target='_blank'>" + jobRequest.requestId + "</a>";
+                            if (jobRequest.planType === 'release')
+                                json[i][1] = '<span class="glyphicon glyphicon-plane" style="color:blue"></span>' +
+                                    jobRequest.planType;
+                            else if (jobRequest.planType === 'build')
+                                json[i][1] = '<span class="glyphicon glyphicon-gift" style="color:green"></span>' +
+                                    jobRequest.planType;
+
+                            json[i][2] = jobRequest.definition.name;
+
+                            if (jobRequest.planType === 'build' && jobRequest.owner.requestedFor)
+                                json[i][3] = jobRequest.owner.requestedFor.displayName;
+                            else
+                                json[i][3] = "---";
+
+                            if (jobRequest.status === 'succeeded')
+                                json[i][4] = '<td style="color:green">Succeeded</td>';
+                            else if (jobRequest.status === 'failed')
+                                json[i][4] = '<td style="color:red">Failed</td>';
+                            else if (jobRequest.status === 'queued')
+                                json[i][4] = '<td style="color:blue">Queued</td>';
+                            else if (jobRequest.status === 'assigned')
+                                json[i][4] = '<td style="color:blue">Assigned</td>';
+                            else if (jobRequest.status === 'started')
+                                json[i][4] = '<td style="color:blue">Started</td>';
+                            else if (jobRequest.status === 'failed')
+                                json[i][4] = '<td style="color:red">Failed</td>';
+                            else if (jobRequest.status === 'abandoned')
+                                json[i][4] = '<td style="color:gray">Abandoned</td>';
+                            else if (jobRequest.status === 'canceled')
+                                json[i][4] = '<td style="color:orange">Cancelled</td>';
+                            else
+                                json[i][4] = '<td style="color:pink"> ${status} </td>';
+
+                            json[i][5] = $.format.date(jobRequest.queueTime, longDateFormat);
+                            json[i][6] = $.format.date(jobRequest.assignTime, longDateFormat);
+                            if (jobRequest.planType == 'release')
+                                json[i][7] = "---";
+                            else
+                                json[i][7] = $.format.date(jobRequest.startedTime, longDateFormat);
+
+                            json[i][8] = $.format.date(jobRequest.finishTime, longDateFormat);
+
+                        }
+                        return json;
+                    }
+                }
+               
+            });
+
+            setInterval(function () {
+                dataTable.ajax.reload();
+            }, 2000);
+
+        });
+</script>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using TfsAdvanced.Data;
@@ -23,6 +24,20 @@ namespace TfsAdvanced.Controllers
         public IList<PullRequest> Index()
         {
             return pullRequestRepository.GetPullRequests();
+        }
+
+        [HttpGet("newcheck/{sinceId}")]
+        public IList<Dictionary<string, string>> NewPullRequestSince([FromRoute] int sinceId)
+        {
+            var pullRequests = pullRequestRepository.GetPullRequestsAfter(sinceId);
+            return pullRequests.Select(pullRequest => new Dictionary<string, string>
+            {
+                {"author", pullRequest.createdBy.displayName },
+                {"id", pullRequest.pullRequestId.ToString()},
+                {"repository", pullRequest.repository.name},
+                {"title", pullRequest.title},
+                {"url", pullRequest.remoteUrl}
+            }).ToList();
         }
     }
 }

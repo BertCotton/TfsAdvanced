@@ -29,6 +29,17 @@ namespace TfsAdvanced.Controllers
             this.buildDefinitionRepository = buildDefinitionRepository;
         }
 
+        [HttpPost("{definitionId}")]
+        public IActionResult BuildDefinitions([FromRoute] int definitionId)
+        {
+            var definition = buildDefinitionRepository.GetBuildDefinition(definitionId);
+            if (definition == null)
+                return NotFound(definitionId);
+            var build = buildDefinitionRequest.LaunchBuild(definition);
+
+            return Ok(build);
+        }
+
         [HttpPost]
         public IActionResult BuildDefinitions([FromBody] List<int> definitionIds)
         {
