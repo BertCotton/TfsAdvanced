@@ -83,13 +83,19 @@
 
 
     function checkStatus() {
-        $.get("/health/LoadedStatus",
-            function (data) {
+        $.get({
+            url : "/health/LoadedStatus",
+            statusCode: {
+                403: function (xhr) {
+                    window.location = "/data/Login";
+                }
+            },
+            sucess: function(data) {
                 var isLoaded = data.isLoaded;
                 var loadedPercent = (data.loadedPercent * 100.0);
                 if (loadedPercent > 100)
                     loadedPercent = 100;
-            
+
                 $("#loadPercent").html(loadedPercent);
                 $(".progress-bar").width(loadedPercent + "%");
 
@@ -99,7 +105,8 @@
                     $("#pullRequestLink").click();
                     $("ul.nav").show();
                 }
-            });
+            }
+        })};
     }
 
     var latestPullRequestId = 0;
