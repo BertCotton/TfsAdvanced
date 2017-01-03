@@ -81,6 +81,7 @@
         $(caller).parent().addClass("active");
     }
 
+    var isLoaded = false;
 
     function checkStatus() {
         $.get({
@@ -91,7 +92,7 @@
                 }
             },
             sucess: function(data) {
-                var isLoaded = data.isLoaded;
+                isLoaded = data.isLoaded;
                 var loadedPercent = (data.loadedPercent * 100.0);
                 if (loadedPercent > 100)
                     loadedPercent = 100;
@@ -99,17 +100,21 @@
                 $("#loadPercent").html(loadedPercent);
                 $(".progress-bar").width(loadedPercent + "%");
 
-                if (!isLoaded)
-                    window.setTimeout(checkStatus, 5000);
-                else {
+                if (isLoaded)
+                {
                     $("#pullRequestLink").click();
                     $("ul.nav").show();
+                    newPRCheck();
                 }
+                else
+                    window.setTimeout(checkStatus, 5000);
             }
         })};
     
     var latestPullRequestId = 0;
     function newPRCheck() {
+        if (!isLoaded)
+            return;
         $.get("/data/PullRequests/newCheck/" + latestPullRequestId,
             function (data) {
                 
@@ -147,9 +152,6 @@
 
             if (Notification.permission !== "granted")
                 Notification.requestPermission();
-            else {
-                newPRCheck();
-            }
             checkStatus();
         });
 </script>
