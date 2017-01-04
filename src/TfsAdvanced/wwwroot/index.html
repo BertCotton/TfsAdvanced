@@ -89,6 +89,9 @@
             statusCode: {
                 403: function (xhr) {
                     window.location = "/data/Login";
+                },
+                401: function (xhr) {
+                    window.location = "/data/Login";
                 }
             },
             success: function (data) {
