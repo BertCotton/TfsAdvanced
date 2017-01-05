@@ -46,23 +46,32 @@
                                 json[i][3] = "---";
 
                             if (jobRequest.status === 'succeeded')
-                                json[i][4] = '<td style="color:green">Succeeded</td>';
+                                json[i][4] = '<span style="color:green">Succeeded</span>';
                             else if (jobRequest.status === 'failed')
-                                json[i][4] = '<td style="color:red">Failed</td>';
-                            else if (jobRequest.status === 'queued')
-                                json[i][4] = '<td style="color:blue">Queued</td>';
+                                json[i][4] = '<span style="color:red">Failed</span>';
+                            else if (jobRequest.status === 'queued') {
+                                if(jobRequest.planType === 'release')
+                                    json[i][4] = '<span style="color:blue">Releasing</span>';
+                                else 
+                                    json[i][4] = '<span style="color:blue">Queued</span>';    
+                            }
                             else if (jobRequest.status === 'assigned')
-                                json[i][4] = '<td style="color:blue">Assigned</td>';
+                                json[i][4] = '<span style="color:blue">Assigned</span>';
                             else if (jobRequest.status === 'started')
-                                json[i][4] = '<td style="color:blue">Started</td>';
+                            {
+                                if(jobRequest.planType === 'release')
+                                    json[i][4] = '<span style="color:blue">Releasing</span>';
+                                else 
+                                    json[i][4] = '<span style="color:blue">Building</span>';    
+                            }
                             else if (jobRequest.status === 'failed')
-                                json[i][4] = '<td style="color:red">Failed</td>';
+                                json[i][4] = '<span style="color:red">Failed</span>';
                             else if (jobRequest.status === 'abandoned')
-                                json[i][4] = '<td style="color:gray">Abandoned</td>';
+                                json[i][4] = '<span style="color:gray">Abandoned</span>';
                             else if (jobRequest.status === 'canceled')
-                                json[i][4] = '<td style="color:orange">Cancelled</td>';
+                                json[i][4] = '<span style="color:orange">Cancelled</span>';
                             else
-                                json[i][4] = '<td style="color:pink"> ${status} </td>';
+                                json[i][4] = '<span style="color:pink"> ${status} </span>';
 
                             json[i][5] = $.format.date(jobRequest.queueTime, longDateFormat);
                             json[i][6] = $.format.date(jobRequest.assignTime, longDateFormat);

@@ -47,7 +47,7 @@
             });
             $("#pullRequests").html($("#pullRequestTemplate").tmpl(data));
             formatPage();
-            window.setTimeout(fetchData, 1000);
+            window.setTimeout(fetchData, 3000);
         });
     };
     
@@ -78,13 +78,13 @@
                     {{if build != null}}
                         <a href="${build._links.web.href}" target="_blank">
                             {{if build.status == 'inProgress'}}
-                                In Progress
+                                <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>
                             {{else build.result == 'succeeded'}}
                                 <span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>
                             {{else}}
-                            <span style="color:red"><i class="glyphicon glyphicon-remove"></i> ${build.result}</span>
+                                <span style="color:red"><i class="glyphicon glyphicon-remove"></i> ${build.result}</span>
                             {{/if}}
-                      </a>
+                        </a>
                     {{/if}}
             </span><br/>
                 <span >Required Reviewers:
@@ -93,7 +93,7 @@
                 {{else}}
                     <i class="glyphicon glyphicon-remove" style="color: red"></i>
                 {{/if}}
-            </span> ${acceptedReviewers} of ${requiredReviewers}</span>
+                </span> ${acceptedReviewers} of ${requiredReviewers}
             </div>
         </div>
         <div class="col-lg-2 padding col-md-12">

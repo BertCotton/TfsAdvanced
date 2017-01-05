@@ -62,6 +62,9 @@ namespace TfsAdvanced.Tasks
                         }
                         foreach (var reviewer in pullRequest.reviewers)
                         {
+                            // Container reviewers do not count
+                            if (reviewer.isContainer)
+                                continue;
                             if (reviewer.vote == (int) Vote.Approved)
                                 pullRequest.acceptedReviewers++;
                         }
