@@ -19,16 +19,21 @@
                 <th>Definition Name</th>
                 <th>Default Branch</th>
                 <th>Latest Build Status</th>
+                <th></th>
             </tr>
             </thead>
             <tbody id="buildsTableBody"></tbody>
         </table>
     </div>
 </div>
+
 <script type="text/javascript">
+    
 
     $(document)
-        .ready(function() {
+        .ready(function () {
+            
+            var charts = [];
             var dataTable = $("#buildsTable").DataTable({
                 "order": [3, "asc"],
                 "ajax": {
@@ -36,7 +41,11 @@
                     "dataSrc": function (json) {
                         for (var i = 0, ien = json.length; i < ien; i++) {
                             var buildDefinition = json[i];
-                            json[i][0] = '<input type="checkbox" name="definitionIds" value="' + buildDefinition.id + '" id="checkbox-' + buildDefinition.id +'" />';
+                            json[i][0] = '<input type="checkbox" name="definitionIds" value="' +
+                                buildDefinition.id +
+                                '" id="checkbox-' +
+                                buildDefinition.id +
+                                '" />';
                             json[i][1] = buildDefinition.project.name;
                             json[i][2] = buildDefinition.path;
                             json[i][3] = buildDefinition.name;
@@ -44,23 +53,117 @@
 
                             if (buildDefinition.latestBuild) {
                                 if (buildDefinition.latestBuild.status === 'completed') {
-                                    if(buildDefinition.latestBuild.result === 'succeeded')
-                                        json[i][5] = '<span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>';
+                                    if (buildDefinition.latestBuild.result === 'succeeded')
+                                        json[i][5] =
+                                            '<span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>';
                                     else if (buildDefinition.latestBuild.result === 'failed')
-                                        json[i][5] = '<span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>';
-                                    else 
-                                        json[i][5] = '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.result}</span>';
-                                }
-                                else if (buildDefinition.latestBuild.status === 'inProgress')
-                                    json[i][5] = '<span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>';
+                                        json[i][5] =
+                                            '<span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>';
+                                    else
+                                        json[i][5] =
+                                            '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.result}</span>';
+                                } else if (buildDefinition.latestBuild.status === 'inProgress')
+                                    json[i][5] =
+                                        '<span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>';
                                 else
-                                    json[i][5] = '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.status}</span>';
-                            }
-                            else
-                                json[i][5] = '<span style="color:gray"><i class="glyphicon glyphicon-remove"></i> No Build?</span>';
+                                    json[i][5] =
+                                        '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.status}</span>';
+                            } else
+                                json[i][5] =
+                                    '<span style="color:gray"><i class="glyphicon glyphicon-remove"></i> No Build?</span>';
 
+                            json[i][6] = '<div id="runtime_chart_' + buildDefinition.id + '" style="display:block;margin 0 auto;"></div>';
+
+
+                            if (buildDefinition.latestBuilds.length > 0) {
+                                var chartData = [];
+                                chartData.push(["Date", "RunTime", { role: 'style' }]);
+                                for (var j = 0; j < buildDefinition.latestBuilds.length; j++) {
+                                    var build = buildDefinition.latestBuilds[j];
+                                    var styleColor = "blue";
+                                    var finishTime = new Date();
+                                    if (build.finishTime) {
+                                        finishTime = new Date(build.finishTime);
+                                        switch (build.result) {
+                                        case "succeeded":
+                                            styleColor = "green";
+                                            break;
+                                        case "failed":
+                                        case "partiallySucceeded":
+                                            styleColor = "red";
+                                            break;
+                                        case "canceled":
+                                            styleColor = "orange";
+                                            break;
+                                        case "abandoned":
+                                            styleColor = "gray";
+                                            break;
+                                        }
+                                    }
+
+                                    var startTime = new Date(build.queuedTime);
+                                    if (build.startTime)
+                                        startTime = new Date(build.startTime);
+                                    var runTime = finishTime.getTime() - startTime.getTime();
+
+
+                                    chartData.push([
+                                        $.format.date(startTime, "MM/dd/yyyy"), runTime, 'color: ' + styleColor
+                                    ]);
+                                }
+
+                                charts.push({
+                                    "id": buildDefinition.id,
+                                    "data": google.visualization.arrayToDataTable(chartData)
+                                });
+                            }
                         }
+
+
                         return json;
+                    }
+                },
+                "drawCallback" : function() {
+                    for (var i = 0; i < charts.length; i++) {
+                        
+                            var chartData = charts[i];
+
+                        try {
+
+                            var div = document.getElementById('runtime_chart_' + chartData.id);
+                            if (div == undefined) {
+                                console.log("Cannot find div");
+                                continue;
+                            }
+                        var chart = new google.visualization.ColumnChart(div);
+                            chart.draw(chartData.data,
+                            {
+                                vAxis: {
+                                    gridlines: {
+                                        color: 'transparent'
+                                    },
+                                    textPosition: 'none'
+                                },
+                                hAxis: { textPosition: 'none' },
+                                legend: { position: 'none' },
+                                tooltip: {
+                                    trigger: 'none'
+                                },
+                                width: 130,
+                                height: 30,
+                                bar: {
+                                    groupWidth: "10"
+                                }
+
+
+                            });
+
+                        } catch (e) {
+                            console.log(chartData);
+                            console.log(e);
+                        }
+
+
                     }
                 }
 
