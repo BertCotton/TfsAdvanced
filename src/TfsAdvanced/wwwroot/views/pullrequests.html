@@ -6,7 +6,7 @@
             </select>-->
         </div>
     </div>
-    <div class="row">
+    <div class="row" id="pullRequestHeader">
         <div class="col-lg-6 visible-lg"></div>
         <div class="col-lg-2 visible-lg">
             <b>Developer</b>
@@ -16,10 +16,14 @@
         </div>
     </div>
     <div id="pullRequests"></div>
+    <div id="NoPullRequests" class="text-center">
+        <img src="/images/sunshine.png" width="300"/>
+        <h2>No Pull Requests</h2>
+    </div>
 </div>
 
 
-<script type="text/javascript">
+<script type="text/javascript" style="display: none">
     $.get("data/Projects", function (data) {
         var selector = $(".projectSelector");
         $(data)
@@ -34,6 +38,16 @@
     function fetchData() {
         $.get("data/PullRequests",
         function (data) {
+            if (data.length === 0) {
+                $("#pullRequestHeader").hide();
+                $("#pullRequests").hide();
+                $("#NoPullRequests").show();
+                return;
+            }
+
+            $("#pullRequestHeader").show();
+            $("#pullRequests").show();
+            $("#NoPullRequests").hide();
             data.sort(function (a, b) {
                 var aDate = new Date(a.creationDate).getTime();
                 var bDate = new Date(b.creationDate).getTime();
