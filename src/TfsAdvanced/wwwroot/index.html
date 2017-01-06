@@ -155,6 +155,9 @@
     $(document)
         .ready(function () {
 
+            $.fn.dataTable.ext.errMode = 'none';
+
+
             if (Notification.permission !== "granted")
                 Notification.requestPermission();
             checkStatus();
