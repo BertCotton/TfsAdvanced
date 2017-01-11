@@ -73,15 +73,21 @@
                             else
                                 json[i][4] = '<span style="color:pink"> ${status} </span>';
 
-                            json[i][5] = $.format.date(jobRequest.queueTime, longDateFormat);
+                            if (jobRequest.queueTime)
+                                json[i][5] = $.format.date(jobRequest.queueTime, longDateFormat);
+                            else 
+                                json[i][5] = "---";
+
                             if (jobRequest.assignTime)
                                 json[i][6] = $.format.date(jobRequest.assignTime, longDateFormat);
                             else
                                 json[i][6] = "---";
                             if (jobRequest.planType === 'release')
                                 json[i][7] = "---";
-                            else
+                            else if (jobRequest.startedTime)
                                 json[i][7] = $.format.date(jobRequest.startedTime, longDateFormat);
+                            else
+                                json[i][7] = "---";
 
                             if (jobRequest.finishTime)
                                 json[i][8] = $.format.date(jobRequest.finishTime, longDateFormat);
