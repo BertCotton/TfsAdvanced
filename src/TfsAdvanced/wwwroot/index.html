@@ -51,7 +51,7 @@
                 <h2 class="text-center">TFS Advanced is Loading</h2>
             </div>
             <div class="panel-body">
-                <div class="progress">
+                <div class="progress" style="display: none" >
                     <span class="progress-value" style="color:black">
                         Please wait while the app is finished loading. (<span id="loadPercent">0</span>%)
                     </span>
@@ -77,6 +77,19 @@
 <script>
     google.charts.load('current', { packages: ['corechart', 'bar'] });
 
+    $.ajaxSetup({
+        error: function(xhr, status, error) {
+            var statusCode = xhr.statusCode();
+            if (statusCode === 403 || statusCode === 401) {
+                console.log("Received response code " + statusCode + " from server.  Redirecting to login");
+                window.location = "/data/Login";
+                return;
+            }
+
+            console.log("Error response [" + status + "] from server.", error);
+        }
+    });
+
     function navigateTo(caller, url) {
         $("li.active").removeClass("active");
         $("#mainPage").load(url);
@@ -88,31 +101,25 @@
     function checkStatus() {
         $.get({
             url : "/health/LoadedStatus",
-            statusCode: {
-                403: function (xhr) {
-                    window.location = "/data/Login";
-                },
-                401: function (xhr) {
-                    window.location = "/data/Login";
-                }
-            },
             success: function (data) {
                 isLoaded = data.isLoaded;
-                var loadedPercent = (data.loadedPercent * 100.0);
-                if (loadedPercent > 100)
-                    loadedPercent = 100;
+                if (!isLoaded) {
+                    var loadedPercent = (data.loadedPercent * 100.0);
+                    if (loadedPercent > 100)
+                        loadedPercent = 100;
 
-                $("#loadPercent").html(loadedPercent);
-                $(".progress-bar").width(loadedPercent + "%");
-
-                if (isLoaded)
+                    $("#loadPercent").html(loadedPercent);
+                    $(".progress").show();
+                    $(".progress-bar").width(loadedPercent + "%");
+                    window.setTimeout(checkStatus, 5000);
+                }
+                else
                 {
                     $("#pullRequestLink").click();
                     $("ul.nav").show();
                     newPRCheck();
                 }
-                else
-                    window.setTimeout(checkStatus, 5000);
+                    
             }
         })};
     

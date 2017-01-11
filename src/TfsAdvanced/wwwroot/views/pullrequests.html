@@ -16,7 +16,7 @@
         </div>
     </div>
     <div id="pullRequests"></div>
-    <div id="NoPullRequests" class="text-center">
+    <div id="NoPullRequests" style="display: none" class="text-center">
         <img src="/images/sunshine.png" width="300"/>
         <h2>No Pull Requests</h2>
     </div>
@@ -24,13 +24,16 @@
 
 
 <script type="text/javascript" style="display: none">
-    $.get("data/Projects", function (data) {
-        var selector = $(".projectSelector");
-        $(data)
-            .each(function (index) {
-                var project = data[index];
-                selector.append("<option  value='" + project.id + "'>" + project.name + "</option>");
-            });
+    $.get({
+        url: "data/Projects",
+        success: function(data) {
+            var selector = $(".projectSelector");
+            $(data)
+                .each(function(index) {
+                    var project = data[index];
+                    selector.append("<option  value='" + project.id + "'>" + project.name + "</option>");
+                });
+        }
     });
 
     fetchData();
