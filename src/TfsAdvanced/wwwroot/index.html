@@ -79,7 +79,7 @@
 
     $.ajaxSetup({
         error: function(xhr, status, error) {
-            var statusCode = xhr.statusCode();
+            var statusCode = xhr.status;
             if (statusCode === 403 || statusCode === 401) {
                 console.log("Received response code " + statusCode + " from server.  Redirecting to login");
                 window.location = "/data/Login";
