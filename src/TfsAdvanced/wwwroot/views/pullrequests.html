@@ -98,14 +98,18 @@
                     {{/if}}
                     {{if build != null}}
                         <a href="${build._links.web.href}" target="_blank">
-                            {{if build.status == 'inProgress'}}
+                            {{if build.status == 'notStarted'}}
+                                <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> Not Started</span>
+                            {{else build.status == 'inProgress'}}
                                 <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>
                             {{else build.result == 'succeeded'}}
                                 <span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>
+                            {{else build.result == 'failed'}}
+                                <span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>
                             {{else mergeStatus == 'conflicts'}}
                                 <span style="color:red"><i class="glyphicon glyphicon-alert"></i> Merge conflicts preventing build.</span>
                             {{else}}
-                                <span style="color:red"><i class="glyphicon glyphicon-remove"></i> ${build.status}</span>
+                                <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${build.status}|${build.result}</span>
                             {{/if}}
                         </a>
                     {{/if}}
