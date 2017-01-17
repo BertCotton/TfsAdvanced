@@ -38,7 +38,16 @@
                                 json[i][1] = '<span class="glyphicon glyphicon-gift" style="color:green"></span>' +
                                     jobRequest.planType;
 
-                            json[i][2] = jobRequest.definition.name;
+                            if (jobRequest.planType === 'build') {
+                                // The path will always at least be "\" so the length needs to be more than one
+                                if(jobRequest.definition.path.length > 1)
+                                    json[i][2] = "<span class='path' style='color:blue'>[" + jobRequest.definition.path.substring(1) + "]</span> " + jobRequest.definition.name;
+                                else
+                                    json[i][2] = jobRequest.definition.name;
+                            }
+                                
+                            else
+                                json[i][2] = jobRequest.definition.name;
 
                             if (jobRequest.planType === 'build' && jobRequest.owner.requestedFor)
                                 json[i][3] = jobRequest.owner.requestedFor.displayName;

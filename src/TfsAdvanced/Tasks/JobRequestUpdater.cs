@@ -58,6 +58,7 @@ namespace TfsAdvanced.Tasks
                                 {
                                     poolJobRequest.owner = build;
                                     poolJobRequest.startedTime = build.startTime;
+                                    poolJobRequest.definition = build.definition;
                                     if (build.status == BuildStatus.completed)
                                     {
                                         switch (build.result)
