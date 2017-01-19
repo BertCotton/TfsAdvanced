@@ -45,10 +45,11 @@ namespace TfsAdvanced.Tasks
                     var definitions = GetAsync.FetchResponseList<BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/definitions?api=2.2").Result;
                     if (definitions == null)
                         return;
-                    foreach (var definition in definitions)
+                    Parallel.ForEach(definitions, new ParallelOptions {MaxDegreeOfParallelism = Startup.MAX_DEGREE_OF_PARALLELISM}, definition =>
                     {
-                        buildDefinitions.Add(definition);
-                    }
+                        var populatedDefinition = GetAsync.Fetch<BuildDefinition>(requestData, definition.url).Result;
+                        buildDefinitions.Add(populatedDefinition);
+                    });
                 });
 
                 buildDefinitionRepository.Update(buildDefinitions.ToList());

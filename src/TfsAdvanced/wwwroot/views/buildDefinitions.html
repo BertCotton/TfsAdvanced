@@ -48,29 +48,30 @@
                                 '" />';
                             json[i][1] = buildDefinition.project.name;
                             json[i][2] = buildDefinition.path;
-                            json[i][3] = buildDefinition.name;
-                            json[i][4] = buildDefinition.defaultBranch;
+                            json[i][3] = '<a href="' + buildDefinition._links.web.href + '" target="_blank">' + buildDefinition.name + "</a>";
+                            json[i][4] = buildDefinition.repository.defaultBranch;
 
+                            var latestBuildStatus = '';
                             if (buildDefinition.latestBuild) {
                                 if (buildDefinition.latestBuild.status === 'completed') {
                                     if (buildDefinition.latestBuild.result === 'succeeded')
-                                        json[i][5] =
-                                            '<span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>';
+                                        latestBuildStatus = '<span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>';
                                     else if (buildDefinition.latestBuild.result === 'failed')
-                                        json[i][5] =
-                                            '<span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>';
+                                        latestBuildStatus = '<span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>';
                                     else
-                                        json[i][5] =
-                                            '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.result}</span>';
+                                        latestBuildStatus = '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.result}</span>';
                                 } else if (buildDefinition.latestBuild.status === 'inProgress')
-                                    json[i][5] =
-                                        '<span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>';
+                                    latestBuildStatus = '<span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>';
                                 else
-                                    json[i][5] =
-                                        '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.status}</span>';
+                                    latestBuildStatus = '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.status}</span>';
                             } else
-                                json[i][5] =
-                                    '<span style="color:gray"><i class="glyphicon glyphicon-remove"></i> No Build?</span>';
+                                latestBuildStatus = '<span style="color:gray"><i class="glyphicon glyphicon-remove"></i> No Build?</span>';
+
+                            if (buildDefinition._links.badge) {
+                                latestBuildStatus = "<img src='" + buildDefinition._links.badge.href + "' />";
+                            }
+
+                            json[i][5] = latestBuildStatus;
 
                             json[i][6] = '<div id="runtime_chart_' + buildDefinition.id + '" style="display:block;margin 0 auto;"></div>';
 
@@ -132,7 +133,6 @@
 
                             var div = document.getElementById('runtime_chart_' + chartData.id);
                             if (div == undefined) {
-                                console.log("Cannot find div");
                                 continue;
                             }
                         var chart = new google.visualization.ColumnChart(div);

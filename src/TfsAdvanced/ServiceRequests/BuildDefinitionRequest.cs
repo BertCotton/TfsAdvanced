@@ -46,7 +46,7 @@ namespace TfsAdvanced.ServiceRequests
                         queue = new Id {id = definition.queue.id },
                         definition = new Id { id = definition.id },
                         project = new ProjectGuid { id = definition.project.id },
-                        sourceBranch = definition.defaultBranch
+                        sourceBranch = definition.repository.defaultBranch
                     }), Encoding.UTF8,
                     "application/json");
             var buildResponse = requestData.HttpClient.SendAsync(request).Result;

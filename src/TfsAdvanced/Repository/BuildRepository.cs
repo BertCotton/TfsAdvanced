@@ -29,7 +29,7 @@ namespace TfsAdvanced.Repository
 
         public IList<Build> GetLatestBuildOnDefaultBranch(BuildDefinition buildDefinition, int limit)
         {
-            return builds.Where(b => b.definition.id == buildDefinition.id && b.sourceBranch == buildDefinition.defaultBranch).OrderByDescending(b => b.id).Take(limit).OrderBy(b =>b.id).ToList();
+            return builds.Where(b => b.definition.id == buildDefinition.id && b.sourceBranch == buildDefinition.repository.defaultBranch).OrderByDescending(b => b.id).Take(limit).OrderBy(b =>b.id).ToList();
         }
 
         public IList<Build> GetLatestBuildOnAllBranches(BuildDefinition buildDefinition, int limit)
