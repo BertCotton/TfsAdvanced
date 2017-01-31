@@ -6,9 +6,9 @@
     <title>TFS Advanced</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="/css/site.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="/css/site.css" />
     <style type="text/css">
         .nav li {
             cursor: pointer
@@ -18,21 +18,18 @@
 <body ng-controller="MainController">
 <nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
     <span class="navbar-brand nav-link">TFS Advanced</span>
-    <ul class="nav navbar-nav" style="display: none" >
+    <ul class="nav navbar-nav hidden-xs" style="display: none">
         <li>
             <a id="pullRequestLink" class="nav-link" onclick="navigateTo(this, '/views/pullRequests.html')">Pull Requests</a>
         </li>
         <li>
             <a class="nav-link" onclick="navigateTo(this, '/views/buildDefinitions.html')">Build Definitions</a>
         </li>
-
         <li>
             <a class="nav-link" onclick="navigateTo(this, '/views/jobRequests.html')">Build & Release Jobs</a>
         </li>
         <li class="dropdown">
-            <a class="dropdown-toggle nav-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true">
-                Statistics<span class="caret"></span>
-            </a>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Statistics <span class="caret"></span></a>
             <ul class="dropdown-menu">
                 <li ng-class="{active : isActive('/buildStatistics')}">
                     <a class="nav-link" onclick="navigateTo(this, '/views/buildStatistics.html')">Build</a>
@@ -168,6 +165,11 @@
             if (Notification.permission !== "granted")
                 Notification.requestPermission();
             checkStatus();
+
+            $('.nav a').on('click', function () {
+                if ($("#navbar").is(":visible"))
+                    $('.navbar-toggle').click();
+            });
         });
 </script>
 </body>

@@ -70,14 +70,30 @@ textarea {
     background-color: #007acc;
 }
 
-  .navbar-nav > li > a, 
-  .navbar-nav > li > a:hover,
-  .navbar-nav > li > a:focus,
+
+  .navbar-nav > li a, 
+  .navbar-nav > li a:hover,
+  .navbar-nav > li a:focus,
   .navbar-nav > li:focus
    {
     background-color: #007acc;
     color: white;
 }
+
+  .navbar-nav > li a:hover {
+      color: gray;
+  }
+
+  .navbar-nav > li.dropdown > ul > li > a {
+      background-color: white;
+      color: black;
+  }
+
+  .navbar-nav > li.dropdown > ul > li > a:hover,
+  .navbar-nav > li.dropdown > ul > li > a:active {
+      background-color: #007acc;
+      color: white;
+  }
 
 .nav-link {
     color: white;
