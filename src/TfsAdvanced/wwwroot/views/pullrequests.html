@@ -62,6 +62,7 @@
                     return -1;
 
             });
+            console.log(data);
             $("#pullRequests").html($("#pullRequestTemplate").tmpl(data));
             formatPage();
             window.setTimeout(fetchData, 3000);
@@ -95,7 +96,7 @@
                     Build Status:
                     {{if build == null}}
                     {{if mergeStatus == 'conflicts'}}
-                    <span style="color:red"><i class="glyphicon glyphicon-alert"></i<span class="hidden-xs"> Merge conflicts preventing build.</span></span>
+                    <span style="color:red"><i class="glyphicon glyphicon-alert"></i><span class="hidden-xs"> Merge conflicts preventing build.</span></span>
                     {{else}}
                     <span class="glyphicon glyphicon-remove" style="color: red"><span class="hidden-xs"> No Build Queued</span></span>
                     {{/if}}
