@@ -62,7 +62,6 @@
                     return -1;
 
             });
-            console.log(data);
             $("#pullRequests").html($("#pullRequestTemplate").tmpl(data));
             formatPage();
             window.setTimeout(fetchData, 3000);
