@@ -1,20 +1,11 @@
-﻿using System;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Newtonsoft.Json;
-using TfsAdvanced.Data;
-using TfsAdvanced.Data.Builds;
-using TfsAdvanced.Repository;
+using Microsoft.AspNetCore.Mvc;
 using TfsAdvanced.ServiceRequests;
+using TfsAdvanced.DataStore.Repository;
+using TfsAdvanced.Models.Builds;
 
-namespace TfsAdvanced.Controllers
+namespace TfsAdvanced.Web.Controllers
 {
     [Route("data/BuildDefinitions")]
     public class BuildDefinitionsController : Controller

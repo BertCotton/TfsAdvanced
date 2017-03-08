@@ -1,24 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
-using TfsAdvanced.ServiceRequests;
-using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
-using TfsAdvanced.Data;
-using TfsAdvanced.Infrastructure;
+using TfsAdvanced.Models.Infrastructure;
+using TfsAdvanced.ServiceRequests;
 
-
-namespace TfsAdvanced.Controllers
+namespace TfsAdvanced.Web.Controllers
 {
     [Route("data/Login")]
     public class LoginController : Controller

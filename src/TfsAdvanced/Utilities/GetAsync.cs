@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using TfsAdvanced.Data;
-using TfsAdvanced.Data.Builds;
-using TfsAdvanced.Data.Errors;
+using TfsAdvanced.Models;
+using TfsAdvanced.Models.Errors;
 
 namespace TfsAdvanced.Utilities
 {

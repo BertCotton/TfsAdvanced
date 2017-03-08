@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TfsAdvanced.Repository;
+using TfsAdvanced.DataStore.Repository;
 
-namespace TfsAdvanced.Controllers
+namespace TfsAdvanced.Web.Controllers
 {
     [Route("data/UpdateStatus")]
     public class UpdateStatusController : Controller

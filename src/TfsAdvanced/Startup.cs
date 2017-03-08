@@ -14,9 +14,9 @@ using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using TfsAdvanced.Data;
-using TfsAdvanced.DataStore;
 using TfsAdvanced.Infrastructure;
-using TfsAdvanced.Tasks;
+using TfsAdvanced.Models;
+using TfsAdvanced.Models.Infrastructure;
 
 namespace TfsAdvanced
 {
@@ -107,7 +107,7 @@ namespace TfsAdvanced
             });
             app.UseHangfireServer();
 
-            Hangfire.BackgroundJob.Enqueue<Updater>(updater => updater.Start());
+            Hangfire.BackgroundJob.Enqueue<Updater.Tasks.Updater>(updater => updater.Start());
         }
     }
 }
