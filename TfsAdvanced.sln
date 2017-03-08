@@ -1,17 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{28430696-29B7-46F4-9140-2EF000FB2D29}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BB3621F3-9DFF-49AD-9482-D325EC7DD410}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "TfsAdvanced", "src\TfsAdvanced\TfsAdvanced.xproj", "{5FFBC1A5-B8CE-44D5-99E7-64B9903E0BAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TfsAdvanced", "src\TfsAdvanced\TfsAdvanced.csproj", "{5FFBC1A5-B8CE-44D5-99E7-64B9903E0BAD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
