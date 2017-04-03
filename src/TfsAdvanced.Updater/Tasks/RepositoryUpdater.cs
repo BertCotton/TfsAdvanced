@@ -44,9 +44,16 @@ namespace TfsAdvanced.Updater.Tasks
                         return;
                     Parallel.ForEach(repositories, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repo =>
                     {
-                        var populatedRepository = GetAsync.Fetch<TfsAdvanced.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/git/repositories/{repo.name}?api=1.0").Result;
-                        populatedRepository.policyConfigurations = policyRepository.GetByRepository(populatedRepository.id);
-                        populatedRepositories.Add(populatedRepository);
+                        try
+                        {
+                            var populatedRepository = GetAsync.Fetch<TfsAdvanced.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/git/repositories/{repo.name}?api=1.0").Result;
+                            populatedRepository.policyConfigurations = policyRepository.GetByRepository(populatedRepository.id);
+                            populatedRepositories.Add(populatedRepository);
+                        }
+                        catch (Exception ex)
+                        {
+                               
+                        }
                     });
                 });
                 var repositoryList = populatedRepositories.ToList();
