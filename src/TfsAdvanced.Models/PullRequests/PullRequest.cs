@@ -1,4 +1,5 @@
 ﻿using System;
+using Models.PullRequests;
 using TfsAdvanced.Models.Builds;
 using TfsAdvanced.Models.Repositories;
 
@@ -32,6 +33,8 @@ namespace TfsAdvanced.Models.PullRequests
         public int acceptedReviewers { get; set; }
 
         public bool hasEnoughReviewers => acceptedReviewers >= requiredReviewers;
+
+        public CompletionOptions completionOptions { get; set; }
         
 
     }

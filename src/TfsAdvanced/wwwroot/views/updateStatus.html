@@ -1,22 +1,37 @@
-<div class="container-fluid" ng-controller="UpdateStatusController">
+<div class="container-fluid">
     <div class="row">
-        <div class="col-lg-12" id="waitTimes">
-            <div class="panel">
-                <div class="panel-heading">
-                    <h2>Update Statuses</h2> 
-                </div>
-                <div class="panel-body">
-                    <div class="container-fluid">
-                        <table ng-table="tableParams" class="table table-condensed" id="updateStatusTable" show-filter="true">
-                            <tr ng-repeat="updater in $data">
-                                <td title="'Updater'" sortable="'updaterName'">{{updater.updaterName}}</td>
-                                <td title="'Last Updated'" sortable="'lastUpdate'">{{updater.lastUpdate | date : "MM/dd/yyyy 'at' h:mm a"}}</td>
-                                <td title="'Updated Records'" sortable="'updatedRecords'">{{updater.updatedRecords}}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <table class="table table-condensed" id="updateStatusTable" show-filter="true">
+            <thead>
+                <tr>
+                    <th>Updater</th>
+                    <th>Last Updated</th>
+                    <th>Updated Record</th>
+                </tr>
+            </thead>
+        </table>
     </div>
 </div>
+
+<script>
+    var longDateFormat = 'MM/dd/yyyy hh:mm:ss a';
+
+    $(document)
+        .ready(function() {
+            var dataTable = $("#updateStatusTable").DataTable({
+                "order": [0, "desc"],
+                "ajax": {
+                    "url": "/data/UpdateStatus",
+                    "dataSrc": function (json) {
+                        console.log(json);
+                        for (var i = 0, ien = json.length; i < ien; i++) {
+                            var updater = json[i];
+                            json[i][0] = updater.updaterName;
+                            json[i][1] = $.format.date(updater.lastUpdate, longDateFormat);
+                            json[i][2] = updater.updatedRecords;
+                        }
+                        return json;
+                    }
+                }
+            });
+        });
+</script>

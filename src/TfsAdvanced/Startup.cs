@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Linq;
 using System.Reflection;
 using Hangfire;
 using Hangfire.MemoryStorage;
@@ -17,6 +18,7 @@ using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
 using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
+using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced
 {
@@ -77,17 +79,22 @@ namespace TfsAdvanced
 
             builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
 
-            builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
-                .Where(t => t.Name.EndsWith("Request") || t.Name.EndsWith("Repository") || t.Name.EndsWith("Updater"))
-                .AsSelf()
-                .SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().FirstOrDefault(t => t.Name == "Models"))).AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().FirstOrDefault(t => t.Name == "Updater"))).AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().FirstOrDefault(t => t.Name == "DataStore"))).AsSelf().SingleInstance();
 
+
+            builder.RegisterType<AuthorizationRequest>().AsSelf().SingleInstance();
+            builder.RegisterType<BuildDefinitionRequest>().AsSelf().SingleInstance();
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
 
 
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
+
+            
+
             return serviceProvider;
         }
 

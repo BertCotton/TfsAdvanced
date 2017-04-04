@@ -7,14 +7,17 @@
         </div>
     </div>
     <div class="row" id="pullRequestHeader">
-        <div class="col-lg-6 visible-lg"></div>
+        <div class="col-lg-4 visible-lg"></div>
+        <div class="col-lg-2 visible-lg">
+            <b>Project</b>
+        </div>
         <div class="col-lg-2 visible-lg">
             <b>Developer</b>
         </div>
-        <div class="col-lg-4 visible-lg">
-            <b>Reviewers</b>
+            <div class="col-lg-4 visible-lg">
+                <b>Reviewers</b>
+            </div>
         </div>
-    </div>
     <div id="pullRequests"></div>
     <div id="NoPullRequests" style="display: none" class="text-center">
         <img src="/images/sunshine.png" width="300"/>
@@ -71,28 +74,25 @@
 </script>
 <script id="pullRequestTemplate" type="text/x-jQuery-tmpl">
     <div class="row striped">
-        <div class="col-lg-6 col-md-12" style="padding: 5px">
-            <h3>
+        <div class="col-lg-4 col-md-12" style="padding: 5px">
+            <h4>
                 <a style="color:darkslategray" href="${remoteUrl}" target="_blank">${title}</a>
-            </h3>
-            <hr/>
+            </h4>
             <h5>
                 <div>
                     <span class="hidden-xs">
-                        <a href="${repository.project.remoteUrl}" target="_blank">${repository.project.name}</a>
-                        /
-                    </span><a href="${repository.remoteUrl}" target="_blank">${repository.name}</a>
-                    | Merge Status:
-                    {{if mergeStatus == 'succeeded'}}
-                    <span style="color:green"><i class="glyphicon glyphicon-check"></i><span class="hidden-xs"> Succeded</span></span>
-                    {{else mergeStatus == 'conflicts'}}
-                    <span style="color:red"><i class="glyphicon glyphicon-remove"></i><span class="hidden-xs"> Conflicts</span></span>
+                        {{if completionOptions != null}}
+                        <span style="color:green"><i class="glyphicon glyphicon-check"></i><span class="hidden-xs"> AutoComplete</span></span><br/>
+                        {{/if}}
+                    </span>
+                   
+                    {{if mergeStatus == 'conflicts'}}
+                    <span style="color:red"><i class="glyphicon glyphicon-remove"></i><span class="hidden-xs"> Merge Conflicts</span></span>
                     {{/if}}
                 </div>
             </h5>
             <div>
                 <span >
-                    Build Status:
                     {{if build == null}}
                     {{if mergeStatus == 'conflicts'}}
                     <span style="color:red"><i class="glyphicon glyphicon-alert"></i><span class="hidden-xs"> Merge conflicts preventing build.</span></span>
@@ -103,13 +103,13 @@
                     {{if build != null}}
                     <a href="${build._links.web.href}" target="_blank">
                         {{if build.status == 'notStarted'}}
-                        <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Not Started</span></span>
+                        <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Not Started</span></span>
                         {{else build.status == 'inProgress'}}
-                        <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> In Progress</span></span>
+                        <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build In Progress</span></span>
                         {{else build.result == 'succeeded'}}
-                        <span style="color:green"><i class="glyphicon glyphicon-check"></i> <span class="hidden-xs"> Succeeded</span></span>
+                        <span style="color:green"><i class="glyphicon glyphicon-check"></i> <span class="hidden-xs"> Build Succeeded</span></span>
                         {{else build.result == 'failed'}}
-                        <span style="color:red"><i class="glyphicon glyphicon-remove"></i> <span class="hidden-xs"> Failed</span></span>
+                        <span style="color:red"><i class="glyphicon glyphicon-remove"></i> <span class="hidden-xs"> Build Failed</span></span>
                         {{else mergeStatus == 'conflicts'}}
                         <span style="color:red"><i class="glyphicon glyphicon-alert"></i> <span class="hidden-xs"> Merge conflicts preventing build.</span></span>
                         {{else}}
@@ -117,19 +117,26 @@
                         {{/if}}
                     </a>
                     {{/if}}
-                </span><br/>
-                <span >Required Reviewers:
+                </span>
+                <span >
+                    {{if requiredReviewers > 0}}
+                    |
                     {{if hasEnoughReviewers}}
                     <i class="glyphicon glyphicon-check" style="color: green"></i>
                     {{else}}
                     <i class="glyphicon glyphicon-remove" style="color: red"></i>
                     {{/if}}
-                </span><span class="hidden-xs">  ${acceptedReviewers} of ${requiredReviewers}</span>
+                    {{/if}}
+                </span><span class="hidden-xs">  ${acceptedReviewers} of ${requiredReviewers} Required Reviewers</span>
             </div>
+        </div>
+        <div class="col-lg-2 hidden-xs">
+                <a href="${repository.project.remoteUrl}" target="_blank">${repository.project.name}</a>
+                <br/>
+                <a href="${repository.remoteUrl}" target="_blank">${repository.name}</a>
         </div>
         <div class="col-lg-2 padding col-md-12">
             <span class="visible-xs">Created By: </span>
-            <span class="datetime-pretty hidden-xs">${creationDate}</span>
             <div class="media">
                 <div class="media-left">
                     <img class="media-object" src="${createdBy.imageUrl}" alt="User Photo" height="30" width="30">
@@ -137,6 +144,7 @@
                 <div class="media-body">
                     <h5 class="media-heading">
                         ${createdBy.displayName}
+                        <br/>(<span class="datetime-pretty hidden-xs">${creationDate}</span>)
                     </h5>
                 </div>
             </div>
