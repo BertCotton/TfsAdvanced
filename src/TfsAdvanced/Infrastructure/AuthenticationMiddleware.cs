@@ -26,11 +26,11 @@ namespace TfsAdvanced.Infrastructure
                 return;
             }
 
-            if (context.Request.Host.Value.Contains("localhost"))
-            {
-                await _next.Invoke(context);
-                return;
-            }
+            //if (context.Request.Host.Value.Contains("localhost"))
+            //{
+            //    await _next.Invoke(context);
+            //    return;
+            //}
             
             byte[] value;
             if (context.Session.TryGetValue("AuthToken", out value))
