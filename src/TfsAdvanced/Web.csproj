@@ -12,7 +12,7 @@
     <Authors>Bert Cotton</Authors>
     <Company>Cotton Tech</Company>
     <Description>Extension for Vistual Studio Team Services specifically around pull requests</Description>
-    <SignAssembly>True</SignAssembly>
+    <SignAssembly>False</SignAssembly>
     <AssemblyOriginatorKeyFile>TfsAdvancedKey.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
