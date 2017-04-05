@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <AssemblyName>Web</AssemblyName>
+    <AssemblyName>TFSAdvanced.Web</AssemblyName>
     <OutputType>Exe</OutputType>
     <PackageId>TfsAdvanced</PackageId>
     <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>

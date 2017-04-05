@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+    <AssemblyName>TFSAdvanced.DataStore</AssemblyName>
+    <RootNamespace>TFSAdvanced.DataStore</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

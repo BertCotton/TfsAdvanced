@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
+    <AssemblyName>TFSAdvanced.Updater</AssemblyName>
+    <RootNamespace>TFSAdvanced.Updater</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

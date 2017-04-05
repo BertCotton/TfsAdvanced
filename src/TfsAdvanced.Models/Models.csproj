@@ -7,6 +7,8 @@
     <Description />
     <Authors>Bert Cotton</Authors>
     <PackageId>Models</PackageId>
+    <AssemblyName>TFSAdvanced.Models</AssemblyName>
+    <RootNamespace>TFSAdvanced.Models</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
