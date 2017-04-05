@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Hangfire;
@@ -28,6 +30,8 @@ namespace TfsAdvanced
         private string siteName = Environment.GetEnvironmentVariable("SiteName") ?? "ius";
         public IConfigurationRoot Configuration { get; set; }
 
+        public IList<Type> References;
+
         public Startup(IHostingEnvironment env)
         {
             // Set up configuration sources.
@@ -38,6 +42,13 @@ namespace TfsAdvanced
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
+            References = new List<Type>
+            {
+                typeof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole),
+                typeof(Microsoft.Extensions.Options.Options)
+            };
+            
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
