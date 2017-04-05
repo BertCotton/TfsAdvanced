@@ -90,9 +90,9 @@ namespace TfsAdvanced
 
             builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
 
-            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().FirstOrDefault(t => t.Name == "Models"))).AsSelf().SingleInstance();
-            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().FirstOrDefault(t => t.Name == "Updater"))).AsSelf().SingleInstance();
-            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().FirstOrDefault(t => t.Name == "DataStore"))).AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Models"))).AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Updater"))).AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.DataStore"))).AsSelf().SingleInstance();
 
 
             builder.RegisterType<AuthorizationRequest>().AsSelf().SingleInstance();
