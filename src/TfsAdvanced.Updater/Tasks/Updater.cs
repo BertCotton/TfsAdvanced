@@ -8,7 +8,8 @@ namespace TfsAdvanced.Updater.Tasks
 {
     public class Updater
     {
-        private Timer tenSecondTimer;
+        private Timer fiveSecondTimer;
+        private Timer thirtySecondTimer;
         private readonly IServiceProvider serviceProvider;
         
         public Updater(IServiceProvider serviceProvider)
@@ -54,19 +55,24 @@ namespace TfsAdvanced.Updater.Tasks
             RecurringJob.AddOrUpdate<PoolUpdater>(updater => updater.Update(), Cron.Hourly);
             RecurringJob.AddOrUpdate<PolicyUpdater>(updater => updater.Update(), Cron.Hourly);
        
-            tenSecondTimer = new Timer(state =>
+            thirtySecondTimer = new Timer(state =>
             {
+                BackgroundJob.Enqueue<BuildDefinitionUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<BuildUpdater>(updater => updater.Update());
+            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+            fiveSecondTimer = new Timer(state =>
+            {
                 BackgroundJob.Enqueue<PullRequestUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<JobRequestUpdater>(updater => updater.Update());
-                BackgroundJob.Enqueue<BuildDefinitionUpdater>(updater => updater.Update());
-            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
+                
+            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
             
         }
 
         public void Stop()
         {
-            tenSecondTimer?.Change(-1, -1);
+            fiveSecondTimer?.Change(-1, -1);
+            thirtySecondTimer?.Change(-1, -1);
         }
         
     }
