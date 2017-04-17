@@ -6,6 +6,7 @@
         succeeded,
         partiallySucceeded,
         canceled,
-        abandoned
+        abandoned,
+        expired
     }
 }
