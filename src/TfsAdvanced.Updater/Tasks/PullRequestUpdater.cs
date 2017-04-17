@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Hangfire;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
+using TfsAdvanced.Models.Builds;
 using TfsAdvanced.Models.Infrastructure;
 using TfsAdvanced.Models.PullRequests;
 
@@ -49,9 +50,14 @@ namespace TfsAdvanced.Updater.Tasks
                     {
                         pullRequest.repository = repository;
                         pullRequest.remoteUrl = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
-                        if(pullRequest.lastMergeCommit != null)
+                        if (pullRequest.lastMergeCommit != null)
+                        {
                             pullRequest.build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
-                        
+                            if (pullRequest.build?.finishTime != null && pullRequest.build.finishTime.Value.AddHours(12) < DateTime.Now)
+                            {
+                                pullRequest.build.result = BuildResult.expired;
+                            }
+                        }
                         foreach (var configuration in repository.policyConfigurations)
                         {
                             if (configuration.type.displayName == "Minimum number of reviewers")
