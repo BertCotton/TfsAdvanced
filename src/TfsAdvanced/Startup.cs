@@ -8,15 +8,19 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using TfsAdvanced.Data;
-using TfsAdvanced.DataStore;
 using TfsAdvanced.Infrastructure;
-using TfsAdvanced.Tasks;
+using TfsAdvanced.Models;
+using TfsAdvanced.Models.Infrastructure;
+using TfsAdvanced.ServiceRequests;
 
 namespace TfsAdvanced
 {
@@ -25,6 +29,8 @@ namespace TfsAdvanced
         public static readonly int MAX_DEGREE_OF_PARALLELISM = -1;
         private string siteName = Environment.GetEnvironmentVariable("SiteName") ?? "ius";
         public IConfigurationRoot Configuration { get; set; }
+
+        public IList<Type> References;
 
         public Startup(IHostingEnvironment env)
         {
@@ -36,6 +42,13 @@ namespace TfsAdvanced
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+
+            References = new List<Type>
+            {
+                typeof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole),
+                typeof(Microsoft.Extensions.Options.Options)
+            };
+            
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -77,17 +90,22 @@ namespace TfsAdvanced
 
             builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
 
-            builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly())
-                .Where(t => t.Name.EndsWith("Request") || t.Name.EndsWith("Repository") || t.Name.EndsWith("Updater"))
-                .AsSelf()
-                .SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Models"))).AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Updater"))).AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.DataStore"))).AsSelf().SingleInstance();
 
+
+            builder.RegisterType<AuthorizationRequest>().AsSelf().SingleInstance();
+            builder.RegisterType<BuildDefinitionRequest>().AsSelf().SingleInstance();
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
 
 
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
+
+            
+
             return serviceProvider;
         }
 
@@ -107,7 +125,7 @@ namespace TfsAdvanced
             });
             app.UseHangfireServer();
 
-            Hangfire.BackgroundJob.Enqueue<Updater>(updater => updater.Start());
+            Hangfire.BackgroundJob.Enqueue<Updater.Tasks.Updater>(updater => updater.Start());
         }
     }
 }

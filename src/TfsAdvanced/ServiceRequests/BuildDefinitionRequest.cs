@@ -1,18 +1,13 @@
-﻿using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using TfsAdvanced.Data;
-using TfsAdvanced.Data.Builds;
-using TfsAdvanced.Data.Projects;
-using TfsAdvanced.Infrastructure;
-using TfsAdvanced.Utilities;
+using TfsAdvanced.Models;
+using TfsAdvanced.Models.Builds;
+using TfsAdvanced.Models.Projects;
 
 namespace TfsAdvanced.ServiceRequests
 {

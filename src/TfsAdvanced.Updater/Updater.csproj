@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <AssemblyName>TFSAdvanced.Updater</AssemblyName>
+    <RootNamespace>TFSAdvanced.Updater</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HangFire.Core" Version="1.6.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TfsAdvanced.DataStore\DataStore.csproj" />
+    <ProjectReference Include="..\TfsAdvanced.Models\Models.csproj" />
+  </ItemGroup>
+
+</Project>

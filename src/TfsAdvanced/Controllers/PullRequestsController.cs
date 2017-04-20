@@ -1,14 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using TfsAdvanced.Data;
-using TfsAdvanced.Data.PullRequests;
-using TfsAdvanced.Repository;
-using TfsAdvanced.ServiceRequests;
+using Microsoft.AspNetCore.Mvc;
+using TfsAdvanced.DataStore.Repository;
+using TfsAdvanced.Models.PullRequests;
 
-namespace TfsAdvanced.Controllers
+namespace TfsAdvanced.Web.Controllers
 {
     [Route("data/PullRequests")]
     public class PullRequestsController : Controller

@@ -12,6 +12,7 @@ using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
+using TfsAdvanced.Models.Infrastructure;
 
 namespace TfsAdvanced.ServiceRequests
 {

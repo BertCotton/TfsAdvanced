@@ -1,13 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using TfsAdvanced.Data;
-using TfsAdvanced.Data.Projects;
-using TfsAdvanced.Repository;
-using TfsAdvanced.ServiceRequests;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using TfsAdvanced.DataStore.Repository;
+using TfsAdvanced.Models.Projects;
 
-namespace TfsAdvanced.Controllers
+namespace TfsAdvanced.Web.Controllers
 {
     [Route("/data/Projects")]
     public class ProjectsController : Controller

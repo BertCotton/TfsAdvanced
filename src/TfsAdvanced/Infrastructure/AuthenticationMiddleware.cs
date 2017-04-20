@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using TfsAdvanced.Data;
 
 namespace TfsAdvanced.Infrastructure
 {
@@ -29,16 +26,16 @@ namespace TfsAdvanced.Infrastructure
                 return;
             }
 
-            if (context.Request.Host.Value.Contains("localhost"))
-            {
-                await _next.Invoke(context);
-                return;
-            }
+            //if (context.Request.Host.Value.Contains("localhost"))
+            //{
+            //    await _next.Invoke(context);
+            //    return;
+            //}
             
             byte[] value;
             if (context.Session.TryGetValue("AuthToken", out value))
             {
-                var token = JsonConvert.DeserializeObject<AuthenticationToken>(ASCIIEncoding.ASCII.GetString(value));
+                var token = JsonConvert.DeserializeObject<TfsAdvanced.Models.Infrastructure.AuthenticationToken>(ASCIIEncoding.ASCII.GetString(value));
                 if (token?.access_token == null)
                 {
                     context.Response.StatusCode = (int) HttpStatusCode.Forbidden;

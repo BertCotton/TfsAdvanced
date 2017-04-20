@@ -1,16 +1,23 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{28430696-29B7-46F4-9140-2EF000FB2D29}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BB3621F3-9DFF-49AD-9482-D325EC7DD410}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		nuget.config = nuget.config
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TfsAdvanced", "src\TfsAdvanced\TfsAdvanced.csproj", "{5FFBC1A5-B8CE-44D5-99E7-64B9903E0BAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web", "src\TfsAdvanced\Web.csproj", "{5FFBC1A5-B8CE-44D5-99E7-64B9903E0BAD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataStore", "src\TfsAdvanced.DataStore\DataStore.csproj", "{B91AC19E-9D65-416C-8B4D-47C7D7F41C63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models", "src\TfsAdvanced.Models\Models.csproj", "{23D45B3D-C188-48F3-9078-35B61B1F293D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "src\TfsAdvanced.Updater\Updater.csproj", "{F88AE0D1-17B4-427E-8023-42A183EB05D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,11 +29,26 @@ Global
 		{5FFBC1A5-B8CE-44D5-99E7-64B9903E0BAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5FFBC1A5-B8CE-44D5-99E7-64B9903E0BAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5FFBC1A5-B8CE-44D5-99E7-64B9903E0BAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B91AC19E-9D65-416C-8B4D-47C7D7F41C63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B91AC19E-9D65-416C-8B4D-47C7D7F41C63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B91AC19E-9D65-416C-8B4D-47C7D7F41C63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B91AC19E-9D65-416C-8B4D-47C7D7F41C63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23D45B3D-C188-48F3-9078-35B61B1F293D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23D45B3D-C188-48F3-9078-35B61B1F293D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23D45B3D-C188-48F3-9078-35B61B1F293D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23D45B3D-C188-48F3-9078-35B61B1F293D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F88AE0D1-17B4-427E-8023-42A183EB05D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F88AE0D1-17B4-427E-8023-42A183EB05D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F88AE0D1-17B4-427E-8023-42A183EB05D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F88AE0D1-17B4-427E-8023-42A183EB05D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5FFBC1A5-B8CE-44D5-99E7-64B9903E0BAD} = {28430696-29B7-46F4-9140-2EF000FB2D29}
+		{B91AC19E-9D65-416C-8B4D-47C7D7F41C63} = {28430696-29B7-46F4-9140-2EF000FB2D29}
+		{23D45B3D-C188-48F3-9078-35B61B1F293D} = {28430696-29B7-46F4-9140-2EF000FB2D29}
+		{F88AE0D1-17B4-427E-8023-42A183EB05D3} = {28430696-29B7-46F4-9140-2EF000FB2D29}
 	EndGlobalSection
 EndGlobal

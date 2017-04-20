@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using TfsAdvanced.Repository;
+using TfsAdvanced.DataStore.Repository;
 
-namespace TfsAdvanced.Controllers
+namespace TfsAdvanced.Web.Controllers
 {
     [Route("data/JobRequests")]
     public class JobRequestsController : Controller
