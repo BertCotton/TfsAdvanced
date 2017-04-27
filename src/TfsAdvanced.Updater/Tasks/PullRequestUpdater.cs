@@ -53,10 +53,10 @@ namespace TfsAdvanced.Updater.Tasks
                         if (pullRequest.lastMergeCommit != null)
                         {
                             pullRequest.build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
-                            if (pullRequest.build?.finishTime != null && pullRequest.build.finishTime.Value.AddHours(12) < DateTime.Now)
-                            {
-                                pullRequest.build.result = BuildResult.expired;
-                            }
+                            //if (pullRequest.build?.finishTime != null && pullRequest.build.finishTime.Value.AddHours(12) < DateTime.Now)
+                            //{
+                            //    pullRequest.build.result = BuildResult.expired;
+                            //}
                         }
                         foreach (var configuration in repository.policyConfigurations)
                         {
