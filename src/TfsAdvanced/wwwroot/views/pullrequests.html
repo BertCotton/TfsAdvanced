@@ -106,7 +106,7 @@
                         <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Not Started</span></span>
                         {{else build.status == 'inProgress'}}
                         <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build In Progress</span></span>
-                        {{ else build.result == 'expired'}}
+                        {{else build.result == 'expired'}}
                         <span style="color:darkorange"><i class="glyphicon glyphicon-alert"></i> <span class="hidden-xs"> Build Expired</span></span>
                         {{else build.result == 'succeeded'}}
                         <span style="color:green"><i class="glyphicon glyphicon-check"></i> <span class="hidden-xs"> Build Succeeded</span></span>
