@@ -15,11 +15,12 @@ before_script:
   - dotnet restore
 
 script:
-  - echo $TRAVIS_BUILD_DIR
+  - echo $TRAVIS_BUILD_DIR/artifacts
+  - mkdir $TRAVIS_BUILD_DIR/artifacts
   - dotnet build
   - dotnet publish --output $TRAVIS_BUILD_DIR/artifacts --configuration Release ./
   - ls
   - ls artifacts
-  - cd ~/artifacts
+  - cd $TRAVIS_BUILD_DIR/artifacts
   - zip TfsAdvanced
   
