@@ -17,10 +17,9 @@ before_script:
 script:
   - echo $TRAVIS_BUILD_DIR
   - dotnet build
-  - dotnet publish --output ~/artifacts --configuration Release
-  - cd ~/artifacts
-  - zip TfsAdvanced
-
-after_script:
+  - dotnet publish --output $TRAVIS_BUILD_DIR/artifacts --configuration Release ./
   - ls
   - ls artifacts
+  - cd ~/artifacts
+  - zip TfsAdvanced
+  
