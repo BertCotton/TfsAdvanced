@@ -1,5 +1,7 @@
 language: csharp
 solution: TfsAdvanced.sln
+before_install:
+  - mkdir artifacts
 script:
   - ./build.sh
   
