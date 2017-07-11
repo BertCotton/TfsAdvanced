@@ -1,10 +1,10 @@
 language: csharp
 solution: TfsAdvanced.sln
-# selecting no mono to speed up the build because this is a netcore project
-mono: none
 before_install:
   - mkdir artifacts
   - chmod +x ./build.sh
 script:
+  - dotnet --version
+  - dotnet --info
   - ./build.sh
   
