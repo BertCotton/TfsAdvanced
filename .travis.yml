@@ -28,4 +28,4 @@ deploy:
   file: $TRAVIS_BUILD_DIR/artifacts/TfsAdvanced-$TRAVIS_COMMIT.tar.gz
   on:
     repo: BertCotton/TfsAdvanced
-    branch: BC.TravisCheck
+    branch: main
