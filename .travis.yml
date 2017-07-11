@@ -1,10 +1,21 @@
 language: csharp
 solution: TfsAdvanced.sln
-before_install:
-  - mkdir artifacts
-  - chmod +x ./build.sh
+mono: none
+dist: trusty
+dotnet: 1.1.0
+addons:
+  apt:
+    sources:
+    - sourceline: 'deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main'
+      key_url: 'https://apt-mo.trafficmanager.net/keys/microsoft.asc'
+    packages:
+    - dotnet-dev-1.1.0
+
+before_script:
+  dotnet --version
+  dotnet --info
+  dotnet restore
+
 script:
-  - dotnet --version
-  - dotnet --info
-  - ./build.sh
+  dotnet build
   
