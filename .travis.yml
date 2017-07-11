@@ -12,10 +12,8 @@ addons:
     - dotnet-dev-1.1.0
 
 before_script:
-  dotnet --version
-  dotnet --info
-  dotnet restore
+  - dotnet restore
 
 script:
-  dotnet build
+  - dotnet build
   
