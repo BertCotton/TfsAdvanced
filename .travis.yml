@@ -1,8 +1,45 @@
 language: csharp
-#sudo: required
 solution: TfsAdvanced.sln
+mono: none
 dist: trusty
-dotnet: 1.0.0-preview2-003131
+dotnet: 1.1.0
+addons:
+  apt:
+    sources:
+    - sourceline: deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/
+        trusty main
+      key_url: https://apt-mo.trafficmanager.net/keys/microsoft.asc
+    packages:
+    - dotnet-dev-1.1.0
+before_script:
+- dotnet restore
 script:
-  - dotnet restore
-  - dotnet build src/TfsAdvanced/
+- mkdir $TRAVIS_BUILD_DIR/artifacts
+- dotnet build
+- dotnet publish --output $TRAVIS_BUILD_DIR/artifacts --configuration Release ./
+- cd $TRAVIS_BUILD_DIR/artifacts
+- tar czf TfsAdvanced-$TRAVIS_COMMIT.tar.gz *
+
+after_success:
+  # CREATE GIT TAG
+  - git config --global user.email "builds@travis-ci.com"
+  - git config --global user.name "Travis CI"
+  - export GIT_TAG=build-$TRAVIS_BRANCH-$(date -u "+%Y-%m-%d")-$TRAVIS_BUILD_NUMBER
+  - echo -n $GIT_TAG > public/version
+  - git commit -m "Set build VERSION number" public/version
+  - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
+  - git push --quiet https://$GITHUBKEY@github.com/BertCotton/TfsAdvanced $GIT_TAG > /dev/null 2>&1
+
+branches:
+  except:
+    - /^build-[0-9a-z\-]*/
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: mon7lbVV0STy1r/7ytOwopkwlROM6mk7qTjSd2NNNzJlb7y0iGh+WBacegEfnhYuFUc1WxlXi4iHAkGbSYFcuUY15qDR/52TpSjObxyVkGU5PUpFif2P7ZMpi0bW3upq2D0y3abJeODOwfcPY5jym77NZBDWnZ+Ukqx+gcnT595sUO/qFfkiMWi1usECgIsfLaN0jdcfY4F9dPei7LcExQczz5uyNUeUKFd/NXxNlwsX7CRDs2Lgc9RH/9d2Ec7KGcp5TqfcN4Qu2iIjEpdfw0gNp7cTkf0iwnjL327fgDS7h8Gry85lcmtX2rhuOYe2EXTU9ZDBM2jzriYoF6/EE2gpTx8Z1WnoVXZcu7ULY7nBtJcZG0kLBpZxee/9j8Lh9Ltxfr0IOo2NKoAC9VdIMiexrDaestfqvcrsT5trIM4wZIxZ1JG7WNTFMjLTU0iL4jGpk4AUno6aNrlCbWJ5I9+Y5Ua3Itg39o5Jd808c+GbgIjZjSFbGzymL+HqDMi/7IA6SWsbs6PY99X02hHhjVHfMqsGopUe3gj8Yonj8TdxsbbisS2AKuAmMiLkogBf7sXQc+gIXJR7fJO+eWKjOZxZglMF8OIT/x7wipzbNrxOX6tUN92CQxcqObjHor4CKEjjuKY7tvnn0R+XVTPXc9VJOi1Rdedpf5YigXNX6GU=
+  file: $TRAVIS_BUILD_DIR/artifacts/TfsAdvanced-$TRAVIS_COMMIT.tar.gz
+  on:
+    repo: BertCotton/TfsAdvanced
+    branch: master
