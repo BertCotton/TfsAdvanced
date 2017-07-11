@@ -1,8 +1,5 @@
 language: csharp
-#sudo: required
 solution: TfsAdvanced.sln
-dist: trusty
-dotnet: 1.0.0-preview2-003131
 script:
-  - dotnet restore
-  - dotnet build src/TfsAdvanced/
+  - ./build.sh
+  
