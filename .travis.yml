@@ -16,4 +16,5 @@ before_script:
 
 script:
   - dotnet build
+  - dotnet publish --output artifacts --configuration Release
   
