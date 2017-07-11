@@ -17,4 +17,7 @@ before_script:
 script:
   - dotnet build
   - dotnet publish --output artifacts --configuration Release
-  
+
+after_script:
+  - ls
+  - ls artifacts
