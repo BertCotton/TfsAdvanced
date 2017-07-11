@@ -30,9 +30,9 @@ after_success:
   - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER"
   - git push --quiet https://$GITHUBKEY@github.com/BertCotton/TfsAdvanced $GIT_TAG > /dev/null 2>&1
 
-  branches:
-    except:
-      - /^build-[0-9a-z\-]*/
+branches:
+  except:
+    - /^build-[0-9a-z\-]*/
 
 deploy:
   provider: releases
