@@ -29,7 +29,7 @@ namespace TfsAdvanced.DataStore.Repository
         public override void Update(IEnumerable<Build> updates)
         {
             base.Update(updates);
-            DateTime yesterday = DateTime.Now.AddMinutes(-1);
+            DateTime yesterday = DateTime.Now.Date.AddDays(-2);
             base.Cleanup(x => x.queueTime < yesterday);
         }
     }
