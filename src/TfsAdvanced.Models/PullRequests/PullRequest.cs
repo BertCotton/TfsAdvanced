@@ -15,8 +15,8 @@ namespace TfsAdvanced.Models.PullRequests
         public CommitLink lastMergeSourceCommit { get; set; }
         public CommitLink lastMergeTargetCommit { get; set; }
         public string mergeId { get; set; }
+        public string status { get; set; }
         public string mergeStatus { get; set; }
-        public string mergeStatusstatus { get; set; }
         public int pullRequestId { get; set; }
         public string remoteUrl { get; set; }
         public Repository repository { get; set; }
