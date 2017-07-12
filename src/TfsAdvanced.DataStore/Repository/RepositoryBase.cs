@@ -85,6 +85,26 @@ namespace TFSAdvanced.DataStore.Repository
             }
         }
 
+        public void Remove(IEnumerable<T> items)
+        {
+            try
+            {
+                if (mutex.WaitOne(60))
+                {
+                    foreach (var item in items)
+                    {
+                        var key = GetId(item);
+                        if(data.ContainsKey(key))
+                            data.Remove(key);
+                    }
+                }
+            }
+            finally
+            {
+                mutex.ReleaseMutex();
+            }
+        }
+
         protected void Cleanup(Predicate<T> removePredicate)
         {
             try
