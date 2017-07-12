@@ -66,7 +66,7 @@ namespace TfsAdvanced.Web.Controllers
 
         private string GetBaseURL()
         {
-            return(HttpContext.Request.IsHttps ? "https://" : "http://") + HttpContext.Request.Host;
+            return "https://" + HttpContext.Request.Host;
         }
     }
 }
