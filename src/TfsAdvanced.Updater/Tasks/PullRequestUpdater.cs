@@ -76,11 +76,7 @@ namespace TfsAdvanced.Updater.Tasks
                 pullRequestRepository.Update(pullRequestsList);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pullRequestsList.Count, UpdaterName = nameof(PullRequestUpdater)});
 
-                // Builds are only tracked 
-                var pullRequestBuildIds = pullRequestsList.Where(x => x.build != null).Select(x => x.build.id).ToList();
-                var buildsToRemove = buildRepository.GetAll().Where(x => !pullRequestBuildIds.Contains(x.id)).ToList();
-                buildRepository.Remove(buildsToRemove);
-
+            
             }
             catch (Exception ex)
             {
