@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using Microsoft.EntityFrameworkCore;
 
 namespace TFSAdvanced.DataStore.Repository
 {
@@ -22,42 +23,50 @@ namespace TFSAdvanced.DataStore.Repository
 
         public IEnumerable<T> GetAll()
         {
-            try
+            if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
             {
-                if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
+                try
+                {
                     return data.Values;
-            }
-            finally
-            {
-                mutex.ReleaseMutex();
+                }
+                finally
+                {
+                    mutex.ReleaseMutex();
+                }
             }
             return new List<T>();
         }
 
         protected T Get(Predicate<T> d)
         {
-            try
+            if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
             {
-                if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
+                try
+                {
+
                     return data.Values.FirstOrDefault(x => d(x));
-            }
-            finally
-            {
-                mutex.ReleaseMutex();
+                }
+                finally
+                {
+                    mutex.ReleaseMutex();
+                }
             }
             return default(T);
         }
 
         protected IEnumerable<T> GetList(Predicate<T> d)
         {
-            try
+            if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
             {
-                if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
+                try
+                {
+
                     return data.Values.Where(x => d(x));
-            }
-            finally
-            {
-                mutex.ReleaseMutex();
+                }
+                finally
+                {
+                    mutex.ReleaseMutex();
+                }
             }
             return new List<T>();
         }
@@ -65,10 +74,11 @@ namespace TFSAdvanced.DataStore.Repository
 
         public virtual void Update(IEnumerable<T> updates)
         {
-            try
+            if (mutex.WaitOne(TimeSpan.FromSeconds(60)))
             {
-                if (mutex.WaitOne(TimeSpan.FromSeconds(60)))
+                try
                 {
+
                     foreach (T update in updates)
                     {
                         var id = GetId(update);
@@ -78,50 +88,53 @@ namespace TFSAdvanced.DataStore.Repository
                             data.Add(id, update);
                     }
                 }
-            }
-            finally
-            {
-                mutex.ReleaseMutex();
+                finally
+
+                {
+                    mutex.ReleaseMutex();
+                }
             }
         }
 
         public void Remove(IEnumerable<T> items)
         {
-            try
+            if (mutex.WaitOne(60))
             {
-                if (mutex.WaitOne(60))
+                try
                 {
-                    foreach (var item in items)
+
+                    // ToList to prevent removing key if it is an enumeration of data
+                    foreach (var item in items.ToList())
                     {
                         var key = GetId(item);
-                        if(data.ContainsKey(key))
+                        if (data.ContainsKey(key))
                             data.Remove(key);
                     }
                 }
-            }
-            finally
-            {
-                mutex.ReleaseMutex();
+                finally
+                {
+                    mutex.ReleaseMutex();
+                }
             }
         }
 
         protected void Cleanup(Predicate<T> removePredicate)
         {
-            try
+            if (mutex.WaitOne(60))
             {
-                if (mutex.WaitOne(60))
+                try
                 {
-                    var itemsToRemove = data.Values.ToImmutableList().Where(x => removePredicate(x));
+                    var itemsToRemove = data.Values.ToImmutableList().Where(x => removePredicate(x)).ToList();
                     foreach (var item in itemsToRemove)
                     {
                         var key = GetId(item);
                         data.Remove(key);
                     }
                 }
-            }
-            finally
-            {
-                mutex.ReleaseMutex();
+                finally
+                {
+                    mutex.ReleaseMutex();
+                }
             }
         }
     }
