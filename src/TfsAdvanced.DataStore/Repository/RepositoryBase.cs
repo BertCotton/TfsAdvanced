@@ -60,7 +60,7 @@ namespace TFSAdvanced.DataStore.Repository
         }
 
 
-        public void Update(IEnumerable<T> updates)
+        public virtual void Update(IEnumerable<T> updates)
         {
             try
             {
@@ -70,6 +70,21 @@ namespace TFSAdvanced.DataStore.Repository
                     {
                         this.data.Add(update);
                     }
+                }
+            }
+            finally
+            {
+                mutex.ReleaseMutex();
+            }
+        }
+
+        protected void Cleanup(Predicate<T> removePredicate)
+        {
+            try
+            {
+                if (mutex.WaitOne(60))
+                {
+                    data.RemoveWhere(removePredicate);
                 }
             }
             finally

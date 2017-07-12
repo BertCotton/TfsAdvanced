@@ -12,6 +12,6 @@ namespace TfsAdvanced.Models.Infrastructure
 
         public AuthorizationSettings authorization { get; set; }
 
-        public static int MAX_DEGREE_OF_PARALLELISM = -1;
+        public static int MAX_DEGREE_OF_PARALLELISM = 3;
     }
 }

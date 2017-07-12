@@ -52,7 +52,6 @@ namespace TfsAdvanced.Updater.Tasks
                 buildRepository.Update(buildLists);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = buildLists.Count, UpdaterName = nameof(BuildUpdater)});
 
-
             }
             catch (Exception ex)
             {

@@ -49,7 +49,7 @@ namespace TfsAdvanced.Updater.Tasks
                     });
                 });
 
-                buildDefinitionRepository.Update(buildDefinitions.ToList());
+                buildDefinitionRepository.Update(buildDefinitions);
                 
                 updateStatusRepository.UpdateStatus(new UpdateStatus { LastUpdate = DateTime.Now, UpdatedRecords = buildDefinitions.Count, UpdaterName = nameof(BuildDefinitionUpdater)});
 

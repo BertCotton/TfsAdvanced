@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,6 +22,13 @@ namespace TfsAdvanced.DataStore.Repository
         public Build GetBuildBySourceVersion(string commitId)
         {
             return base.Get(() => data.Where(b => b.sourceVersion == commitId).OrderByDescending(b => b.id).FirstOrDefault());
+        }
+        
+        public override void Update(IEnumerable<Build> updates)
+        {
+            base.Update(updates);
+            DateTime yesterday = DateTime.Now.Date.AddDays(-2);
+            base.Cleanup(x => x.queueTime < yesterday);
         }
     }
 
