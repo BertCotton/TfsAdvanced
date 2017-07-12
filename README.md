@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/BertCotton/TfsAdvanced.svg?branch=master)](https://travis-ci.org/BertCotton/TfsAdvanced)
+
 # TfsAdvanced
 This is a sister application for TFS.  It is to be deployed along side an existing TFS instance.
 
