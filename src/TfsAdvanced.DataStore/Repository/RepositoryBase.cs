@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -8,21 +9,23 @@ namespace TFSAdvanced.DataStore.Repository
 {
     public abstract class RepositoryBase<T>
     {
-        protected readonly HashSet<T> data;
+        protected readonly Dictionary<int, T> data;
         protected readonly Mutex mutex;
 
-        protected RepositoryBase(IEqualityComparer<T> comparer)
+        protected RepositoryBase()
         {
-            this.data = new HashSet<T>(comparer);
+            this.data = new Dictionary<int, T>();
             this.mutex = new Mutex();
         }
+
+        protected abstract int GetId(T item);
 
         public IEnumerable<T> GetAll()
         {
             try
             {
                 if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
-                    return data;
+                    return data.Values;
             }
             finally
             {
@@ -31,12 +34,12 @@ namespace TFSAdvanced.DataStore.Repository
             return new List<T>();
         }
 
-        protected T Get(Func<T> d)
+        protected T Get(Predicate<T> d)
         {
             try
             {
                 if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
-                    return d();
+                    return data.Values.FirstOrDefault(x => d(x));
             }
             finally
             {
@@ -45,12 +48,12 @@ namespace TFSAdvanced.DataStore.Repository
             return default(T);
         }
 
-        protected IEnumerable<T> Get(Func<IEnumerable<T>> d)
+        protected IEnumerable<T> GetList(Predicate<T> d)
         {
             try
             {
                 if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
-                    return d();
+                    return data.Values.Where(x => d(x));
             }
             finally
             {
@@ -68,7 +71,11 @@ namespace TFSAdvanced.DataStore.Repository
                 {
                     foreach (T update in updates)
                     {
-                        this.data.Add(update);
+                        var id = GetId(update);
+                        if (data.ContainsKey(id))
+                            data[id] = update;
+                        else
+                            data.Add(id, update);
                     }
                 }
             }
@@ -84,7 +91,12 @@ namespace TFSAdvanced.DataStore.Repository
             {
                 if (mutex.WaitOne(60))
                 {
-                    data.RemoveWhere(removePredicate);
+                    var itemsToRemove = data.Values.ToImmutableList().Where(x => removePredicate(x));
+                    foreach (var item in itemsToRemove)
+                    {
+                        var key = GetId(item);
+                        data.Remove(key);
+                    }
                 }
             }
             finally

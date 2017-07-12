@@ -8,21 +8,10 @@ namespace TfsAdvanced.DataStore.Repository
 {
     public class PoolRepository : RepositoryBase<Pool>
     {
-        public PoolRepository() : base(new PoolComparer())
+        protected override int GetId(Pool item)
         {
+            return item.id;
         }
     }
 
-    class PoolComparer : IEqualityComparer<Pool>
-    {
-        public bool Equals(Pool x, Pool y)
-        {
-            return x.id == y.id;
-        }
-
-        public int GetHashCode(Pool obj)
-        {
-            return obj.id;
-        }
-    }
 }

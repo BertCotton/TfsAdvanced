@@ -11,14 +11,15 @@ namespace TfsAdvanced.DataStore.Repository
 {
     public class ProjectRepository : RepositoryBase<Project>
     {
-        public ProjectRepository() : base(new ProjectComparer())
-        {
-        }
-
 
         public Project GetProject(string projectId)
         {
-            return base.Get(() => data.FirstOrDefault(p => p.id == projectId));
+            return base.Get(p => p.id == projectId);
+        }
+
+        protected override int GetId(Project item)
+        {
+            return item.id.GetHashCode();
         }
     }
 

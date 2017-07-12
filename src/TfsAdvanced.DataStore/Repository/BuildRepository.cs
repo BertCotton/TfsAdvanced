@@ -10,38 +10,28 @@ namespace TfsAdvanced.DataStore.Repository
 {
     public class BuildRepository : RepositoryBase<Build>
     {
-        public BuildRepository() : base(new BuildComparer())
-        {
-        }
         
         public Build GetBuild(int buildId)
         {
-            return base.Get(() => data.FirstOrDefault(b => b.id == buildId));
+            return base.Get(b => b.id == buildId);
         }
 
         public Build GetBuildBySourceVersion(string commitId)
         {
-            return base.Get(() => data.Where(b => b.sourceVersion == commitId).OrderByDescending(b => b.id).FirstOrDefault());
+            return base.GetList(b => b.sourceVersion == commitId).OrderByDescending(b => b.id).FirstOrDefault();
         }
-        
+
+        protected override int GetId(Build item)
+        {
+            return item.id;
+        }
+
         public override void Update(IEnumerable<Build> updates)
         {
             base.Update(updates);
-            DateTime yesterday = DateTime.Now.Date.AddDays(-2);
+            DateTime yesterday = DateTime.Now.AddMinutes(-1);
             base.Cleanup(x => x.queueTime < yesterday);
         }
     }
-
-    class BuildComparer : IEqualityComparer<Build>
-    {
-        public bool Equals(Build x, Build y)
-        {
-            return x.id == y.id;
-        }
-
-        public int GetHashCode(Build obj)
-        {
-            return obj.id;
-        }
-    }
+    
 }

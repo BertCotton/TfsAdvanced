@@ -7,22 +7,10 @@ namespace TfsAdvanced.DataStore.Repository
 {
     public class RepositoryRepository : RepositoryBase<Models.Repositories.Repository>
     {
-        public RepositoryRepository() : base(new RepositoryComparer())
+        protected override int GetId(Models.Repositories.Repository item)
         {
-
+            return item.id.GetHashCode();
         }
     }
 
-    class RepositoryComparer : IEqualityComparer<Models.Repositories.Repository>
-    {
-        public bool Equals(Models.Repositories.Repository x, Models.Repositories.Repository y)
-        {
-            return x.id == y.id;
-        }
-
-        public int GetHashCode(Models.Repositories.Repository obj)
-        {
-            return obj.id.GetHashCode();
-        }
-    }
 }
