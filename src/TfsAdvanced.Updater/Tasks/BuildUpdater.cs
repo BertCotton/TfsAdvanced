@@ -42,19 +42,31 @@ namespace TfsAdvanced.Updater.Tasks
                 var builds = new ConcurrentStack<Build>();
                 Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
-                    // Finished builds                    
+                    // Finished PR builds                    
                     var projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&minFinishTime={yesterday:O}").Result;
                     if (projectBuilds != null && projectBuilds.Any())
                     {
                         builds.PushRange(projectBuilds.ToArray());
                     }
 
+
                     // Current active builds
-                    projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&statusFilter=inProgress&inProgress=notStarted").Result;
+                    projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2&statusFilter=inProgress&inProgress=notStarted").Result;
                     if (projectBuilds != null && projectBuilds.Any())
                     {
                         builds.PushRange(projectBuilds.ToArray());
                     }
+
+
+                    DateTime twoHoursAgo = DateTime.Now.AddHours(-2);
+                    // Because we want to capture the final state of any build that was running and just finished we are getting those too
+                    // Finished builds within the last 2 hours
+                    projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2&minFinishTime={twoHoursAgo:O}").Result;
+                    if (projectBuilds != null && projectBuilds.Any())
+                    {
+                        builds.PushRange(projectBuilds.ToArray());
+                    }
+
                 });
 
 
