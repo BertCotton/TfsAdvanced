@@ -37,7 +37,7 @@ namespace TfsAdvanced.Web.Controllers
             if (!definitionIds.Any())
                 return NotFound();
 
-            var definitions = buildDefinitionRepository.GetBuildDefinitions()
+            var definitions = buildDefinitionRepository.GetAll()
                     .Where(x => definitionIds.Contains(x.id))
                     .ToList();
             var builds = buildDefinitionRequest.LaunchBuild(definitions);
@@ -46,9 +46,9 @@ namespace TfsAdvanced.Web.Controllers
         }
         
         [HttpGet]
-        public IList<BuildDefinition> Index()
+        public IEnumerable<BuildDefinition> Index()
         {
-            return buildDefinitionRepository.GetBuildDefinitions();
+            return buildDefinitionRepository.GetAll();
         }
     }
 }

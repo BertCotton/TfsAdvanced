@@ -13,11 +13,6 @@ namespace TfsAdvanced.Models.Builds
         public string url { get; set; }
         public Repository repository { get; set; }
         public BuildQueue queue { get; set; }
-
-        public IList<Build> LatestBuilds { get; set; }
-
-        public Build LatestBuild { get; set; }
-        
         public BuildDefinitionLinks _links { get; set; }
         
     }

@@ -1,32 +1,42 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using Microsoft.EntityFrameworkCore;
 using TfsAdvanced.Models.Builds;
+using TFSAdvanced.DataStore.Repository;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class BuildDefinitionRepository
+    public class BuildDefinitionRepository : RepositoryBase<BuildDefinition>
     {
-        private ConcurrentBag<BuildDefinition> buildDefinitions;
-
-        public BuildDefinitionRepository()
+        
+        public BuildDefinitionRepository() : base(new BuildDefinitionComparer())
         {
-            buildDefinitions = new ConcurrentBag<BuildDefinition>();
         }
 
-        public IList<BuildDefinition> GetBuildDefinitions()
-        {
-            return buildDefinitions.ToList();
-        }
-
+     
         public BuildDefinition GetBuildDefinition(int definitionId)
         {
-            return buildDefinitions.FirstOrDefault(x => x.id == definitionId);
+            return base.Get(() => data.FirstOrDefault(x => x.id == definitionId));
         }
 
-        public void Update(IList<BuildDefinition> buildDefinitions)
+    }
+
+    class BuildDefinitionComparer : IEqualityComparer<BuildDefinition>
+    {
+        public bool Equals(BuildDefinition x, BuildDefinition y)
         {
-            this.buildDefinitions = new ConcurrentBag<BuildDefinition>(buildDefinitions);
+            return x.id == y.id;
+        }
+
+        public int GetHashCode(BuildDefinition obj)
+        {
+            // The ID of a buildDefinition should be unique to a hash code
+            return obj.id;
         }
     }
 }

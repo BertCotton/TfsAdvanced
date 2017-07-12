@@ -2,35 +2,32 @@
 using System.Collections.Generic;
 using System.Linq;
 using TfsAdvanced.Models.PullRequests;
+using TFSAdvanced.DataStore.Repository;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class PullRequestRepository
+    public class PullRequestRepository : RepositoryBase<PullRequest>
     {
-        private ConcurrentBag<PullRequest> pullRequests;
-        
-
-        public PullRequestRepository()
+        public PullRequestRepository() : base(new PullRequestComparer())
         {
-            this.pullRequests = new ConcurrentBag<PullRequest>();
         }
 
-        public IList<PullRequest> GetPullRequests()
+        public IEnumerable<PullRequest> GetPullRequestsAfter(int id)
         {
+            return base.Get(() => data.Where(x => x.pullRequestId > id));
+        }
+    }
 
-            return pullRequests.ToList();
+    class PullRequestComparer : IEqualityComparer<PullRequest>
+    {
+        public bool Equals(PullRequest x, PullRequest y)
+        {
+            return x.pullRequestId == y.pullRequestId;
         }
 
-        public IList<PullRequest> GetPullRequestsAfter(int id)
+        public int GetHashCode(PullRequest obj)
         {
-
-            return pullRequests.Where(x => x.pullRequestId > id).ToList();
+            return obj.pullRequestId;
         }
-
-        public void UpdatePullRequests(IList<PullRequest> updatedPullRequests)
-        {
-            this.pullRequests = new ConcurrentBag<PullRequest>(updatedPullRequests);
-        }
-        
     }
 }

@@ -37,7 +37,7 @@ namespace TfsAdvanced.Updater.Tasks
             try
             {
                 ConcurrentBag<TfsAdvanced.Models.Repositories.Repository> populatedRepositories = new ConcurrentBag<TfsAdvanced.Models.Repositories.Repository>();
-                Parallel.ForEach(projectRepository.GetProjects(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
+                Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
                     IList<TfsAdvanced.Models.Repositories.Repository> repositories = GetAsync.FetchResponseList<TfsAdvanced.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/git/repositories?api=1.0").Result;
                     if (repositories == null)
@@ -57,7 +57,7 @@ namespace TfsAdvanced.Updater.Tasks
                     });
                 });
                 var repositoryList = populatedRepositories.ToList();
-                repositoryRepository.UpdateRepositories(repositoryList);
+                repositoryRepository.Update(repositoryList);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = repositoryList.Count, UpdaterName = nameof(RepositoryUpdater)});
             }
             catch (Exception ex)

@@ -1,34 +1,37 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using TfsAdvanced.Models.Projects;
+using TFSAdvanced.DataStore.Repository;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class ProjectRepository
+    public class ProjectRepository : RepositoryBase<Project>
     {
-        private ConcurrentBag<Project> projects;
-
-        public ProjectRepository()
+        public ProjectRepository() : base(new ProjectComparer())
         {
-            projects = new ConcurrentBag<Project>();
         }
 
-        public IList<Project> GetProjects()
-        {
-            return projects.ToImmutableList();    
-        }
 
         public Project GetProject(string projectId)
         {
-            return projects.FirstOrDefault(p => p.id == projectId);
+            return base.Get(() => data.FirstOrDefault(p => p.id == projectId));
         }
+    }
 
-        public void Update(IList<Project> updatedProjects)
+    class ProjectComparer : IEqualityComparer<Project>
+    {
+        public bool Equals(Project x, Project y)
         {
-            this.projects = new ConcurrentBag<Project>(updatedProjects);
+            return x.id == y.id;
         }
 
+        public int GetHashCode(Project obj)
+        {
+            return obj.id.GetHashCode();
+        }
     }
 }

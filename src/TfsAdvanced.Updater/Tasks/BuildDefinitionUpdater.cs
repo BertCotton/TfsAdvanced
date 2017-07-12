@@ -15,18 +15,15 @@ namespace TfsAdvanced.Updater.Tasks
     {
         private readonly BuildDefinitionRepository buildDefinitionRepository;
         private readonly UpdateStatusRepository updateStatusRepository;
-        private readonly BuildRepository buildRepository;
         private readonly ProjectRepository projectRepository;
         private readonly RequestData requestData;
         private bool IsRunning;
 
-        public BuildDefinitionUpdater(BuildDefinitionRepository buildDefinitionRepository, RequestData requestData, ProjectRepository projectRepository, 
-            BuildRepository buildRepository, UpdateStatusRepository updateStatusRepository)
+        public BuildDefinitionUpdater(BuildDefinitionRepository buildDefinitionRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository)
         {
             this.buildDefinitionRepository = buildDefinitionRepository;
             this.requestData = requestData;
             this.projectRepository = projectRepository;
-            this.buildRepository = buildRepository;
             this.updateStatusRepository = updateStatusRepository;
         }
 
@@ -40,7 +37,7 @@ namespace TfsAdvanced.Updater.Tasks
             {
 
                 var buildDefinitions = new ConcurrentBag<BuildDefinition>();
-                Parallel.ForEach(projectRepository.GetProjects(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
+                Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
                     var definitions = GetAsync.FetchResponseList<BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/definitions?api=2.2").Result;
                     if (definitions == null)
@@ -52,29 +49,9 @@ namespace TfsAdvanced.Updater.Tasks
                     });
                 });
 
-                buildDefinitionRepository.Update(buildDefinitions.ToList());
-                Parallel.ForEach(buildDefinitions, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, buildDefinition =>
-                {
-                    IList<Build> latestBuilds;
-                    if (buildDefinition.path.Contains("CI"))
-                    {
-                        latestBuilds = buildRepository.GetLatestBuildOnAllBranches(buildDefinition, 8);
-                    }
-                    else
-                    {
-                        latestBuilds = buildRepository.GetLatestBuildOnDefaultBranch(buildDefinition, 8);
-                    }
-
-                    buildDefinition.LatestBuilds = latestBuilds;
-                    if (latestBuilds.Any())
-                    {
-                        buildDefinition.LatestBuild = latestBuilds.OrderByDescending(b => b.id).FirstOrDefault();
-                    }
-                });
-
-                var buildDefinitionsList = buildDefinitions.ToList();
-                buildDefinitionRepository.Update(buildDefinitionsList);
-                updateStatusRepository.UpdateStatus(new UpdateStatus { LastUpdate = DateTime.Now, UpdatedRecords = buildDefinitionsList.Count, UpdaterName = nameof(BuildDefinitionUpdater)});
+                buildDefinitionRepository.Update(buildDefinitions);
+                
+                updateStatusRepository.UpdateStatus(new UpdateStatus { LastUpdate = DateTime.Now, UpdatedRecords = buildDefinitions.Count, UpdaterName = nameof(BuildDefinitionUpdater)});
 
     }
             catch (Exception ex)

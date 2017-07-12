@@ -21,6 +21,7 @@ using TfsAdvanced.Infrastructure;
 using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
 using TfsAdvanced.ServiceRequests;
+using TfsAdvanced.Web;
 
 namespace TfsAdvanced
 {
@@ -124,6 +125,8 @@ namespace TfsAdvanced
                 Authorization = new []{new HangfireAuthorizationFilter()}
             });
             app.UseHangfireServer();
+
+            GlobalJobFilters.Filters.Add(new HangfireJobFilter());
 
             Hangfire.BackgroundJob.Enqueue<Updater.Tasks.Updater>(updater => updater.Start());
         }

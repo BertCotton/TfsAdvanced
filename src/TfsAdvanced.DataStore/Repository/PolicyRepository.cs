@@ -2,31 +2,34 @@
 using System.Collections.Generic;
 using System.Linq;
 using TfsAdvanced.Models.Policy;
+using TFSAdvanced.DataStore.Repository;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class PolicyRepository
+    public class PolicyRepository : RepositoryBase<PolicyConfiguration>
     {
-        public ConcurrentBag<PolicyConfiguration> policies;
 
-        public PolicyRepository()
+        public PolicyRepository() : base(new PolicyConfigurationComparer())
         {
-            policies = new ConcurrentBag<PolicyConfiguration>();
         }
 
-        public IList<PolicyConfiguration> GetPolicies()
+
+        public IEnumerable<PolicyConfiguration> GetByRepository(string repositoryId)
         {
-            return policies.ToList();
+            return base.Get(() => data.Where(p => p.settings.scope != null && p.settings.scope.Any(s => s.repositoryId == repositoryId)));
+        }
+    }
+
+    class PolicyConfigurationComparer : IEqualityComparer<PolicyConfiguration>
+    {
+        public bool Equals(PolicyConfiguration x, PolicyConfiguration y)
+        {
+            return x.id == y.id;
         }
 
-        public IList<PolicyConfiguration> GetByRepository(string repositoryId)
+        public int GetHashCode(PolicyConfiguration obj)
         {
-            return policies.Where(p => p.settings.scope != null && p.settings.scope.Any(s => s.repositoryId == repositoryId)).ToList();
-        }
-
-        public void SetPolicies(IEnumerable<PolicyConfiguration> policies)
-        {
-            this.policies = new ConcurrentBag<PolicyConfiguration>(policies);
+            return obj.id;
         }
     }
 }
