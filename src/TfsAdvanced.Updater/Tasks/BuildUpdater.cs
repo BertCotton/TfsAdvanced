@@ -16,15 +16,17 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly BuildRepository buildRepository;
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly ProjectRepository projectRepository;
+        private readonly PullRequestRepository pullRequestRepository;
         private readonly RequestData requestData;
         private bool IsRunning;
 
-        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository)
+        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, PullRequestRepository pullRequestRepository)
         {
             this.buildRepository = buildRepository;
             this.requestData = requestData;
             this.projectRepository = projectRepository;
             this.updateStatusRepository = updateStatusRepository;
+            this.pullRequestRepository = pullRequestRepository;
         }
 
         [AutomaticRetry(Attempts = 0)]
@@ -35,20 +37,29 @@ namespace TfsAdvanced.Updater.Tasks
             IsRunning = true;
             try
             {
-                
+
+                DateTime yesterday = DateTime.Now.Date.AddDays(-1);
                 var builds = new ConcurrentStack<Build>();
                 Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
-                    var projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2").Result;
+                    // Finished builds                    
+                    var projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&minFinishTime={yesterday:O}").Result;
+                    if (projectBuilds != null && projectBuilds.Any())
+                    {
+                        builds.PushRange(projectBuilds.ToArray());
+                    }
+
+                    // Current active builds
+                    projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&statusFilter=inProgress&inProgress=notStarted").Result;
                     if (projectBuilds != null && projectBuilds.Any())
                     {
                         builds.PushRange(projectBuilds.ToArray());
                     }
                 });
 
+
                 // The builds must be requested without the filter because the only filter available is minFinishTime, which will filter out those that haven't finished yet
-                DateTime yesterday = DateTime.Now.Date.AddDays(-1);
-                var buildLists = builds.Where(x => x.startTime >= yesterday).ToList();
+                var buildLists = builds.ToList();
                 buildRepository.Update(buildLists);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = buildLists.Count, UpdaterName = nameof(BuildUpdater)});
 

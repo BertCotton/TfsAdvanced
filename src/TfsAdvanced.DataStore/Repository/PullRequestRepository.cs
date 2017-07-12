@@ -8,26 +8,16 @@ namespace TfsAdvanced.DataStore.Repository
 {
     public class PullRequestRepository : RepositoryBase<PullRequest>
     {
-        public PullRequestRepository() : base(new PullRequestComparer())
-        {
-        }
 
         public IEnumerable<PullRequest> GetPullRequestsAfter(int id)
         {
-            return base.Get(() => data.Where(x => x.pullRequestId > id));
-        }
-    }
-
-    class PullRequestComparer : IEqualityComparer<PullRequest>
-    {
-        public bool Equals(PullRequest x, PullRequest y)
-        {
-            return x.pullRequestId == y.pullRequestId;
+            return base.GetList(x => x.pullRequestId > id);
         }
 
-        public int GetHashCode(PullRequest obj)
+        protected override int GetId(PullRequest item)
         {
-            return obj.pullRequestId;
+            return item.pullRequestId;
         }
     }
+    
 }

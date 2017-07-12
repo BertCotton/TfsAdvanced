@@ -13,30 +13,17 @@ namespace TfsAdvanced.DataStore.Repository
 {
     public class BuildDefinitionRepository : RepositoryBase<BuildDefinition>
     {
-        
-        public BuildDefinitionRepository() : base(new BuildDefinitionComparer())
-        {
-        }
 
-     
         public BuildDefinition GetBuildDefinition(int definitionId)
         {
-            return base.Get(() => data.FirstOrDefault(x => x.id == definitionId));
+            return base.Get(definition => definition.id == definitionId);
         }
 
-    }
 
-    class BuildDefinitionComparer : IEqualityComparer<BuildDefinition>
-    {
-        public bool Equals(BuildDefinition x, BuildDefinition y)
+        protected override int GetId(BuildDefinition item)
         {
-            return x.id == y.id;
-        }
-
-        public int GetHashCode(BuildDefinition obj)
-        {
-            // The ID of a buildDefinition should be unique to a hash code
-            return obj.id;
+            return item.id;
         }
     }
+    
 }

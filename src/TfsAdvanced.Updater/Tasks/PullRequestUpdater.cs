@@ -53,10 +53,6 @@ namespace TfsAdvanced.Updater.Tasks
                         if (pullRequest.lastMergeCommit != null)
                         {
                             pullRequest.build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
-                            //if (pullRequest.build?.finishTime != null && pullRequest.build.finishTime.Value.AddHours(12) < DateTime.Now)
-                            //{
-                            //    pullRequest.build.result = BuildResult.expired;
-                            //}
                         }
                         foreach (var configuration in repository.policyConfigurations)
                         {
@@ -80,6 +76,10 @@ namespace TfsAdvanced.Updater.Tasks
                 pullRequestRepository.Update(pullRequestsList);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pullRequestsList.Count, UpdaterName = nameof(PullRequestUpdater)});
 
+                // Builds are only tracked 
+                var pullRequestBuildIds = pullRequestsList.Where(x => x.build != null).Select(x => x.build.id).ToList();
+                var buildsToRemove = buildRepository.GetAll().Where(x => !pullRequestBuildIds.Contains(x.id)).ToList();
+                buildRepository.Remove(buildsToRemove);
 
             }
             catch (Exception ex)

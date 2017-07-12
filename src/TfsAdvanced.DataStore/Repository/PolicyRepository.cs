@@ -9,27 +9,15 @@ namespace TfsAdvanced.DataStore.Repository
     public class PolicyRepository : RepositoryBase<PolicyConfiguration>
     {
 
-        public PolicyRepository() : base(new PolicyConfigurationComparer())
-        {
-        }
-
 
         public IEnumerable<PolicyConfiguration> GetByRepository(string repositoryId)
         {
-            return base.Get(() => data.Where(p => p.settings.scope != null && p.settings.scope.Any(s => s.repositoryId == repositoryId)));
-        }
-    }
-
-    class PolicyConfigurationComparer : IEqualityComparer<PolicyConfiguration>
-    {
-        public bool Equals(PolicyConfiguration x, PolicyConfiguration y)
-        {
-            return x.id == y.id;
+            return base.GetList(p => p.settings.scope != null && p.settings.scope.Any(s => s.repositoryId == repositoryId));
         }
 
-        public int GetHashCode(PolicyConfiguration obj)
+        protected override int GetId(PolicyConfiguration item)
         {
-            return obj.id;
+            return item.id;
         }
     }
 }
