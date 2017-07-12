@@ -35,9 +35,9 @@ namespace TfsAdvanced.Updater.Tasks
             IsRunning = true;
             try
             {
-
+                
                 var builds = new ConcurrentStack<Build>();
-                Parallel.ForEach(projectRepository.GetProjects(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
+                Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
                     var projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.name}/_apis/build/builds?api-version=2.2").Result;
                     if (projectBuilds != null && projectBuilds.Any())
@@ -46,7 +46,9 @@ namespace TfsAdvanced.Updater.Tasks
                     }
                 });
 
-                var buildLists = builds.ToList();
+                // The builds must be requested without the filter because the only filter available is minFinishTime, which will filter out those that haven't finished yet
+                DateTime yesterday = DateTime.Now.Date.AddDays(-1);
+                var buildLists = builds.Where(x => x.startTime >= yesterday).ToList();
                 buildRepository.Update(buildLists);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = buildLists.Count, UpdaterName = nameof(BuildUpdater)});
 

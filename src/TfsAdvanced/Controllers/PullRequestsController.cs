@@ -17,9 +17,9 @@ namespace TfsAdvanced.Web.Controllers
         }
 
         [HttpGet]
-        public IList<PullRequest> Index()
+        public IEnumerable<PullRequest> Index()
         {
-            return pullRequestRepository.GetPullRequests();
+            return pullRequestRepository.GetAll();
         }
 
         [HttpGet("newcheck/{sinceId}")]

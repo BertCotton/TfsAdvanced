@@ -1,26 +1,28 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using TFSAdvanced.DataStore.Repository;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class RepositoryRepository
+    public class RepositoryRepository : RepositoryBase<Models.Repositories.Repository>
     {
-        private ConcurrentBag<Models.Repositories.Repository> repositories;
-
-        public RepositoryRepository()
+        public RepositoryRepository() : base(new RepositoryComparer())
         {
-            repositories = new ConcurrentBag<Models.Repositories.Repository>();
+
+        }
+    }
+
+    class RepositoryComparer : IEqualityComparer<Models.Repositories.Repository>
+    {
+        public bool Equals(Models.Repositories.Repository x, Models.Repositories.Repository y)
+        {
+            return x.id == y.id;
         }
 
-        public IList<Models.Repositories.Repository> GetRepositories()
+        public int GetHashCode(Models.Repositories.Repository obj)
         {
-            return repositories.ToImmutableList();
-        }
-
-        public void UpdateRepositories(IList<Models.Repositories.Repository> repositories)
-        {
-            this.repositories = new ConcurrentBag<Models.Repositories.Repository>(repositories);
+            return obj.id.GetHashCode();
         }
     }
 }

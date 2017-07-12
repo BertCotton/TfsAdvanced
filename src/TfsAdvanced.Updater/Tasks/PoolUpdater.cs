@@ -33,7 +33,7 @@ namespace TfsAdvanced.Updater.Tasks
                 var pools = GetAsync.FetchResponseList<Pool>(requestData, $"{requestData.BaseAddress}/_apis/distributedtask/pools?api-version=1.0").Result;
                 if (pools != null)
                 {
-                    poolRepository.UpdatePools(pools);
+                    poolRepository.Update(pools);
                     updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pools.Count, UpdaterName = nameof(PoolUpdater)});
                 }
 

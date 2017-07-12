@@ -2,26 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using TfsAdvanced.Models.Pools;
+using TFSAdvanced.DataStore.Repository;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class PoolRepository
+    public class PoolRepository : RepositoryBase<Pool>
     {
-        private ConcurrentStack<Pool> pools;
-
-        public PoolRepository()
+        public PoolRepository() : base(new PoolComparer())
         {
-            this.pools = new ConcurrentStack<Pool>();
+        }
+    }
+
+    class PoolComparer : IEqualityComparer<Pool>
+    {
+        public bool Equals(Pool x, Pool y)
+        {
+            return x.id == y.id;
         }
 
-        public IList<Pool> GetPools()
+        public int GetHashCode(Pool obj)
         {
-            return pools.ToList();
-        }
-
-        public void UpdatePools(IList<Pool> pools)
-        {
-            this.pools = new ConcurrentStack<Pool>(pools);
+            return obj.id;
         }
     }
 }

@@ -36,7 +36,7 @@ namespace TfsAdvanced.Updater.Tasks
             {
 
                 ConcurrentBag<PolicyConfiguration> policies = new ConcurrentBag<PolicyConfiguration>();
-                Parallel.ForEach(projectRepository.GetProjects(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
+                Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
                     var policyConfigurations = GetAsync.FetchResponseList<PolicyConfiguration>(requestData, $"{requestData.BaseAddress}/defaultcollection/{project.id}/_apis/policy/configurations?api-version=2.0-preview.1").Result;
                     foreach (var configuration in policyConfigurations)
@@ -45,7 +45,7 @@ namespace TfsAdvanced.Updater.Tasks
                     }
 
                 });
-                policyRepository.SetPolicies(policies);
+                policyRepository.Update(policies);
             }
             catch (Exception ex)
             {

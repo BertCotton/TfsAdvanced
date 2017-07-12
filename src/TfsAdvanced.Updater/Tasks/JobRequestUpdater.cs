@@ -42,7 +42,7 @@ namespace TfsAdvanced.Updater.Tasks
 
                 ConcurrentBag<JobRequest> jobRequests = new ConcurrentBag<JobRequest>();
 
-                Parallel.ForEach(poolRepository.GetPools(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pool =>
+                Parallel.ForEach(poolRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pool =>
                 {
 
                     var poolJobRequests = GetAsync.FetchResponseList<JobRequest>(requestData, $"{requestData.BaseAddress}/_apis/distributedtask/pools/{pool.id}/jobrequests?api-version=1.0").Result;
@@ -118,7 +118,8 @@ namespace TfsAdvanced.Updater.Tasks
                     }
                 });
 
-                var jobRequestsLists = jobRequests.ToList();
+                DateTime yesterday = DateTime.Now.Date.AddDays(-1);
+                var jobRequestsLists = jobRequests.Where(x => !x.startedTime.HasValue || x.startedTime.Value >= yesterday).ToList();
                 jobRequestRepository.UpdateJobRequests(jobRequestsLists);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = jobRequestsLists.Count, UpdaterName = nameof(JobRequestUpdater)});
 

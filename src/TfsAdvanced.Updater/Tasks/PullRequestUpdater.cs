@@ -39,7 +39,7 @@ namespace TfsAdvanced.Updater.Tasks
             try
             {
                 ConcurrentBag<PullRequest> allPullRequests = new ConcurrentBag<PullRequest>();
-                Parallel.ForEach(repositoryRepository.GetRepositories(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repository =>
+                Parallel.ForEach(repositoryRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repository =>
                 {
                     if (repository._links.pullRequests == null)
                         return;
@@ -77,7 +77,7 @@ namespace TfsAdvanced.Updater.Tasks
                     });
                 });
                 var pullRequestsList = allPullRequests.ToList();
-                pullRequestRepository.UpdatePullRequests(pullRequestsList);
+                pullRequestRepository.Update(pullRequestsList);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pullRequestsList.Count, UpdaterName = nameof(PullRequestUpdater)});
 
 

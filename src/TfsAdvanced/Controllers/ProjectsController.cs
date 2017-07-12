@@ -17,9 +17,9 @@ namespace TfsAdvanced.Web.Controllers
 
 
         [HttpGet]
-        public IList<Project> GetProjects()
+        public IEnumerable<Project> GetProjects()
         {
-            return projectRepository.GetProjects();
+            return projectRepository.GetAll();
         }
     }
 }

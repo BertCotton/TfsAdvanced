@@ -16,7 +16,7 @@ namespace TfsAdvanced.Web.Controllers
         [HttpGet]
         public IActionResult GetPools()
         {
-            return Ok(poolRepository.GetPools());
+            return Ok(poolRepository.GetAll());
         }
     }
 }

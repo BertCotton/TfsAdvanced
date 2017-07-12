@@ -18,7 +18,6 @@
                 <th>Folder</th>
                 <th>Definition Name</th>
                 <th>Default Branch</th>
-                <th>Latest Build Status</th>
                 <th></th>
             </tr>
             </thead>
@@ -50,74 +49,6 @@
                             json[i][2] = buildDefinition.path;
                             json[i][3] = '<a href="' + buildDefinition._links.web.href + '" target="_blank">' + buildDefinition.name + "</a>";
                             json[i][4] = buildDefinition.repository.defaultBranch;
-
-                            var latestBuildStatus = '';
-                            if (buildDefinition.latestBuild) {
-                                if (buildDefinition.latestBuild.status === 'completed') {
-                                    if (buildDefinition.latestBuild.result === 'succeeded')
-                                        latestBuildStatus = '<span style="color:green"><i class="glyphicon glyphicon-check"></i> Succeeded</span>';
-                                    else if (buildDefinition.latestBuild.result === 'failed')
-                                        latestBuildStatus = '<span style="color:red"><i class="glyphicon glyphicon-remove"></i> Failed</span>';
-                                    else
-                                        latestBuildStatus = '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.result}</span>';
-                                } else if (buildDefinition.latestBuild.status === 'inProgress')
-                                    latestBuildStatus = '<span style="color:blue"><i class="glyphicon glyphicon-fire"></i> In Progress</span>';
-                                else
-                                    latestBuildStatus = '<span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${latestBuild.status}</span>';
-                            } else
-                                latestBuildStatus = '<span style="color:gray"><i class="glyphicon glyphicon-remove"></i> No Build?</span>';
-
-                            if (buildDefinition._links.badge) {
-                                latestBuildStatus = "<img src='" + buildDefinition._links.badge.href + "' />";
-                            }
-
-                            json[i][5] = latestBuildStatus;
-
-                            json[i][6] = '<div id="runtime_chart_' + buildDefinition.id + '" style="display:block;margin 0 auto;"></div>';
-
-
-                            if (buildDefinition.latestBuilds.length > 0) {
-                                var chartData = [];
-                                chartData.push(["Date", "RunTime", { role: 'style' }]);
-                                for (var j = 0; j < buildDefinition.latestBuilds.length; j++) {
-                                    var build = buildDefinition.latestBuilds[j];
-                                    var styleColor = "blue";
-                                    var finishTime = new Date();
-                                    if (build.finishTime) {
-                                        finishTime = new Date(build.finishTime);
-                                        switch (build.result) {
-                                        case "succeeded":
-                                            styleColor = "green";
-                                            break;
-                                        case "failed":
-                                        case "partiallySucceeded":
-                                            styleColor = "red";
-                                            break;
-                                        case "canceled":
-                                            styleColor = "orange";
-                                            break;
-                                        case "abandoned":
-                                            styleColor = "gray";
-                                            break;
-                                        }
-                                    }
-
-                                    var startTime = new Date(build.queuedTime);
-                                    if (build.startTime)
-                                        startTime = new Date(build.startTime);
-                                    var runTime = finishTime.getTime() - startTime.getTime();
-
-
-                                    chartData.push([
-                                        $.format.date(startTime, "MM/dd/yyyy"), runTime, 'color: ' + styleColor
-                                    ]);
-                                }
-
-                                charts.push({
-                                    "id": buildDefinition.id,
-                                    "data": google.visualization.arrayToDataTable(chartData)
-                                });
-                            }
                         }
 
 
