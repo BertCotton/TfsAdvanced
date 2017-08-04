@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
@@ -9,8 +8,8 @@ using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
 using TFSAdvanced.Models.DTO;
 using TFSAdvanced.Updater.Models.Builds;
-using Build = TFSAdvanced.Updater.Models.Builds.Build;
-using BuildStatus = TFSAdvanced.Updater.Models.Builds.BuildStatus;
+using Build = TFSAdvanced.Models.DTO.Build;
+using BuildStatus = TFSAdvanced.Models.DTO.BuildStatus;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -40,11 +39,11 @@ namespace TfsAdvanced.Updater.Tasks
             {
 
                 DateTime yesterday = DateTime.Now.Date.AddDays(-1);
-                var builds = new ConcurrentStack<Build>();
+                var builds = new ConcurrentStack<TFSAdvanced.Updater.Models.Builds.Build>();
                 Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
                     // Finished PR builds                    
-                    var projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&minFinishTime={yesterday:O}").Result;
+                    var projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&minFinishTime={yesterday:O}").Result;
                     if (projectBuilds != null && projectBuilds.Any())
                     {
                         builds.PushRange(projectBuilds.ToArray());
@@ -52,7 +51,7 @@ namespace TfsAdvanced.Updater.Tasks
 
 
                     // Current active builds
-                    projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&statusFilter=inProgress&inProgress=notStarted").Result;
+                    projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&statusFilter=inProgress&inProgress=notStarted").Result;
                     if (projectBuilds != null && projectBuilds.Any())
                     {
                         builds.PushRange(projectBuilds.ToArray());
@@ -62,7 +61,7 @@ namespace TfsAdvanced.Updater.Tasks
                     DateTime twoHoursAgo = DateTime.Now.AddHours(-2);
                     // Because we want to capture the final state of any build that was running and just finished we are getting those too
                     // Finished builds within the last 2 hours
-                    projectBuilds = GetAsync.FetchResponseList<Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&minFinishTime={twoHoursAgo:O}").Result;
+                    projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&minFinishTime={twoHoursAgo:O}").Result;
                     if (projectBuilds != null && projectBuilds.Any())
                     {
                         builds.PushRange(projectBuilds.ToArray());
@@ -87,9 +86,9 @@ namespace TfsAdvanced.Updater.Tasks
             }
         }
 
-        private TFSAdvanced.Models.DTO.Build CreateBuild(Build build)
+        private Build CreateBuild(TFSAdvanced.Updater.Models.Builds.Build build)
         {
-            TFSAdvanced.Models.DTO.Build buildDto = new TFSAdvanced.Models.DTO.Build
+            Build buildDto = new Build
             {
                 Id = build.id,
                 Name = build.definition.name,
@@ -108,33 +107,33 @@ namespace TfsAdvanced.Updater.Tasks
 
             switch (build.status)
             {
-                case BuildStatus.notStarted:
-                    buildDto.BuildStatus = TFSAdvanced.Models.DTO.BuildStatus.NotStarted;
+                case TFSAdvanced.Updater.Models.Builds.BuildStatus.notStarted:
+                    buildDto.BuildStatus = BuildStatus.NotStarted;
                     break;
-                case BuildStatus.inProgress:
-                    buildDto.BuildStatus = TFSAdvanced.Models.DTO.BuildStatus.Building;
+                case TFSAdvanced.Updater.Models.Builds.BuildStatus.inProgress:
+                    buildDto.BuildStatus = BuildStatus.Building;
                     break;
                 default:
                     switch (build.result)
                     {
                         case BuildResult.abandoned:
-                            buildDto.BuildStatus = TFSAdvanced.Models.DTO.BuildStatus.Abandonded;
+                            buildDto.BuildStatus = BuildStatus.Abandonded;
                             break;
                         case BuildResult.canceled:
-                            buildDto.BuildStatus = TFSAdvanced.Models.DTO.BuildStatus.Cancelled;
+                            buildDto.BuildStatus = BuildStatus.Cancelled;
                             break;
                         case BuildResult.expired:
-                            buildDto.BuildStatus = TFSAdvanced.Models.DTO.BuildStatus.Expired;
+                            buildDto.BuildStatus = BuildStatus.Expired;
                             break;
                         case BuildResult.failed:
                         case BuildResult.partiallySucceeded:
-                            buildDto.BuildStatus = TFSAdvanced.Models.DTO.BuildStatus.Failed;
+                            buildDto.BuildStatus = BuildStatus.Failed;
                             break;
                         case BuildResult.succeeded:
-                            buildDto.BuildStatus = TFSAdvanced.Models.DTO.BuildStatus.Succeeded;
+                            buildDto.BuildStatus = BuildStatus.Succeeded;
                             break;
                         default:
-                            buildDto.BuildStatus = TFSAdvanced.Models.DTO.BuildStatus.NoBuild;
+                            buildDto.BuildStatus = BuildStatus.NoBuild;
                             break;
                     }
                     break;

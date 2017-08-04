@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using TFSAdvanced.Models.DTO;
 using TFSAdvanced.DataStore.Repository;
+using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {

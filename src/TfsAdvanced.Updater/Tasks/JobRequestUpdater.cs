@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
@@ -12,7 +10,7 @@ using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.DTO;
 using TFSAdvanced.Updater.Models.Builds;
 using TFSAdvanced.Updater.Models.JobRequests;
-using BuildStatus = TFSAdvanced.Updater.Models.Builds.BuildStatus;
+using BuildStatus = TFSAdvanced.Models.DTO.BuildStatus;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -84,23 +82,23 @@ namespace TfsAdvanced.Updater.Tasks
 
                                     switch (build.BuildStatus)
                                     {
-                                        case TFSAdvanced.Models.DTO.BuildStatus.NotStarted:
+                                        case BuildStatus.NotStarted:
                                             queueJob.QueueJobStatus = QueueJobStatus.Queued;
                                             break;
-                                        case TFSAdvanced.Models.DTO.BuildStatus.Abandonded:
+                                        case BuildStatus.Abandonded:
                                             queueJob.QueueJobStatus = QueueJobStatus.Abandonded;
                                             break;
-                                        case TFSAdvanced.Models.DTO.BuildStatus.Building:
+                                        case BuildStatus.Building:
                                             queueJob.QueueJobStatus = QueueJobStatus.Building;
                                             break;
-                                        case TFSAdvanced.Models.DTO.BuildStatus.Cancelled:
+                                        case BuildStatus.Cancelled:
                                             queueJob.QueueJobStatus = QueueJobStatus.Cancelled;
                                             break;
-                                        case TFSAdvanced.Models.DTO.BuildStatus.Expired:
-                                        case TFSAdvanced.Models.DTO.BuildStatus.Failed:
+                                        case BuildStatus.Expired:
+                                        case BuildStatus.Failed:
                                             queueJob.QueueJobStatus = QueueJobStatus.Failed;
                                             break;
-                                        case TFSAdvanced.Models.DTO.BuildStatus.Succeeded:
+                                        case BuildStatus.Succeeded:
                                             queueJob.QueueJobStatus = QueueJobStatus.Succeeded;
                                             break;
                                     }

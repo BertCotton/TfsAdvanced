@@ -9,7 +9,6 @@ using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
 using TFSAdvanced.Models.DTO;
 using TFSAdvanced.Updater.Models.Policy;
-using Repository = TFSAdvanced.Updater.Models.Repositories.Repository;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -38,19 +37,19 @@ namespace TfsAdvanced.Updater.Tasks
             IsRunning = true;
             try
             {
-                ConcurrentBag<TFSAdvanced.Models.DTO.Repository> populatedRepositories = new ConcurrentBag<TFSAdvanced.Models.DTO.Repository>();
+                ConcurrentBag<Repository> populatedRepositories = new ConcurrentBag<Repository>();
                 Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
-                    IList<Repository> repositories = GetAsync.FetchResponseList<Repository>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/git/repositories?api=1.0").Result;
+                    IList<TFSAdvanced.Updater.Models.Repositories.Repository> repositories = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/git/repositories?api=1.0").Result;
                     if (repositories == null)
                         return;
                     Parallel.ForEach(repositories, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repo =>
                     {
                         try
                         {
-                            var populatedRepository = GetAsync.Fetch<Repository>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/git/repositories/{repo.name}?api=1.0").Result;
+                            var populatedRepository = GetAsync.Fetch<TFSAdvanced.Updater.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/git/repositories/{repo.name}?api=1.0").Result;
 
-                            var repositoryDto = new TFSAdvanced.Models.DTO.Repository
+                            var repositoryDto = new Repository
                             {
                                 Id = populatedRepository.id,
                                 Name = populatedRepository.name,

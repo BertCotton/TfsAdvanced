@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using TFSAdvanced.DataStore.Repository;
+﻿using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository

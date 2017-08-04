@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
-using TfsAdvanced.Data;
-using TfsAdvanced.Infrastructure;
 using TfsAdvanced.Models.Infrastructure;
 
 namespace TfsAdvanced.ServiceRequests

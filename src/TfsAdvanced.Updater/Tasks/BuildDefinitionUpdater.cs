@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
 using TFSAdvanced.Models.DTO;
-using BuildDefinition = TFSAdvanced.Updater.Models.Builds.BuildDefinition;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -39,17 +36,17 @@ namespace TfsAdvanced.Updater.Tasks
             try
             {
 
-                var buildDefinitions = new ConcurrentBag<TFSAdvanced.Models.DTO.BuildDefinition>();
+                var buildDefinitions = new ConcurrentBag<BuildDefinition>();
                 Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
                 {
-                    var definitions = GetAsync.FetchResponseList<BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/definitions?api=2.2").Result;
+                    var definitions = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/definitions?api=2.2").Result;
                     if (definitions == null)
                         return;
                     Parallel.ForEach(definitions, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, definition =>
                     {
-                        var populatedDefinition = GetAsync.Fetch<BuildDefinition>(requestData, definition.url).Result;
+                        var populatedDefinition = GetAsync.Fetch<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, definition.url).Result;
 
-                        buildDefinitions.Add(new TFSAdvanced.Models.DTO.BuildDefinition
+                        buildDefinitions.Add(new BuildDefinition
                         {
                             DefaultBranch = populatedDefinition.repository.defaultBranch,
                             Folder = populatedDefinition.path,

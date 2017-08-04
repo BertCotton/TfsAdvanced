@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using TfsAdvanced.ServiceRequests;
 using TfsAdvanced.DataStore.Repository;
+using TfsAdvanced.ServiceRequests;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.Web.Controllers

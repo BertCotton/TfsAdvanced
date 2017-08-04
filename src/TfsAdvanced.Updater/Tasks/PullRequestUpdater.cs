@@ -9,10 +9,8 @@ using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
 using TFSAdvanced.Models.DTO;
 using TFSAdvanced.Updater.Models.PullRequests;
-using BuildStatus = TFSAdvanced.Updater.Models.Builds.BuildStatus;
-using PullRequest = TFSAdvanced.Updater.Models.PullRequests.PullRequest;
+using PullRequest = TFSAdvanced.Models.DTO.PullRequest;
 using Reviewer = TFSAdvanced.Models.DTO.Reviewer;
-using Repository = TFSAdvanced.Models.DTO.Repository;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -44,12 +42,12 @@ namespace TfsAdvanced.Updater.Tasks
             IsRunning = true;
             try
             {
-                ConcurrentBag<TFSAdvanced.Models.DTO.PullRequest> allPullRequests = new ConcurrentBag<TFSAdvanced.Models.DTO.PullRequest>();
+                ConcurrentBag<PullRequest> allPullRequests = new ConcurrentBag<PullRequest>();
                 Parallel.ForEach(repositoryRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repository =>
                 {
                     if (string.IsNullOrEmpty(repository.PullRequestUrl))
                         return;
-                    var pullRequests = GetAsync.FetchResponseList<PullRequest>(requestData, repository.PullRequestUrl).Result;
+                    var pullRequests = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(requestData, repository.PullRequestUrl).Result;
                     if (pullRequests == null)
                         return;
                     Parallel.ForEach(pullRequests, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pullRequest =>
@@ -87,9 +85,9 @@ namespace TfsAdvanced.Updater.Tasks
             }
         }
 
-        private TFSAdvanced.Models.DTO.PullRequest BuildPullRequest(PullRequest x, Build build)
+        private PullRequest BuildPullRequest(TFSAdvanced.Updater.Models.PullRequests.PullRequest x, Build build)
         {
-            TFSAdvanced.Models.DTO.PullRequest pullRequestDto = new TFSAdvanced.Models.DTO.PullRequest
+            PullRequest pullRequestDto = new PullRequest
             {
                 Id = x.pullRequestId,
                 Title = x.title,
@@ -154,7 +152,7 @@ namespace TfsAdvanced.Updater.Tasks
 
             if (build == null)
             {
-                pullRequestDto.BuildStatus = TFSAdvanced.Models.DTO.BuildStatus.NoBuild;
+                pullRequestDto.BuildStatus = BuildStatus.NoBuild;
             }
             else
             {
@@ -166,7 +164,7 @@ namespace TfsAdvanced.Updater.Tasks
             return pullRequestDto;
         }
 
-        public string BuildPullRequestUrl(PullRequest pullRequest, string baseUrl)
+        public string BuildPullRequestUrl(TFSAdvanced.Updater.Models.PullRequests.PullRequest pullRequest, string baseUrl)
         {
             return
                 $"{baseUrl}/{pullRequest.repository.project.name}/_git/{pullRequest.repository.name}/pullrequest/{pullRequest.pullRequestId}?view=files";

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TFSAdvanced.Updater.Models.Policy
+﻿namespace TFSAdvanced.Updater.Models.Policy
 {
     public class PolicyConfiguration
     {

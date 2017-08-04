@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using TfsAdvanced.Data;
 using TfsAdvanced.Models.Infrastructure;
 
 namespace TfsAdvanced.Infrastructure

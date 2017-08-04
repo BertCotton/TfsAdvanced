@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using Microsoft.EntityFrameworkCore;
-using TFSAdvanced.DataStore.Repository;
+﻿using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository

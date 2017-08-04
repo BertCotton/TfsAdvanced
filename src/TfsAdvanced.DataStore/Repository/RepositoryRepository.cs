@@ -1,7 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using TFSAdvanced.DataStore.Repository;
+﻿using TFSAdvanced.DataStore.Repository;
 
 namespace TfsAdvanced.DataStore.Repository
 {

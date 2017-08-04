@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using TfsAdvanced.Models;
 using TFSAdvanced.Updater.Models.Builds;
 using TFSAdvanced.Updater.Models.Projects;
