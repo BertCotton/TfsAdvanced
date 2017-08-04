@@ -2,7 +2,7 @@
 using Hangfire;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
-using TfsAdvanced.Models.Pools;
+using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.Updater.Tasks
 {

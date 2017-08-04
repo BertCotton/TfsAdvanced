@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using TfsAdvanced.DataStore.Repository;
-using TfsAdvanced.Models.Projects;
+using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.Web.Controllers
 {

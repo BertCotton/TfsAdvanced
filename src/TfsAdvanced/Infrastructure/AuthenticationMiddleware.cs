@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using TfsAdvanced.Models.Infrastructure;
 
 namespace TfsAdvanced.Infrastructure
 {
@@ -35,7 +36,7 @@ namespace TfsAdvanced.Infrastructure
             byte[] value;
             if (context.Session.TryGetValue("AuthToken", out value))
             {
-                var token = JsonConvert.DeserializeObject<TfsAdvanced.Models.Infrastructure.AuthenticationToken>(ASCIIEncoding.ASCII.GetString(value));
+                var token = JsonConvert.DeserializeObject<AuthenticationToken>(ASCIIEncoding.ASCII.GetString(value));
                 if (token?.access_token == null)
                 {
                     context.Response.StatusCode = (int) HttpStatusCode.Forbidden;

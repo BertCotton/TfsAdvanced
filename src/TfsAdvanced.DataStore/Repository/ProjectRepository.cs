@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
-using TfsAdvanced.Models.Projects;
-using TFSAdvanced.DataStore.Repository;
+﻿using TFSAdvanced.DataStore.Repository;
+using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {
@@ -14,25 +8,13 @@ namespace TfsAdvanced.DataStore.Repository
 
         public Project GetProject(string projectId)
         {
-            return base.Get(p => p.id == projectId);
+            return base.Get(p => p.Id == projectId);
         }
 
         protected override int GetId(Project item)
         {
-            return item.id.GetHashCode();
+            return item.Id.GetHashCode();
         }
     }
-
-    class ProjectComparer : IEqualityComparer<Project>
-    {
-        public bool Equals(Project x, Project y)
-        {
-            return x.id == y.id;
-        }
-
-        public int GetHashCode(Project obj)
-        {
-            return obj.id.GetHashCode();
-        }
-    }
+    
 }

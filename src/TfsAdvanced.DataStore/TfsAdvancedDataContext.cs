@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using TfsAdvanced.Data;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
+﻿using Microsoft.EntityFrameworkCore;
 using TfsAdvanced.Models.Infrastructure;
 
 namespace TfsAdvanced.Data

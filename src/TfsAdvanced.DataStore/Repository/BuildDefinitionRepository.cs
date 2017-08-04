@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using Microsoft.EntityFrameworkCore;
-using TfsAdvanced.Models.Builds;
-using TFSAdvanced.DataStore.Repository;
+﻿using TFSAdvanced.DataStore.Repository;
+using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {
@@ -16,13 +8,13 @@ namespace TfsAdvanced.DataStore.Repository
 
         public BuildDefinition GetBuildDefinition(int definitionId)
         {
-            return base.Get(definition => definition.id == definitionId);
+            return base.Get(definition => definition.Id == definitionId);
         }
 
 
         protected override int GetId(BuildDefinition item)
         {
-            return item.id;
+            return item.Id;
         }
     }
     

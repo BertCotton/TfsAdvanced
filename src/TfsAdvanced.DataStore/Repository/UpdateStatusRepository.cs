@@ -7,7 +7,7 @@ namespace TfsAdvanced.DataStore.Repository
 {
     public class UpdateStatusRepository
     {
-        private ConcurrentDictionary<string, UpdateStatus> updateStatuses;
+        private readonly ConcurrentDictionary<string, UpdateStatus> updateStatuses;
 
         public UpdateStatusRepository()
         {

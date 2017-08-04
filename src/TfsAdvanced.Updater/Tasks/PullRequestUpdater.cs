@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
-using TfsAdvanced.Models.Builds;
 using TfsAdvanced.Models.Infrastructure;
-using TfsAdvanced.Models.PullRequests;
+using TFSAdvanced.Models.DTO;
+using TFSAdvanced.Updater.Models.PullRequests;
+using PullRequest = TFSAdvanced.Models.DTO.PullRequest;
+using Reviewer = TFSAdvanced.Models.DTO.Reviewer;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -20,7 +23,8 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly BuildRepository buildRepository;
         private bool IsRunning;
 
-        public PullRequestUpdater(PullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository)
+        public PullRequestUpdater(PullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, 
+            UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository)
         {
             this.requestData = requestData;
             this.repositoryRepository = repositoryRepository;
@@ -41,35 +45,28 @@ namespace TfsAdvanced.Updater.Tasks
                 ConcurrentBag<PullRequest> allPullRequests = new ConcurrentBag<PullRequest>();
                 Parallel.ForEach(repositoryRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repository =>
                 {
-                    if (repository._links.pullRequests == null)
+                    if (string.IsNullOrEmpty(repository.PullRequestUrl))
                         return;
-                    var pullRequests = GetAsync.FetchResponseList<PullRequest>(requestData, repository._links.pullRequests.href).Result;
+                    var pullRequests = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(requestData, repository.PullRequestUrl).Result;
                     if (pullRequests == null)
                         return;
                     Parallel.ForEach(pullRequests, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pullRequest =>
                     {
-                        pullRequest.repository = repository;
-                        pullRequest.remoteUrl = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
-                        if (pullRequest.lastMergeCommit != null)
-                        {
-                            pullRequest.build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
-                        }
-                        foreach (var configuration in repository.policyConfigurations)
-                        {
-                            if (configuration.type.displayName == "Minimum number of reviewers")
-                            {
-                                pullRequest.requiredReviewers = configuration.settings.minimumApproverCount;
-                            }
-                        }
+                        var build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
+                        var pullRequestDto = BuildPullRequest(pullRequest, build);
+                        pullRequestDto.Repository= repository;
+                        pullRequestDto.Url = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
+                        pullRequestDto.RequiredReviewers = repository.MinimumApproverCount;
+                        
                         foreach (var reviewer in pullRequest.reviewers)
                         {
                             // Container reviewers do not count
                             if (reviewer.isContainer)
                                 continue;
                             if (reviewer.vote == (int) Vote.Approved)
-                                pullRequest.acceptedReviewers++;
+                                pullRequestDto.AcceptedReviewers++;
                         }
-                        allPullRequests.Add(pullRequest);
+                        allPullRequests.Add(pullRequestDto);
                     });
                 });
                 var pullRequestsList = allPullRequests.ToList();
@@ -88,7 +85,86 @@ namespace TfsAdvanced.Updater.Tasks
             }
         }
 
-        public string BuildPullRequestUrl(PullRequest pullRequest, string baseUrl)
+        private PullRequest BuildPullRequest(TFSAdvanced.Updater.Models.PullRequests.PullRequest x, Build build)
+        {
+            PullRequest pullRequestDto = new PullRequest
+            {
+                Id = x.pullRequestId,
+                Title = x.title,
+                Url = x.remoteUrl,
+                CreatedDate = x.creationDate,
+                Creator = new User
+                {
+                    Name = x.createdBy.displayName,
+                    IconUrl = x.createdBy.imageUrl
+                },
+                Repository = new Repository
+                {
+                    Name = x.repository.name,
+                    Url = x.repository.remoteUrl,
+                    Project = new Project
+                    {
+                        Name = x.repository.project.name,
+                        Url = x.repository.project.remoteUrl
+                    }
+                },
+                MergeStatus = x.mergeStatus == "conflicts" ? MergeStatus.Failed : MergeStatus.Succeeded,
+                IsAutoCompleteSet = x.completionOptions != null,
+                HasEnoughReviewers = x.hasEnoughReviewers,
+                AcceptedReviewers = x.acceptedReviewers,
+                RequiredReviewers = x.requiredReviewers,
+                Reviewers = new List<Reviewer>()
+            };
+
+            if (x.reviewers != null)
+            {
+                foreach (var reviewer in x.reviewers)
+                {
+                    if (reviewer.isContainer)
+                        continue;
+                    var reviewerDto = new Reviewer
+                    {
+                        Name = reviewer.displayName,
+                        IconUrl = reviewer.imageUrl
+
+                    };
+                    switch ((Vote)reviewer.vote)
+                    {
+                        case Vote.Approved:
+                            reviewerDto.ReviewStatus = ReviewStatus.Approved;
+                            break;
+                        case Vote.ApprovedWithSuggestions:
+                            reviewerDto.ReviewStatus = ReviewStatus.ApprovedWithSuggestions;
+                            break;
+                        case Vote.NoResponse:
+                            reviewerDto.ReviewStatus = ReviewStatus.NoResponse;
+                            break;
+                        case Vote.Rejected:
+                            reviewerDto.ReviewStatus = ReviewStatus.Rejected;
+                            break;
+                        case Vote.WaitingForAuthor:
+                            reviewerDto.ReviewStatus = ReviewStatus.WaitingForAuthor;
+                            break;
+                    }
+                    pullRequestDto.Reviewers.Add(reviewerDto);
+                }
+            }
+
+            if (build == null)
+            {
+                pullRequestDto.BuildStatus = BuildStatus.NoBuild;
+            }
+            else
+            {
+                pullRequestDto.buildId = build.Id;
+                pullRequestDto.BuildUrl = build.Url;
+                pullRequestDto.BuildStatus = build.BuildStatus;
+            }
+
+            return pullRequestDto;
+        }
+
+        public string BuildPullRequestUrl(TFSAdvanced.Updater.Models.PullRequests.PullRequest pullRequest, string baseUrl)
         {
             return
                 $"{baseUrl}/{pullRequest.repository.project.name}/_git/{pullRequest.repository.name}/pullrequest/{pullRequest.pullRequestId}?view=files";

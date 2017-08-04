@@ -3,6 +3,7 @@ using System.Threading;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using TfsAdvanced.DataStore.Repository;
+using TFSAdvanced.Updater.Tasks;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -20,12 +21,10 @@ namespace TfsAdvanced.Updater.Tasks
         public void Start()
         {
             // Initialize the updaters in order
-            double stepSize = 1.0/8.0;
+            double stepSize = 1.0/7.0;
             double percentLoaded = 0.0;
             var hangFireStatusRepository = serviceProvider.GetService<HangFireStatusRepository>();
             serviceProvider.GetService<ProjectUpdater>().Update();
-            percentLoaded += stepSize;
-            serviceProvider.GetService<PolicyUpdater>().Update();
             percentLoaded += stepSize;
             hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<RepositoryUpdater>().Update();
@@ -43,6 +42,9 @@ namespace TfsAdvanced.Updater.Tasks
             serviceProvider.GetService<PoolUpdater>().Update();
             percentLoaded += stepSize;
             hangFireStatusRepository.SetPercentLoaded(percentLoaded);
+            serviceProvider.GetService<ReleaseDefinitionUpdater>().Update();
+            percentLoaded += stepSize;
+            hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<JobRequestUpdater>().Update();
             percentLoaded += stepSize;
             hangFireStatusRepository.SetPercentLoaded(1);
@@ -53,18 +55,17 @@ namespace TfsAdvanced.Updater.Tasks
             RecurringJob.AddOrUpdate<ProjectUpdater>(updater => updater.Update(), Cron.Hourly);
             RecurringJob.AddOrUpdate<RepositoryUpdater>(updater => updater.Update(), Cron.Hourly);
             RecurringJob.AddOrUpdate<PoolUpdater>(updater => updater.Update(), Cron.Hourly);
-            RecurringJob.AddOrUpdate<PolicyUpdater>(updater => updater.Update(), Cron.Hourly);
        
             thirtySecondTimer = new Timer(state =>
             {
                 BackgroundJob.Enqueue<BuildDefinitionUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<BuildUpdater>(updater => updater.Update());
+                BackgroundJob.Enqueue<ReleaseDefinitionUpdater>(updater => updater.Update());
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
             fiveSecondTimer = new Timer(state =>
             {
                 BackgroundJob.Enqueue<PullRequestUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<JobRequestUpdater>(updater => updater.Update());
-                
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
             
         }

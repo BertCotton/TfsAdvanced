@@ -1,21 +1,21 @@
-﻿using Autofac;
-using Autofac.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Hangfire;
 using Hangfire.MemoryStorage;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using TfsAdvanced.Data;
 using TfsAdvanced.Infrastructure;
 using TfsAdvanced.Models;
@@ -28,7 +28,7 @@ namespace TfsAdvanced
     public class Startup
     {
         public static readonly int MAX_DEGREE_OF_PARALLELISM = -1;
-        private string siteName = Environment.GetEnvironmentVariable("SiteName") ?? "ius";
+        private readonly string siteName = Environment.GetEnvironmentVariable("SiteName") ?? "ius";
         public IConfigurationRoot Configuration { get; set; }
 
         public IList<Type> References;
@@ -46,8 +46,8 @@ namespace TfsAdvanced
 
             References = new List<Type>
             {
-                typeof(Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityRole),
-                typeof(Microsoft.Extensions.Options.Options)
+                typeof(IdentityRole),
+                typeof(Options)
             };
             
         }
@@ -128,7 +128,7 @@ namespace TfsAdvanced
 
             GlobalJobFilters.Filters.Add(new HangfireJobFilter());
 
-            Hangfire.BackgroundJob.Enqueue<Updater.Tasks.Updater>(updater => updater.Start());
+            BackgroundJob.Enqueue<Updater.Tasks.Updater>(updater => updater.Start());
         }
     }
 }

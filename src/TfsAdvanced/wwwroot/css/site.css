@@ -167,3 +167,7 @@ div[ng-view] {
 .launching {
     background-color: lightblue;
 }
+
+.datetime {
+    font-size: 75%;
+}

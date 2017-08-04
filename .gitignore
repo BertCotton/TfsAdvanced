@@ -236,6 +236,7 @@ src/*/wwwroot/lib/
 src/*/wwwroot/fonts/
 src/*/wwwroot/_references.js
 
+!src/**/Models/Releases/
 
 
 node_modules/

@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using TfsAdvanced.DataStore.Repository;
-using TfsAdvanced.Models.PullRequests;
+using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.Web.Controllers
 {
@@ -28,11 +28,11 @@ namespace TfsAdvanced.Web.Controllers
             var pullRequests = pullRequestRepository.GetPullRequestsAfter(sinceId);
             return pullRequests.Select(pullRequest => new Dictionary<string, string>
             {
-                {"author", pullRequest.createdBy.displayName },
-                {"id", pullRequest.pullRequestId.ToString()},
-                {"repository", pullRequest.repository.name},
-                {"title", pullRequest.title},
-                {"url", pullRequest.remoteUrl}
+                {"author", pullRequest.Creator.Name },
+                {"id", pullRequest.Id.ToString()},
+                {"repository", pullRequest.Repository.Name},
+                {"title", pullRequest.Title},
+                {"url", pullRequest.BuildUrl}
             }).ToList();
         }
     }

@@ -43,7 +43,8 @@
 
     function fetchData() {
         $.get("data/PullRequests",
-        function (data) {
+            function (data) {
+                console.log(data);
             if (data.length === 0) {
                 $("#pullRequestHeader").hide();
                 $("#pullRequests").hide();
@@ -76,12 +77,12 @@
     <div class="row striped">
         <div class="col-lg-4 col-md-12" style="padding: 5px">
             <h4>
-                <a style="color:darkslategray" href="${remoteUrl}" target="_blank">${title}</a>
+                <a style="color:darkslategray" href="${url}" target="_blank">${title}</a>
             </h4>
             <h5>
                 <div>
                     <span class="hidden-xs">
-                        {{if completionOptions != null}}
+                        {{if isAutoCompleteSet}}
                         <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up"></i><span class="hidden-xs"> AutoComplete Set</span></span><br/>
                         {{/if}}
                     </span>
@@ -93,60 +94,52 @@
             </h5>
             <div>
                 <span >
-                    {{if build == null}}
-                    {{if mergeStatus == 'conflicts'}}
-                    <span style="color:red"><i class="glyphicon glyphicon-alert"></i><span class="hidden-xs"> Merge conflicts preventing build.</span></span>
-                    {{else}}
+                    
+                    {{if buildStatus == 'NoBuild'}}
                     <span class="glyphicon glyphicon-remove" style="color: red"><span class="hidden-xs"> No Build Queued</span></span>
-                    {{/if}}
-                    {{/if}}
-                    {{if build != null}}
-                    <a href="${build._links.web.href}" target="_blank">
-                        {{if build.status == 'notStarted'}}
+                    {{else}}
+                    <a href="${buildUrl}" target="_blank">
+                        {{if buildStatus == 'notStarted'}}
                         <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Not Started</span></span>
-                        {{else build.status == 'inProgress'}}
+                        {{else buildStatus == 'building'}}
                         <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build In Progress</span></span>
-                        {{else build.result == 'expired'}}
+                        {{else buildStatus == 'expired'}}
                         <span style="color:darkorange"><i class="glyphicon glyphicon-alert"></i> <span class="hidden-xs"> Build Expired</span></span>
-                        {{else build.result == 'succeeded'}}
+                        {{else buildStatus == 'succeeded'}}
                         <span style="color:green"><i class="glyphicon glyphicon-check"></i> <span class="hidden-xs"> Build Succeeded</span></span>
-                        {{else build.result == 'failed'}}
+                        {{else buildStatus == 'failed'}}
                         <span style="color:red"><i class="glyphicon glyphicon-remove"></i> <span class="hidden-xs"> Build Failed</span></span>
-                        {{else mergeStatus == 'conflicts'}}
-                        <span style="color:red"><i class="glyphicon glyphicon-alert"></i> <span class="hidden-xs"> Merge conflicts preventing build.</span></span>
                         {{else}}
-                        <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${build.status}|${build.result}</span>
+                        <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${buildStatus}</span>
                         {{/if}}
                     </a>
                     {{/if}}
                 </span>
                 <span >
-                    {{if requiredReviewers > 0}}
                     |
-                    {{if hasEnoughReviewers}}
+                    {{if HasEnoughReviewers}}
                     <i class="glyphicon glyphicon-check" style="color: green"></i>
                     {{else}}
                     <i class="glyphicon glyphicon-remove" style="color: red"></i>
-                    {{/if}}
                     {{/if}}
                 </span><span class="hidden-xs">  ${acceptedReviewers} of ${requiredReviewers} Required Reviewers</span>
             </div>
         </div>
         <div class="col-lg-2 hidden-xs">
-                <a href="${repository.project.remoteUrl}" target="_blank">${repository.project.name}</a>
+                <a href="${repository.project.url}" target="_blank">${repository.project.name}</a>
                 <br/>
-                <a href="${repository.remoteUrl}" target="_blank">${repository.name}</a>
+                <a href="${repository.url}" target="_blank">${repository.name}</a>
         </div>
         <div class="col-lg-2 padding col-md-12">
             <span class="visible-xs">Created By: </span>
             <div class="media">
                 <div class="media-left">
-                    <img class="media-object" src="${createdBy.imageUrl}" alt="User Photo" height="30" width="30">
+                    <img class="media-object" src="${creator.iconUrl}" alt="User Photo" height="30" width="30">
                 </div>
                 <div class="media-body">
                     <h5 class="media-heading">
-                        ${createdBy.displayName}
-                        <br/>(<span class="datetime-pretty hidden-xs">${creationDate}</span>)
+                        ${creator.name}
+                        <br/>(<span class="datetime-pretty hidden-xs">${createdDate}</span>)
                     </h5>
                 </div>
             </div>
@@ -159,29 +152,27 @@
 </script>
 
 <script id="reviewersTemplate" type="text/x-jQuery-tmpl">
-    {{if isContainer == false}}
     <div>
         <div class="media">
-            <div class="media-left"><img class="media-object" src="${imageUrl}" alt="User Photo" height="30" width="30">
+            <div class="media-left"><img class="media-object" src="${iconUrl}" alt="User Photo" height="30" width="30">
                 
             </div>
             
             <div class="media-body hidden-xs">
-                ${displayName} | 
+                ${name} | 
                 <span>
-                    {{if vote == 10}}<span style="color: green"><b>Approved</b></span>
-                    {{else vote == 5}}
+                    {{if reviewStatus == 'NoResponse'}}<span style="color: green"><b>Approved</b></span>
+                    {{else reviewStatus == 'Approved'}}
                         <span style="color: orange"><b>Approved With Suggestions</b></span>
-                    {{else vote == 0}}
+                    {{else reviewStatus == 'ApprovedWithSuggestions'}}
                         <span style="color: gray"><b>No Response</b></span>
-                    {{else vote == -5}}
+                    {{else reviewStatus == 'WaitingForAuthor'}}
                         <span style="color: orangered"><b>Waiting For Author</b></span>
-                    {{else vote == -10}}
+                    {{else reviewStatus == 'Rejected'}}
                         <span style="color: red"><b>Rejected</b></span>
                     {{/if}}
                 </span>
             </div>
         </div>
     </div>
-    {{/if}}
 </script>

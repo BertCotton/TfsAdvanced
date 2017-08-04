@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using Microsoft.EntityFrameworkCore;
 
 namespace TFSAdvanced.DataStore.Repository
 {

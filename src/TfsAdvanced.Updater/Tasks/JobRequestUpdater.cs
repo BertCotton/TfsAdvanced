@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
-using TfsAdvanced.Models.Builds;
 using TfsAdvanced.Models.Infrastructure;
-using TfsAdvanced.Models.JobRequests;
+using TFSAdvanced.DataStore.Repository;
+using TFSAdvanced.Models.DTO;
+using TFSAdvanced.Updater.Models.Builds;
+using TFSAdvanced.Updater.Models.JobRequests;
+using BuildStatus = TFSAdvanced.Models.DTO.BuildStatus;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -18,17 +20,23 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly PoolRepository poolRepository;
         private readonly BuildRepository buildRepository;
+        private readonly BuildDefinitionRepository buildDefinitionRepository;
+        private readonly ProjectRepository projectRepository;
+        private readonly ReleaseDefinitionRepository releaseDefinitionRepository;
         private readonly RequestData requestData;
         private bool IsRunning;
 
 
-        public JobRequestUpdater(JobRequestRepository jobRequestRepository, RequestData requestData, PoolRepository poolRepository, BuildRepository buildRepository, UpdateStatusRepository updateStatusRepository)
+        public JobRequestUpdater(JobRequestRepository jobRequestRepository, RequestData requestData, PoolRepository poolRepository, BuildRepository buildRepository, UpdateStatusRepository updateStatusRepository, BuildDefinitionRepository buildDefinitionRepository, ProjectRepository projectRepository, ReleaseDefinitionRepository releaseDefinitionRepository)
         {
             this.jobRequestRepository = jobRequestRepository;
             this.requestData = requestData;
             this.poolRepository = poolRepository;
             this.buildRepository = buildRepository;
             this.updateStatusRepository = updateStatusRepository;
+            this.buildDefinitionRepository = buildDefinitionRepository;
+            this.projectRepository = projectRepository;
+            this.releaseDefinitionRepository = releaseDefinitionRepository;
         }
 
         [AutomaticRetry(Attempts = 0)]
@@ -40,7 +48,7 @@ namespace TfsAdvanced.Updater.Tasks
             try
             {
 
-                ConcurrentBag<JobRequest> jobRequests = new ConcurrentBag<JobRequest>();
+                ConcurrentBag<QueueJob> jobRequests = new ConcurrentBag<QueueJob>();
 
                 Parallel.ForEach(poolRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pool =>
                 {
@@ -50,41 +58,79 @@ namespace TfsAdvanced.Updater.Tasks
                     {
                         foreach (var poolJobRequest in poolJobRequests)
                         {
+                            
+                            QueueJob queueJob = new QueueJob
+                            {
+                                
+                                RequestId = poolJobRequest.requestId,
+                                QueuedTime = poolJobRequest.queueTime,
+                                AssignedTime = poolJobRequest.assignTime,
+                                FinishedTime = poolJobRequest.finishTime,
+                                Name = poolJobRequest.definition.name,
+                                Url = poolJobRequest.definition._links.self.href
+                            };
+                            
                             if (poolJobRequest.planType == PlanTypes.Build)
                             {
                                 var build = buildRepository.GetBuild(poolJobRequest.owner.id);
                                 if (build != null)
                                 {
-                                    poolJobRequest.owner = build;
-                                    poolJobRequest.startedTime = build.startTime;
-                                    poolJobRequest.definition = build.definition;
-                                    if (build.status == BuildStatus.completed)
-                                    {
-                                        switch (build.result)
-                                        {
-                                            case BuildResult.succeeded:
-                                                poolJobRequest.status = JobRequestStatus.succeeded;
-                                                break;
-                                            case BuildResult.abandoned:
-                                                poolJobRequest.status = JobRequestStatus.abandoned;
-                                                break;
-                                            case BuildResult.canceled:
-                                                poolJobRequest.status = JobRequestStatus.canceled;
-                                                break;
-                                            case BuildResult.failed:
-                                            case BuildResult.partiallySucceeded:
-                                                poolJobRequest.status = JobRequestStatus.failed;
-                                                break;
-                                        }
-                                    }
-                                    else if (build.status == BuildStatus.inProgress)
-                                    {
-                                        if (build.startTime.HasValue)
-                                            poolJobRequest.status = JobRequestStatus.started;
-                                        else
-                                            poolJobRequest.status = JobRequestStatus.queued;
-                                    }
+                                    queueJob.LaunchedBy = build.Creator;
+                                    queueJob.StartedTime = build.StartedDate;
+                                    queueJob.FinishedTime = build.FinishedDate;
+                                    queueJob.BuildFolder = build.Folder;
 
+                                    switch (build.BuildStatus)
+                                    {
+                                        case BuildStatus.NotStarted:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Queued;
+                                            break;
+                                        case BuildStatus.Abandonded:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Abandonded;
+                                            break;
+                                        case BuildStatus.Building:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Building;
+                                            break;
+                                        case BuildStatus.Cancelled:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Cancelled;
+                                            break;
+                                        case BuildStatus.Expired:
+                                        case BuildStatus.Failed:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Failed;
+                                            break;
+                                        case BuildStatus.Succeeded:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Succeeded;
+                                            break;
+                                    }
+                                }
+
+                                var buildDefinition = buildDefinitionRepository.GetBuildDefinition(poolJobRequest.definition.id);
+                                if (buildDefinition != null)
+                                {
+                                    var project = projectRepository.GetProject(buildDefinition.Repository.Project.Id);
+                                    if (project != null)
+                                    {
+                                        queueJob.Project = new Project
+                                        {
+                                            Id = project.Id,
+                                            Name = project.Name,
+                                            Url = project.Url
+                                        };
+                                    }
+                                    else
+                                    {
+                                        queueJob.Project = new Project
+                                        {
+                                            Name = "Unknown Project"
+                                        };
+                                    }
+                                }
+                                else
+                                {
+                                    queueJob.Project = new Project
+                                    {
+                                        Name = "Unknown Build Definition"
+                                    };
                                 }
 
                             }
@@ -95,32 +141,47 @@ namespace TfsAdvanced.Updater.Tasks
                                     switch (poolJobRequest.result)
                                     {
                                         case BuildResult.succeeded:
-                                            poolJobRequest.status = JobRequestStatus.succeeded;
+                                            queueJob.QueueJobStatus = QueueJobStatus.Succeeded;
                                             break;
                                         case BuildResult.abandoned:
-                                            poolJobRequest.status = JobRequestStatus.abandoned;
+                                            queueJob.QueueJobStatus = QueueJobStatus.Abandonded;
                                             break;
                                         case BuildResult.canceled:
-                                            poolJobRequest.status = JobRequestStatus.canceled;
+                                            queueJob.QueueJobStatus = QueueJobStatus.Cancelled;
                                             break;
                                         case BuildResult.failed:
                                         case BuildResult.partiallySucceeded:
-                                            poolJobRequest.status = JobRequestStatus.failed;
+                                            queueJob.QueueJobStatus = QueueJobStatus.Failed;
                                             break;
                                     }
                                 }
+
+                                var releaseDefinition = releaseDefinitionRepository.GetReleaseDefinition(poolJobRequest.definition.id);
+                                if (releaseDefinition != null)
+                                {
+                                    queueJob.Project = releaseDefinition.Project;
+                                }
+                                else
+                                {
+                                    queueJob.Project = new Project
+                                    {
+                                        Name = "Unknown Release Definition"
+                                    };
+                                }
+
+
                             }
 
 
 
-                            jobRequests.Add(poolJobRequest);
+                            jobRequests.Add(queueJob);
                         }
                     }
                 });
 
                 DateTime yesterday = DateTime.Now.Date.AddDays(-1);
-                var jobRequestsLists = jobRequests.Where(x => !x.startedTime.HasValue || x.startedTime.Value >= yesterday).ToList();
-                jobRequestRepository.UpdateJobRequests(jobRequestsLists);
+                var jobRequestsLists = jobRequests.Where(x => !x.StartedTime.HasValue || x.StartedTime.Value >= yesterday).ToList();
+                jobRequestRepository.Update(jobRequestsLists);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = jobRequestsLists.Count, UpdaterName = nameof(JobRequestUpdater)});
 
             }
