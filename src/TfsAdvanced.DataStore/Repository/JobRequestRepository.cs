@@ -2,34 +2,28 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using TfsAdvanced.Models.JobRequests;
+using TFSAdvanced.DataStore.Repository;
+using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class JobRequestRepository
+    public class JobRequestRepository : RepositoryBase<QueueJob>
     {
-        private ConcurrentBag<JobRequest> jobRequests;
-
-        public JobRequestRepository()
-        {
-            this.jobRequests = new ConcurrentBag<JobRequest>();
-        }
-
-        public IList<JobRequest> GetJobRequests(DateTime? fromDate = null, DateTime? toDate = null)
+        public IEnumerable<QueueJob> GetJobRequests(DateTime? fromDate = null, DateTime? toDate = null)
         {
             if(fromDate.HasValue && toDate.HasValue)
-              return jobRequests.Where(x => x.queueTime >= fromDate.Value && x.queueTime <= toDate.Value).ToList();
+              return base.GetList(x => x.QueuedTime >= fromDate.Value && x.QueuedTime <= toDate.Value);
             if (fromDate.HasValue)
-                return jobRequests.Where(x => x.queueTime >= fromDate.Value).ToList();
+                return base.GetList(x => x.QueuedTime >= fromDate.Value);
             if(toDate.HasValue)
-                return jobRequests.Where(x => x.queueTime <= toDate.Value).ToList();
+                return base.GetList(x => x.QueuedTime <= toDate.Value);
 
-            return jobRequests.ToList();
+            return GetAll();
         }
 
-        public void UpdateJobRequests(IList<JobRequest> jobRequests)
+        protected override int GetId(QueueJob item)
         {
-            this.jobRequests = new ConcurrentBag<JobRequest>(jobRequests);
+            return item.RequestId;
         }
     }
 }

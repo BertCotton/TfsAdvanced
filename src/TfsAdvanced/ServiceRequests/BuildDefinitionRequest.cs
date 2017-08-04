@@ -6,8 +6,10 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using TfsAdvanced.Models;
-using TfsAdvanced.Models.Builds;
-using TfsAdvanced.Models.Projects;
+using TFSAdvanced.Updater.Models.Builds;
+using TFSAdvanced.Updater.Models.Projects;
+using Build = TFSAdvanced.Models.DTO.Build;
+using BuildDefinition = TFSAdvanced.Models.DTO.BuildDefinition;
 
 namespace TfsAdvanced.ServiceRequests
 {
@@ -33,27 +35,22 @@ namespace TfsAdvanced.ServiceRequests
         public Build LaunchBuild(BuildDefinition definition)
         {
             var request = new HttpRequestMessage(HttpMethod.Post,
-                                $"{requestData.BaseAddress}/{definition.project.name}/_apis/build/builds?api-version=2.2");
+                                $"{requestData.BaseAddress}/{definition.Repository.Project.Name}/_apis/build/builds?api-version=2.2");
             request.Content =
                 new StringContent(
                     JsonConvert.SerializeObject(new BuildQueueRequest
                     {
-                        queue = new Id {id = definition.queue.id },
-                        definition = new Id { id = definition.id },
-                        project = new ProjectGuid { id = definition.project.id },
-                        sourceBranch = definition.repository.defaultBranch
+                        queue = new Id {id = definition.QueueId},
+                        definition = new Id { id = definition.Id },
+                        project = new ProjectGuid { id = definition.Repository.Project.Id },
+                        sourceBranch = definition.DefaultBranch
                     }), Encoding.UTF8,
                     "application/json");
             var buildResponse = requestData.HttpClient.SendAsync(request).Result;
             var responseString = buildResponse.Content.ReadAsStringAsync().Result;
             if(buildResponse.IsSuccessStatusCode)
                 return JsonConvert.DeserializeObject<Build>(responseString);
-            return new Build
-            {
-                definition = definition,
-                project = definition.project,
-                buildNumber = "Failed To Start Build"
-            };
+            return null;
         }
     }
 }

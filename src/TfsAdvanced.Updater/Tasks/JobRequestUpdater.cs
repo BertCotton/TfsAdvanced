@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 using Hangfire;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
-using TfsAdvanced.Models.Builds;
 using TfsAdvanced.Models.Infrastructure;
-using TfsAdvanced.Models.JobRequests;
+using TFSAdvanced.Models.DTO;
+using TFSAdvanced.Updater.Models.Builds;
+using TFSAdvanced.Updater.Models.JobRequests;
+using BuildStatus = TFSAdvanced.Updater.Models.Builds.BuildStatus;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -40,7 +42,7 @@ namespace TfsAdvanced.Updater.Tasks
             try
             {
 
-                ConcurrentBag<JobRequest> jobRequests = new ConcurrentBag<JobRequest>();
+                ConcurrentBag<QueueJob> jobRequests = new ConcurrentBag<QueueJob>();
 
                 Parallel.ForEach(poolRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pool =>
                 {
@@ -50,41 +52,43 @@ namespace TfsAdvanced.Updater.Tasks
                     {
                         foreach (var poolJobRequest in poolJobRequests)
                         {
+                            QueueJob queueJob = new QueueJob
+                            {
+                                RequestId = poolJobRequest.requestId,
+                                QueuedTime = poolJobRequest.queueTime,
+                                AssignedTime = poolJobRequest.assignTime,
+                                FinishedTime = poolJobRequest.finishTime
+                            };
                             if (poolJobRequest.planType == PlanTypes.Build)
                             {
                                 var build = buildRepository.GetBuild(poolJobRequest.owner.id);
                                 if (build != null)
                                 {
-                                    poolJobRequest.owner = build;
-                                    poolJobRequest.startedTime = build.startTime;
-                                    poolJobRequest.definition = build.definition;
-                                    if (build.status == BuildStatus.completed)
+                                    queueJob.LaunchedBy = build.Creator;
+                                    queueJob.StartedTime = build.StartedDate;
+                                    queueJob.FinishedTime = build.FinishedDate;
+                                    switch (build.BuildStatus)
                                     {
-                                        switch (build.result)
-                                        {
-                                            case BuildResult.succeeded:
-                                                poolJobRequest.status = JobRequestStatus.succeeded;
-                                                break;
-                                            case BuildResult.abandoned:
-                                                poolJobRequest.status = JobRequestStatus.abandoned;
-                                                break;
-                                            case BuildResult.canceled:
-                                                poolJobRequest.status = JobRequestStatus.canceled;
-                                                break;
-                                            case BuildResult.failed:
-                                            case BuildResult.partiallySucceeded:
-                                                poolJobRequest.status = JobRequestStatus.failed;
-                                                break;
-                                        }
+                                        case TFSAdvanced.Models.DTO.BuildStatus.NotStarted:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Queued;
+                                            break;
+                                        case TFSAdvanced.Models.DTO.BuildStatus.Abandonded:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Abandonded;
+                                            break;
+                                        case TFSAdvanced.Models.DTO.BuildStatus.Building:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Building;
+                                            break;
+                                        case TFSAdvanced.Models.DTO.BuildStatus.Cancelled:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Cancelled;
+                                            break;
+                                        case TFSAdvanced.Models.DTO.BuildStatus.Expired:
+                                        case TFSAdvanced.Models.DTO.BuildStatus.Failed:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Failed;
+                                            break;
+                                        case TFSAdvanced.Models.DTO.BuildStatus.Succeeded:
+                                            queueJob.QueueJobStatus = QueueJobStatus.Succeeded;
+                                            break;
                                     }
-                                    else if (build.status == BuildStatus.inProgress)
-                                    {
-                                        if (build.startTime.HasValue)
-                                            poolJobRequest.status = JobRequestStatus.started;
-                                        else
-                                            poolJobRequest.status = JobRequestStatus.queued;
-                                    }
-
                                 }
 
                             }
@@ -95,17 +99,17 @@ namespace TfsAdvanced.Updater.Tasks
                                     switch (poolJobRequest.result)
                                     {
                                         case BuildResult.succeeded:
-                                            poolJobRequest.status = JobRequestStatus.succeeded;
+                                            queueJob.QueueJobStatus = QueueJobStatus.Succeeded;
                                             break;
                                         case BuildResult.abandoned:
-                                            poolJobRequest.status = JobRequestStatus.abandoned;
+                                            queueJob.QueueJobStatus = QueueJobStatus.Abandonded;
                                             break;
                                         case BuildResult.canceled:
-                                            poolJobRequest.status = JobRequestStatus.canceled;
+                                            queueJob.QueueJobStatus = QueueJobStatus.Cancelled;
                                             break;
                                         case BuildResult.failed:
                                         case BuildResult.partiallySucceeded:
-                                            poolJobRequest.status = JobRequestStatus.failed;
+                                            queueJob.QueueJobStatus = QueueJobStatus.Failed;
                                             break;
                                     }
                                 }
@@ -113,14 +117,14 @@ namespace TfsAdvanced.Updater.Tasks
 
 
 
-                            jobRequests.Add(poolJobRequest);
+                            jobRequests.Add(queueJob);
                         }
                     }
                 });
 
                 DateTime yesterday = DateTime.Now.Date.AddDays(-1);
-                var jobRequestsLists = jobRequests.Where(x => !x.startedTime.HasValue || x.startedTime.Value >= yesterday).ToList();
-                jobRequestRepository.UpdateJobRequests(jobRequestsLists);
+                var jobRequestsLists = jobRequests.Where(x => !x.StartedTime.HasValue || x.StartedTime.Value >= yesterday).ToList();
+                jobRequestRepository.Update(jobRequestsLists);
                 updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = jobRequestsLists.Count, UpdaterName = nameof(JobRequestUpdater)});
 
             }

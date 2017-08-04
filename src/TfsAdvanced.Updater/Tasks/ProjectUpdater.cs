@@ -3,7 +3,7 @@ using System.Linq;
 using Hangfire;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
-using TfsAdvanced.Models.Projects;
+using TFSAdvanced.Updater.Models.Projects;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -33,7 +33,12 @@ namespace TfsAdvanced.Updater.Tasks
                 var projects = GetAsync.FetchResponseList<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects?api-version=1.0").Result;
                 if (projects != null)
                 {
-                    projectRepository.Update(projects.ToList());
+                    projectRepository.Update(projects.Select(x => new TFSAdvanced.Models.DTO.Project
+                    {
+                        Id = x.id,
+                        Name = x.name,
+                        Url = x.remoteUrl
+                    }));
                     updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = projects.Count, UpdaterName = nameof(ProjectUpdater)});
                 }
 

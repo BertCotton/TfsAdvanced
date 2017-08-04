@@ -20,12 +20,10 @@ namespace TfsAdvanced.Updater.Tasks
         public void Start()
         {
             // Initialize the updaters in order
-            double stepSize = 1.0/8.0;
+            double stepSize = 1.0/7.0;
             double percentLoaded = 0.0;
             var hangFireStatusRepository = serviceProvider.GetService<HangFireStatusRepository>();
             serviceProvider.GetService<ProjectUpdater>().Update();
-            percentLoaded += stepSize;
-            serviceProvider.GetService<PolicyUpdater>().Update();
             percentLoaded += stepSize;
             hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<RepositoryUpdater>().Update();
@@ -53,7 +51,6 @@ namespace TfsAdvanced.Updater.Tasks
             RecurringJob.AddOrUpdate<ProjectUpdater>(updater => updater.Update(), Cron.Hourly);
             RecurringJob.AddOrUpdate<RepositoryUpdater>(updater => updater.Update(), Cron.Hourly);
             RecurringJob.AddOrUpdate<PoolUpdater>(updater => updater.Update(), Cron.Hourly);
-            RecurringJob.AddOrUpdate<PolicyUpdater>(updater => updater.Update(), Cron.Hourly);
        
             thirtySecondTimer = new Timer(state =>
             {

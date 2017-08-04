@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using TfsAdvanced.ServiceRequests;
 using TfsAdvanced.DataStore.Repository;
-using TfsAdvanced.Models.Builds;
+using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.Web.Controllers
 {
@@ -38,7 +38,7 @@ namespace TfsAdvanced.Web.Controllers
                 return NotFound();
 
             var definitions = buildDefinitionRepository.GetAll()
-                    .Where(x => definitionIds.Contains(x.id))
+                    .Where(x => definitionIds.Contains(x.Id))
                     .ToList();
             var builds = buildDefinitionRequest.LaunchBuild(definitions);
 
