@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using TfsAdvanced.DataStore.Repository;
 
@@ -20,7 +21,7 @@ namespace TfsAdvanced.Web.Controllers
             return Ok(new Dictionary<string, object>
             {
                 {"IsLoaded", hangFireStatusRepository.IsLoaded()},
-                {"LoadedPercent", hangFireStatusRepository.PercentLoaded()}
+                {"LoadedPercent", Math.Round(hangFireStatusRepository.PercentLoaded(), 2)}
             });
         }
     }
