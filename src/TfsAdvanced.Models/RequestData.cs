@@ -13,6 +13,8 @@ namespace TfsAdvanced.Models
         private readonly AppSettings appSettings;
 
         public string BaseAddress { get; }
+
+        public string BaseReleaseManagerAddress { get; }
         public HttpClient HttpClient { get; }
         
         public RequestData(IOptions<AppSettings> settings)
@@ -23,6 +25,13 @@ namespace TfsAdvanced.Models
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             };
             BaseAddress = appSettings.BaseAddress;
+
+            var baseAddressParts = BaseAddress.Split('.');
+            if (appSettings.BaseReleaseManagerAddress == null)
+                BaseReleaseManagerAddress = $"{baseAddressParts[0]}.vsrm.{baseAddressParts[1]}.{baseAddressParts[2]}";
+            else
+                BaseReleaseManagerAddress = appSettings.BaseReleaseManagerAddress;
+
             HttpClient = new HttpClient(handler);
             HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             //HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authenticationToken.base64_token);

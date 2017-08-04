@@ -25,5 +25,9 @@ namespace TFSAdvanced.Models.DTO
         public DateTime? StartedTime { get; set; }
 
         public DateTime? FinishedTime { get; set; }
+
+        public string Name { get; set; }
+
+        public string BuildFolder { get; set; }
     }
 }

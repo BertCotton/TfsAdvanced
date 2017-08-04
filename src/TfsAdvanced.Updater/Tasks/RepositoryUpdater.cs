@@ -58,8 +58,9 @@ namespace TfsAdvanced.Updater.Tasks
                                 Url = populatedRepository.remoteUrl,
                                 Project = new Project
                                 {
+                                    Id = populatedRepository.project.id,
                                     Name = populatedRepository.project.name,
-                                    Url = populatedRepository.project.remoteUrl
+                                    Url = populatedRepository.project.url
                                 }
                             };
                             var policyConfigurations = GetAsync.FetchResponseList<PolicyConfiguration>(requestData, $"{requestData.BaseAddress}/defaultcollection/{project.Id}/_apis/policy/configurations?api-version=2.0-preview.1").Result;

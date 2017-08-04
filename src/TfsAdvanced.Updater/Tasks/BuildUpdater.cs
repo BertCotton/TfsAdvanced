@@ -92,6 +92,8 @@ namespace TfsAdvanced.Updater.Tasks
             TFSAdvanced.Models.DTO.Build buildDto = new TFSAdvanced.Models.DTO.Build
             {
                 Id = build.id,
+                Name = build.definition.name,
+                Folder = build.definition.path,
                 Url = build._links.web.href,
                 SourceCommit = build.sourceVersion,
                 QueuedDate = build.queueTime,

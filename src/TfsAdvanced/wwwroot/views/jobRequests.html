@@ -32,78 +32,89 @@
                         for (var i = 0, ien = json.length; i < ien; i++) {
                             var column = 0;
                             var jobRequest = json[i];
-                            json[i][column++] = "<a href=" + jobRequest.owner._links.web.href + " target='_blank'>" + jobRequest.requestId + "</a>";
-                            if (jobRequest.planType === 'release')
+                            console.log(jobRequest);
+                            json[i][column++] = "<a href=" + jobRequest.Url + " target='_blank'>" + jobRequest.requestId + "</a>";
+
+                            if (jobRequest.jobType === 'release')
                                 json[i][column++] = '<span class="glyphicon glyphicon-plane" style="color:blue"></span>' +
-                                    jobRequest.planType;
-                            else if (jobRequest.planType === 'build')
+                                    jobRequest.jobType;
+                            else if (jobRequest.jobType === 'build')
                                 json[i][column++] = '<span class="glyphicon glyphicon-gift" style="color:green"></span>' +
-                                    jobRequest.planType;
+                                    jobRequest.jobType;
 
-                            json[i][column++] = "<span class='project'>" + jobRequest.project.name + "</span>";
+                            if (jobRequest.project != null)
+                                json[i][column++] = "<span class='project'>" + jobRequest.project.name + "</span>";
+                            else
+                                json[i][column++] = "<span class='project'></span>";
 
-                            if (jobRequest.planType === 'build') {
+                            if (jobRequest.jobType === 'build') {
                                 // The path will always at least be "\" so the length needs to be more than one
-                                if (jobRequest.definition.path && jobRequest.definition.path.length > 1)
-                                    json[i][column++] = "<span class='path' style='color:blue'>[" + jobRequest.definition.path.substring(1) + "]</span> " + jobRequest.definition.name;
+                                if (jobRequest.buildFolder)
+                                    json[i][column++] = "<span class='path' style='color:blue'>[" + jobRequest.buildFolder.substring(1) + "]</span> " + jobRequest.name;
                                 else
-                                    json[i][column++] = jobRequest.definition.name;
+                                    json[i][column++] = jobRequest.name;
                             }
                                 
                             else
-                                json[i][column++] = jobRequest.definition.name;
+                                json[i][column++] = jobRequest.name;
 
-                            if (jobRequest.planType === 'build' && jobRequest.owner.requestedFor)
-                                json[i][column++] = jobRequest.owner.requestedFor.displayName;
+                            if (jobRequest.launchedBy)
+                                json[i][column++] = "<img src='" + jobRequest.launchedBy.iconUrl + "' style='width:15px;height:15px' /> " + jobRequest.launchedBy.name;
                             else
                                 json[i][column++] = "---";
 
-                            if (jobRequest.status === 'succeeded')
-                                json[i][column++] = '<span style="color:green">Succeeded</span>';
-                            else if (jobRequest.status === 'failed')
-                                json[i][column++] = '<span style="color:red">Failed</span>';
-                            else if (jobRequest.status === 'queued') {
-                                if(jobRequest.planType === 'release')
+                            switch (jobRequest.queueJobStatus) {
+                                case "queued":
+                                    if (jobRequest.jobType === 'release')
+                                        json[i][column++] = '<span style="color:blue">Releasing</span>';
+                                    else 
+                                        json[i][column++] = '<span style="color:blue">Queued</span>';    
+                                    break;
+                                case "assigned":
+                                    json[i][column++] = '<span style="color:blue">Assigned</span>';
+                                    break;
+                                case "building":
+                                    json[i][column++] = '<span style="color:blue">Building</span>';
+                                    break;
+                                case "deploying":
                                     json[i][column++] = '<span style="color:blue">Releasing</span>';
-                                else 
-                                    json[i][column++] = '<span style="color:blue">Queued</span>';    
+                                    break;
+                                case "succeeded":
+                                    json[i][column++] = '<span style="color:green">Succeeded</span>';
+                                        break;
+                                case "failed":
+                                    json[i][column++] = '<span style="color:red">Failed</span>';
+                                    break;
+                                case "abandonded":
+                                    json[i][column++] = '<span style="color:gray">Abandoned</span>';
+                                    break;
+                                case "cancelled":
+                                    json[i][column++] = '<span style="color:orange">Cancelled</span>';
+                                    break;
+                                default:
+                                        json[i][column++] = '<span style="color:pink">' + jobRequest.queueJobStatus + '</span>';
+                                    break;
                             }
-                            else if (jobRequest.status === 'assigned')
-                                json[i][column++] = '<span style="color:blue">Assigned</span>';
-                            else if (jobRequest.status === 'started')
-                            {
-                                if(jobRequest.planType === 'release')
-                                    json[i][column++] = '<span style="color:blue">Releasing</span>';
-                                else 
-                                    json[i][column++] = '<span style="color:blue">Building</span>';    
-                            }
-                            else if (jobRequest.status === 'failed')
-                                json[i][column++] = '<span style="color:red">Failed</span>';
-                            else if (jobRequest.status === 'abandoned')
-                                json[i][column++] = '<span style="color:gray">Abandoned</span>';
-                            else if (jobRequest.status === 'canceled')
-                                json[i][column++] = '<span style="color:orange">Cancelled</span>';
-                            else
-                                json[i][column++] = '<span style="color:pink"> ${status} </span>';
+                                
 
-                            if (jobRequest.queueTime)
-                                json[i][column++] = $.format.date(jobRequest.queueTime, longDateFormat);
+                            if (jobRequest.queuedTime)
+                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.queuedTime, longDateFormat) + "</span>";
                             else 
                                 json[i][column++] = "---";
 
-                            if (jobRequest.assignTime)
-                                json[i][column++] = $.format.date(jobRequest.assignTime, longDateFormat);
+                            if (jobRequest.assignedTime)
+                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.assignedTime, longDateFormat) + "</span>";
                             else
                                 json[i][column++] = "---";
-                            if (jobRequest.planType === 'release')
+                            if (jobRequest.jobType === 'release')
                                 json[i][column++] = "---";
                             else if (jobRequest.startedTime)
-                                json[i][column++] = $.format.date(jobRequest.startedTime, longDateFormat);
+                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.startedTime, longDateFormat) + "</span>";
                             else
                                 json[i][column++] = "---";
 
                             if (jobRequest.finishTime)
-                                json[i][column++] = $.format.date(jobRequest.finishTime, longDateFormat);
+                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.finishedTime, longDateFormat) + "</span>";
                             else
                                 json[i][column++] = "---";
 

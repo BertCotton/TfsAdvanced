@@ -3,6 +3,7 @@ using System.Threading;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using TfsAdvanced.DataStore.Repository;
+using TFSAdvanced.Updater.Tasks;
 
 namespace TfsAdvanced.Updater.Tasks
 {
@@ -41,6 +42,9 @@ namespace TfsAdvanced.Updater.Tasks
             serviceProvider.GetService<PoolUpdater>().Update();
             percentLoaded += stepSize;
             hangFireStatusRepository.SetPercentLoaded(percentLoaded);
+            serviceProvider.GetService<ReleaseDefinitionUpdater>().Update();
+            percentLoaded += stepSize;
+            hangFireStatusRepository.SetPercentLoaded(percentLoaded);
             serviceProvider.GetService<JobRequestUpdater>().Update();
             percentLoaded += stepSize;
             hangFireStatusRepository.SetPercentLoaded(1);
@@ -56,12 +60,12 @@ namespace TfsAdvanced.Updater.Tasks
             {
                 BackgroundJob.Enqueue<BuildDefinitionUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<BuildUpdater>(updater => updater.Update());
+                BackgroundJob.Enqueue<ReleaseDefinitionUpdater>(updater => updater.Update());
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
             fiveSecondTimer = new Timer(state =>
             {
                 BackgroundJob.Enqueue<PullRequestUpdater>(updater => updater.Update());
                 BackgroundJob.Enqueue<JobRequestUpdater>(updater => updater.Update());
-                
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
             
         }

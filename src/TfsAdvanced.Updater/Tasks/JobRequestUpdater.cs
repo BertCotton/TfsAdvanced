@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
+using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.DTO;
 using TFSAdvanced.Updater.Models.Builds;
 using TFSAdvanced.Updater.Models.JobRequests;
@@ -20,17 +22,23 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly PoolRepository poolRepository;
         private readonly BuildRepository buildRepository;
+        private readonly BuildDefinitionRepository buildDefinitionRepository;
+        private readonly ProjectRepository projectRepository;
+        private readonly ReleaseDefinitionRepository releaseDefinitionRepository;
         private readonly RequestData requestData;
         private bool IsRunning;
 
 
-        public JobRequestUpdater(JobRequestRepository jobRequestRepository, RequestData requestData, PoolRepository poolRepository, BuildRepository buildRepository, UpdateStatusRepository updateStatusRepository)
+        public JobRequestUpdater(JobRequestRepository jobRequestRepository, RequestData requestData, PoolRepository poolRepository, BuildRepository buildRepository, UpdateStatusRepository updateStatusRepository, BuildDefinitionRepository buildDefinitionRepository, ProjectRepository projectRepository, ReleaseDefinitionRepository releaseDefinitionRepository)
         {
             this.jobRequestRepository = jobRequestRepository;
             this.requestData = requestData;
             this.poolRepository = poolRepository;
             this.buildRepository = buildRepository;
             this.updateStatusRepository = updateStatusRepository;
+            this.buildDefinitionRepository = buildDefinitionRepository;
+            this.projectRepository = projectRepository;
+            this.releaseDefinitionRepository = releaseDefinitionRepository;
         }
 
         [AutomaticRetry(Attempts = 0)]
@@ -52,13 +60,18 @@ namespace TfsAdvanced.Updater.Tasks
                     {
                         foreach (var poolJobRequest in poolJobRequests)
                         {
+                            
                             QueueJob queueJob = new QueueJob
                             {
+                                
                                 RequestId = poolJobRequest.requestId,
                                 QueuedTime = poolJobRequest.queueTime,
                                 AssignedTime = poolJobRequest.assignTime,
-                                FinishedTime = poolJobRequest.finishTime
+                                FinishedTime = poolJobRequest.finishTime,
+                                Name = poolJobRequest.definition.name,
+                                Url = poolJobRequest.definition._links.self.href
                             };
+                            
                             if (poolJobRequest.planType == PlanTypes.Build)
                             {
                                 var build = buildRepository.GetBuild(poolJobRequest.owner.id);
@@ -67,6 +80,8 @@ namespace TfsAdvanced.Updater.Tasks
                                     queueJob.LaunchedBy = build.Creator;
                                     queueJob.StartedTime = build.StartedDate;
                                     queueJob.FinishedTime = build.FinishedDate;
+                                    queueJob.BuildFolder = build.Folder;
+
                                     switch (build.BuildStatus)
                                     {
                                         case TFSAdvanced.Models.DTO.BuildStatus.NotStarted:
@@ -91,6 +106,35 @@ namespace TfsAdvanced.Updater.Tasks
                                     }
                                 }
 
+                                var buildDefinition = buildDefinitionRepository.GetBuildDefinition(poolJobRequest.definition.id);
+                                if (buildDefinition != null)
+                                {
+                                    var project = projectRepository.GetProject(buildDefinition.Repository.Project.Id);
+                                    if (project != null)
+                                    {
+                                        queueJob.Project = new Project
+                                        {
+                                            Id = project.Id,
+                                            Name = project.Name,
+                                            Url = project.Url
+                                        };
+                                    }
+                                    else
+                                    {
+                                        queueJob.Project = new Project
+                                        {
+                                            Name = "Unknown Project"
+                                        };
+                                    }
+                                }
+                                else
+                                {
+                                    queueJob.Project = new Project
+                                    {
+                                        Name = "Unknown Build Definition"
+                                    };
+                                }
+
                             }
                             else if (poolJobRequest.planType == PlanTypes.Release)
                             {
@@ -113,6 +157,21 @@ namespace TfsAdvanced.Updater.Tasks
                                             break;
                                     }
                                 }
+
+                                var releaseDefinition = releaseDefinitionRepository.GetReleaseDefinition(poolJobRequest.definition.id);
+                                if (releaseDefinition != null)
+                                {
+                                    queueJob.Project = releaseDefinition.Project;
+                                }
+                                else
+                                {
+                                    queueJob.Project = new Project
+                                    {
+                                        Name = "Unknown Release Definition"
+                                    };
+                                }
+
+
                             }
 
 

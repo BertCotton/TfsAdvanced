@@ -8,6 +8,10 @@ namespace TFSAdvanced.Models.DTO
     {
         public int Id { get; set; }
 
+        public string Name { get; set; }
+
+        public string Folder { get; set; }
+
         public string Url { get; set; }
 
         public User Creator { get; set; }
