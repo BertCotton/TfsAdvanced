@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.Extensions.Logging;
@@ -57,7 +58,20 @@ namespace TfsAdvanced.Updater.Tasks
                     {
                         try
                         {
+                            if (pullRequest.lastMergeCommit == null)
+                            {
+                                logger.LogWarning($"Unable to get last merge commit for the pullrequest ({pullRequest.pullRequestId}) {pullRequest.description}");
+                                return;
+                            }
+
+                            if (string.IsNullOrEmpty(pullRequest.lastMergeCommit.commitId))
+                            {
+                                logger.LogWarning($"Unable to get the last commitID for the pull request ({pullRequest.pullRequestId}) {pullRequest.description}");
+                                return;
+                            }
                             var build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
+                            
+                            
                             var pullRequestDto = BuildPullRequest(pullRequest, build);
                             pullRequestDto.Repository = repository;
                             pullRequestDto.Url = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);

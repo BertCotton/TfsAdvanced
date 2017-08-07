@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using Hangfire;
+using Microsoft.Extensions.Logging;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
@@ -16,15 +17,17 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly ProjectRepository projectRepository;
         private readonly RepositoryRepository repositoryRepository;
         private readonly RequestData requestData;
+        private readonly ILogger<BuildDefinitionUpdater> logger;
         private bool IsRunning;
 
-        public BuildDefinitionUpdater(BuildDefinitionRepository buildDefinitionRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, RepositoryRepository repositoryRepository)
+        public BuildDefinitionUpdater(BuildDefinitionRepository buildDefinitionRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, RepositoryRepository repositoryRepository, ILogger<BuildDefinitionUpdater> logger)
         {
             this.buildDefinitionRepository = buildDefinitionRepository;
             this.requestData = requestData;
             this.projectRepository = projectRepository;
             this.updateStatusRepository = updateStatusRepository;
             this.repositoryRepository = repositoryRepository;
+            this.logger = logger;
         }
 
         [AutomaticRetry(Attempts = 0)]
@@ -41,7 +44,10 @@ namespace TfsAdvanced.Updater.Tasks
                 {
                     var definitions = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/definitions?api=2.2").Result;
                     if (definitions == null)
+                    {
+                        logger.LogInformation($"Unable to get the definitiosn for the project {project.Name}");
                         return;
+                    }
                     Parallel.ForEach(definitions, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, definition =>
                     {
                         var populatedDefinition = GetAsync.Fetch<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, definition.url).Result;

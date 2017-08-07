@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
+using Hangfire.Logging;
+using Microsoft.Extensions.Logging;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
@@ -19,14 +21,16 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly ProjectRepository projectRepository;
         private readonly RequestData requestData;
+        private readonly ILogger<BuildUpdater> logger;
         private bool IsRunning;
 
-        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository)
+        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, ILogger<BuildUpdater> logger)
         {
             this.buildRepository = buildRepository;
             this.requestData = requestData;
             this.projectRepository = projectRepository;
             this.updateStatusRepository = updateStatusRepository;
+            this.logger = logger;
         }
 
         [AutomaticRetry(Attempts = 0)]
