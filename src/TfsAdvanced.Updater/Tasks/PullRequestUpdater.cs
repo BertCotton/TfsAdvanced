@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hangfire;
+using Microsoft.Extensions.Logging;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
@@ -21,15 +22,17 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly RepositoryRepository repositoryRepository;
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly BuildRepository buildRepository;
+        private readonly ILogger<PullRequestUpdater> logger;
         private bool IsRunning;
 
         public PullRequestUpdater(PullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, 
-            UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository)
+            UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository, ILogger<PullRequestUpdater> logger)
         {
             this.requestData = requestData;
             this.repositoryRepository = repositoryRepository;
             this.updateStatusRepository = updateStatusRepository;
             this.buildRepository = buildRepository;
+            this.logger = logger;
             this.pullRequestRepository = pullRequestRepository;
         }
 
@@ -52,21 +55,28 @@ namespace TfsAdvanced.Updater.Tasks
                         return;
                     Parallel.ForEach(pullRequests, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pullRequest =>
                     {
-                        var build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
-                        var pullRequestDto = BuildPullRequest(pullRequest, build);
-                        pullRequestDto.Repository= repository;
-                        pullRequestDto.Url = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
-                        pullRequestDto.RequiredReviewers = repository.MinimumApproverCount;
-                        
-                        foreach (var reviewer in pullRequest.reviewers)
+                        try
                         {
-                            // Container reviewers do not count
-                            if (reviewer.isContainer)
-                                continue;
-                            if (reviewer.vote == (int) Vote.Approved)
-                                pullRequestDto.AcceptedReviewers++;
+                            var build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
+                            var pullRequestDto = BuildPullRequest(pullRequest, build);
+                            pullRequestDto.Repository = repository;
+                            pullRequestDto.Url = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
+                            pullRequestDto.RequiredReviewers = repository.MinimumApproverCount;
+
+                            foreach (var reviewer in pullRequest.reviewers)
+                            {
+                                // Container reviewers do not count
+                                if (reviewer.isContainer)
+                                    continue;
+                                if (reviewer.vote == (int) Vote.Approved)
+                                    pullRequestDto.AcceptedReviewers++;
+                            }
+                            allPullRequests.Add(pullRequestDto);
                         }
-                        allPullRequests.Add(pullRequestDto);
+                        catch (Exception e)
+                        {
+                            logger.LogError("Error parsing pull request", e);
+                        }
                     });
                 });
                 var pullRequestsList = allPullRequests.ToList();
