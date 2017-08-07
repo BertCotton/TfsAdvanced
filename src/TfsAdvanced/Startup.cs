@@ -22,6 +22,11 @@ using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
 using TfsAdvanced.ServiceRequests;
 using TfsAdvanced.Web;
+using Serilog;
+using Serilog.Core;
+using Serilog.Enrichers;
+using Serilog.Events;
+using Serilog.Exceptions;
 
 namespace TfsAdvanced
 {
@@ -101,6 +106,9 @@ namespace TfsAdvanced
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
 
 
+            
+
+
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
@@ -125,6 +133,33 @@ namespace TfsAdvanced
                 Authorization = new []{new HangfireAuthorizationFilter()}
             });
             app.UseHangfireServer();
+
+            LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
+                .Enrich.WithExceptionDetails()
+                .Enrich.With(new MachineNameEnricher())
+                .Enrich.FromLogContext()
+                .MinimumLevel.Is(LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+                .MinimumLevel.Override("System", LogEventLevel.Error)
+                .WriteTo.ColoredConsole()
+                .WriteTo.LiterateConsole()
+                ;
+
+
+
+            var seqKey = Configuration["Logging:Seq:Key"];
+            if(!string.IsNullOrEmpty(seqKey))
+            {
+                var seqUrl = Configuration["Logging:Seq:Url"];
+                loggerConfiguration.WriteTo.Seq(serverUrl:seqUrl, apiKey:seqKey);
+            }
+
+            if (env.IsDevelopment())
+            {
+                loggerConfiguration.WriteTo.Trace();
+            }
+
+            Log.Logger = loggerConfiguration.CreateLogger();
 
             GlobalJobFilters.Filters.Add(new HangfireJobFilter());
 
