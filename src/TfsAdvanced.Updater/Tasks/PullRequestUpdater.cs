@@ -11,102 +11,83 @@ using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
 using TFSAdvanced.Models.DTO;
 using TFSAdvanced.Updater.Models.PullRequests;
+using TFSAdvanced.Updater.Tasks;
 using PullRequest = TFSAdvanced.Models.DTO.PullRequest;
 using Reviewer = TFSAdvanced.Models.DTO.Reviewer;
 
 namespace TfsAdvanced.Updater.Tasks
 {
-    public class PullRequestUpdater
+    public class PullRequestUpdater : UpdaterBase
     {
         private readonly RequestData requestData;
         private readonly PullRequestRepository pullRequestRepository;
         private readonly RepositoryRepository repositoryRepository;
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly BuildRepository buildRepository;
-        private readonly ILogger<PullRequestUpdater> logger;
-        private bool IsRunning;
-
+        
         public PullRequestUpdater(PullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, 
-            UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository, ILogger<PullRequestUpdater> logger)
+            UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository, ILogger<PullRequestUpdater> logger) : base(logger)
         {
             this.requestData = requestData;
             this.repositoryRepository = repositoryRepository;
             this.updateStatusRepository = updateStatusRepository;
             this.buildRepository = buildRepository;
-            this.logger = logger;
             this.pullRequestRepository = pullRequestRepository;
         }
 
-        [AutomaticRetry(Attempts = 0)]
-        public void Update()
+        protected override void Update()
         {
-            if (IsRunning)
-                return;
-
-            IsRunning = true;
-            try
+            ConcurrentBag<PullRequest> allPullRequests = new ConcurrentBag<PullRequest>();
+            Parallel.ForEach(repositoryRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repository =>
             {
-                ConcurrentBag<PullRequest> allPullRequests = new ConcurrentBag<PullRequest>();
-                Parallel.ForEach(repositoryRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repository =>
+                if (string.IsNullOrEmpty(repository.PullRequestUrl))
+                    return;
+                var pullRequests = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(requestData, repository.PullRequestUrl).Result;
+                if (pullRequests == null)
+                    return;
+                Parallel.ForEach(pullRequests, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pullRequest =>
                 {
-                    if (string.IsNullOrEmpty(repository.PullRequestUrl))
-                        return;
-                    var pullRequests = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(requestData, repository.PullRequestUrl).Result;
-                    if (pullRequests == null)
-                        return;
-                    Parallel.ForEach(pullRequests, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pullRequest =>
+                    try
                     {
-                        try
+                        if (pullRequest.lastMergeCommit == null)
                         {
-                            if (pullRequest.lastMergeCommit == null)
-                            {
-                                logger.LogWarning($"Unable to get last merge commit for the pullrequest ({pullRequest.pullRequestId}) {pullRequest.description}");
-                                return;
-                            }
-
-                            if (string.IsNullOrEmpty(pullRequest.lastMergeCommit.commitId))
-                            {
-                                logger.LogWarning($"Unable to get the last commitID for the pull request ({pullRequest.pullRequestId}) {pullRequest.description}");
-                                return;
-                            }
-                            var build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
-                            
-                            
-                            var pullRequestDto = BuildPullRequest(pullRequest, build);
-                            pullRequestDto.Repository = repository;
-                            pullRequestDto.Url = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
-                            pullRequestDto.RequiredReviewers = repository.MinimumApproverCount;
-
-                            foreach (var reviewer in pullRequest.reviewers)
-                            {
-                                // Container reviewers do not count
-                                if (reviewer.isContainer)
-                                    continue;
-                                if (reviewer.vote == (int) Vote.Approved)
-                                    pullRequestDto.AcceptedReviewers++;
-                            }
-                            allPullRequests.Add(pullRequestDto);
+                            logger.LogWarning($"Unable to get last merge commit for the pullrequest ({pullRequest.pullRequestId}) {pullRequest.description}");
+                            return;
                         }
-                        catch (Exception e)
+
+                        if (string.IsNullOrEmpty(pullRequest.lastMergeCommit.commitId))
                         {
-                            logger.LogError("Error parsing pull request", e);
+                            logger.LogWarning($"Unable to get the last commitID for the pull request ({pullRequest.pullRequestId}) {pullRequest.description}");
+                            return;
                         }
-                    });
+                        var build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
+
+
+                        var pullRequestDto = BuildPullRequest(pullRequest, build);
+                        pullRequestDto.Repository = repository;
+                        pullRequestDto.Url = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
+                        pullRequestDto.RequiredReviewers = repository.MinimumApproverCount;
+
+                        foreach (var reviewer in pullRequest.reviewers)
+                        {
+                            // Container reviewers do not count
+                            if (reviewer.isContainer)
+                                continue;
+                            if (reviewer.vote == (int) Vote.Approved)
+                                pullRequestDto.AcceptedReviewers++;
+                        }
+                        allPullRequests.Add(pullRequestDto);
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError("Error parsing pull request", e);
+                    }
                 });
-                var pullRequestsList = allPullRequests.ToList();
-                pullRequestRepository.Update(pullRequestsList);
-                updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pullRequestsList.Count, UpdaterName = nameof(PullRequestUpdater)});
+            });
+            var pullRequestsList = allPullRequests.ToList();
+            pullRequestRepository.Update(pullRequestsList);
+            updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pullRequestsList.Count, UpdaterName = nameof(PullRequestUpdater)});
 
-            
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Error runnign Pull Request Updater", ex);
-            }
-            finally
-            {
-                IsRunning = false;
-            }
         }
 
         private PullRequest BuildPullRequest(TFSAdvanced.Updater.Models.PullRequests.PullRequest x, Build build)
