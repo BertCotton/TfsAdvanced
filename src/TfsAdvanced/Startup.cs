@@ -154,6 +154,12 @@ namespace TfsAdvanced
                 loggerConfiguration.WriteTo.Seq(serverUrl:seqUrl, apiKey:seqKey);
             }
 
+            var applicationInsights = Configuration["Logging:ApplicationInsights:InstrumentationKey"];
+            if (!string.IsNullOrEmpty(applicationInsights))
+            {
+                loggerConfiguration.WriteTo.ApplicationInsightsTraces(instrumentationKey: applicationInsights);
+            }
+
             if (env.IsDevelopment())
             {
                 loggerConfiguration.WriteTo.Trace();
