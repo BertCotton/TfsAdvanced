@@ -67,35 +67,34 @@ namespace TfsAdvanced.Updater.Tasks
                         {
                             var build = buildRepository.GetBuild(poolJobRequest.owner.id);
                             if (build != null)
-                            {
                                 queueJob.LaunchedBy = build.Creator;
-                                queueJob.StartedTime = build.StartedDate;
-                                queueJob.FinishedTime = build.FinishedDate;
-                                queueJob.BuildFolder = build.Folder;
+                            queueJob.StartedTime = build.StartedDate;
+                            queueJob.FinishedTime = build.FinishedDate;
+                            queueJob.BuildFolder = build.Folder;
 
-                                switch (build.BuildStatus)
-                                {
-                                    case BuildStatus.NotStarted:
-                                        queueJob.QueueJobStatus = QueueJobStatus.Queued;
-                                        break;
-                                    case BuildStatus.Abandonded:
-                                        queueJob.QueueJobStatus = QueueJobStatus.Abandonded;
-                                        break;
-                                    case BuildStatus.Building:
-                                        queueJob.QueueJobStatus = QueueJobStatus.Building;
-                                        break;
-                                    case BuildStatus.Cancelled:
-                                        queueJob.QueueJobStatus = QueueJobStatus.Cancelled;
-                                        break;
-                                    case BuildStatus.Expired:
-                                    case BuildStatus.Failed:
-                                        queueJob.QueueJobStatus = QueueJobStatus.Failed;
-                                        break;
-                                    case BuildStatus.Succeeded:
-                                        queueJob.QueueJobStatus = QueueJobStatus.Succeeded;
-                                        break;
-                                }
+                            switch (build.BuildStatus)
+                            {
+                                case BuildStatus.NotStarted:
+                                    queueJob.QueueJobStatus = QueueJobStatus.Queued;
+                                    break;
+                                case BuildStatus.Abandonded:
+                                    queueJob.QueueJobStatus = QueueJobStatus.Abandonded;
+                                    break;
+                                case BuildStatus.Building:
+                                    queueJob.QueueJobStatus = QueueJobStatus.Building;
+                                    break;
+                                case BuildStatus.Cancelled:
+                                    queueJob.QueueJobStatus = QueueJobStatus.Cancelled;
+                                    break;
+                                case BuildStatus.Expired:
+                                case BuildStatus.Failed:
+                                    queueJob.QueueJobStatus = QueueJobStatus.Failed;
+                                    break;
+                                case BuildStatus.Succeeded:
+                                    queueJob.QueueJobStatus = QueueJobStatus.Succeeded;
+                                    break;
                             }
+
 
                             var buildDefinition = buildDefinitionRepository.GetBuildDefinition(poolJobRequest.definition.id);
                             if (buildDefinition != null)
@@ -125,8 +124,8 @@ namespace TfsAdvanced.Updater.Tasks
                                     Name = "Unknown Build Definition"
                                 };
                             }
-
                         }
+
                         else if (poolJobRequest.planType == PlanTypes.Release)
                         {
                             if (poolJobRequest.finishTime.HasValue)
