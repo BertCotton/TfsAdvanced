@@ -32,7 +32,7 @@
                         for (var i = 0, ien = json.length; i < ien; i++) {
                             var column = 0;
                             var jobRequest = json[i];
-                            json[i][column++] = "<a href=" + jobRequest.Url + " target='_blank'>" + jobRequest.requestId + "</a>";
+                            json[i][column++] = "<a href=" + jobRequest.url + " target='_blank'>" + jobRequest.requestId + "</a>";
 
                             if (jobRequest.jobType === 'release')
                                 json[i][column++] = '<span class="glyphicon glyphicon-plane" style="color:blue"></span>' +

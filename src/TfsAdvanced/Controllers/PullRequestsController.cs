@@ -32,7 +32,7 @@ namespace TfsAdvanced.Web.Controllers
                 {"id", pullRequest.Id.ToString()},
                 {"repository", pullRequest.Repository.Name},
                 {"title", pullRequest.Title},
-                {"url", pullRequest.BuildUrl}
+                {"url", pullRequest.Url}
             }).ToList();
         }
     }

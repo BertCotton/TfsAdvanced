@@ -67,7 +67,7 @@ namespace TfsAdvanced.Updater.Tasks
                                 AssignedTime = poolJobRequest.assignTime,
                                 FinishedTime = poolJobRequest.finishTime,
                                 Name = poolJobRequest.definition.name,
-                                Url = poolJobRequest.definition._links.self.href
+                                Url = poolJobRequest.definition._links.web.href
                             };
                             
                             if (poolJobRequest.planType == PlanTypes.Build)
