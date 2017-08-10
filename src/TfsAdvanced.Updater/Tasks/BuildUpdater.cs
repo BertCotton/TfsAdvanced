@@ -10,84 +10,66 @@ using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
 using TFSAdvanced.Models.DTO;
 using TFSAdvanced.Updater.Models.Builds;
+using TFSAdvanced.Updater.Tasks;
 using Build = TFSAdvanced.Models.DTO.Build;
 using BuildStatus = TFSAdvanced.Models.DTO.BuildStatus;
 
 namespace TfsAdvanced.Updater.Tasks
 {
-    public class BuildUpdater
+    public class BuildUpdater : UpdaterBase
     {
         private readonly BuildRepository buildRepository;
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly ProjectRepository projectRepository;
         private readonly RequestData requestData;
-        private readonly ILogger<BuildUpdater> logger;
-        private bool IsRunning;
-
+    
         public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, ILogger<BuildUpdater> logger)
+            :base(logger)
         {
             this.buildRepository = buildRepository;
             this.requestData = requestData;
             this.projectRepository = projectRepository;
             this.updateStatusRepository = updateStatusRepository;
-            this.logger = logger;
         }
 
-        [AutomaticRetry(Attempts = 0)]
-        public void Update()
+        protected override void Update()
         {
-            if (IsRunning)
-                return;
-            IsRunning = true;
-            try
+            DateTime yesterday = DateTime.Now.Date.AddDays(-1);
+            var builds = new ConcurrentStack<TFSAdvanced.Updater.Models.Builds.Build>();
+            Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
             {
-
-                DateTime yesterday = DateTime.Now.Date.AddDays(-1);
-                var builds = new ConcurrentStack<TFSAdvanced.Updater.Models.Builds.Build>();
-                Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
+                // Finished PR builds                    
+                var projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&minFinishTime={yesterday:O}").Result;
+                if (projectBuilds != null && projectBuilds.Any())
                 {
-                    // Finished PR builds                    
-                    var projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&minFinishTime={yesterday:O}").Result;
-                    if (projectBuilds != null && projectBuilds.Any())
-                    {
-                        builds.PushRange(projectBuilds.ToArray());
-                    }
+                    builds.PushRange(projectBuilds.ToArray());
+                }
 
 
-                    // Current active builds
-                    projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&statusFilter=inProgress&inProgress=notStarted").Result;
-                    if (projectBuilds != null && projectBuilds.Any())
-                    {
-                        builds.PushRange(projectBuilds.ToArray());
-                    }
+                // Current active builds
+                projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&statusFilter=inProgress&inProgress=notStarted").Result;
+                if (projectBuilds != null && projectBuilds.Any())
+                {
+                    builds.PushRange(projectBuilds.ToArray());
+                }
 
 
-                    DateTime twoHoursAgo = DateTime.Now.AddHours(-2);
-                    // Because we want to capture the final state of any build that was running and just finished we are getting those too
-                    // Finished builds within the last 2 hours
-                    projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&minFinishTime={twoHoursAgo:O}").Result;
-                    if (projectBuilds != null && projectBuilds.Any())
-                    {
-                        builds.PushRange(projectBuilds.ToArray());
-                    }
+                DateTime twoHoursAgo = DateTime.Now.AddHours(-2);
+                // Because we want to capture the final state of any build that was running and just finished we are getting those too
+                // Finished builds within the last 2 hours
+                projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&minFinishTime={twoHoursAgo:O}").Result;
+                if (projectBuilds != null && projectBuilds.Any())
+                {
+                    builds.PushRange(projectBuilds.ToArray());
+                }
 
-                });
+            });
 
 
-                // The builds must be requested without the filter because the only filter available is minFinishTime, which will filter out those that haven't finished yet
-                var buildLists = builds.ToList();
-                buildRepository.Update(buildLists.Select(CreateBuild));
-                updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = buildLists.Count, UpdaterName = nameof(BuildUpdater)});
-
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Error running build updater", ex);
-            }
-            finally
-            {
-                IsRunning = false;
-            }
+            // The builds must be requested without the filter because the only filter available is minFinishTime, which will filter out those that haven't finished yet
+            var buildLists = builds.ToList();
+            buildRepository.Update(buildLists.Select(CreateBuild));
+            updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = buildLists.Count, UpdaterName = nameof(BuildUpdater)});
         }
 
         private Build CreateBuild(TFSAdvanced.Updater.Models.Builds.Build build)

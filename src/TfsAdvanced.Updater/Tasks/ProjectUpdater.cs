@@ -1,58 +1,41 @@
 ﻿using System;
 using System.Linq;
 using Hangfire;
+using Microsoft.Extensions.Logging;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
 using TFSAdvanced.Updater.Models.Projects;
+using TFSAdvanced.Updater.Tasks;
 
 namespace TfsAdvanced.Updater.Tasks
 {
-    public class ProjectUpdater
+    public class ProjectUpdater : UpdaterBase
     {
 
         private readonly ProjectRepository projectRepository;
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly RequestData requestData;
-        private bool IsRunning;
 
-        public ProjectUpdater(ProjectRepository projectRepository, RequestData requestData, UpdateStatusRepository updateStatusRepository)
+        public ProjectUpdater(ProjectRepository projectRepository, RequestData requestData, UpdateStatusRepository updateStatusRepository, ILogger<ProjectUpdater> logger) : base(logger)
         {
             this.projectRepository = projectRepository;
             this.requestData = requestData;
             this.updateStatusRepository = updateStatusRepository;
         }
 
-        [AutomaticRetry(Attempts = 0)]
-        public void Update()
+        protected override void Update()
         {
-            if (IsRunning)
-                return;
-            IsRunning = true;
-            try
+            var projects = GetAsync.FetchResponseList<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects?api-version=1.0").Result;
+            if (projects != null)
             {
-                var projects = GetAsync.FetchResponseList<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects?api-version=1.0").Result;
-                if (projects != null)
+                projectRepository.Update(projects.Select(x => new TFSAdvanced.Models.DTO.Project
                 {
-                    projectRepository.Update(projects.Select(x => new TFSAdvanced.Models.DTO.Project
-                    {
-                        Id = x.id,
-                        Name = x.name,
-                        Url = x.remoteUrl
-                    }));
-                    updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = projects.Count, UpdaterName = nameof(ProjectUpdater)});
-                }
-
-
+                    Id = x.id,
+                    Name = x.name,
+                    Url = x.remoteUrl
+                }));
+                updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = projects.Count, UpdaterName = nameof(ProjectUpdater)});
             }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Error running project updater.", ex);
-            }
-            finally
-            {
-                IsRunning = false;
-            }
-
         }
     }
 }
