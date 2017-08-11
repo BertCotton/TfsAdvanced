@@ -60,42 +60,43 @@ namespace TfsAdvanced.Updater.Tasks
                             AssignedTime = poolJobRequest.assignTime,
                             FinishedTime = poolJobRequest.finishTime,
                             Name = poolJobRequest.definition.name,
-                            Url = poolJobRequest.definition._links.self.href
+                            Url = poolJobRequest.definition._links.web.href
                         };
 
                         if (poolJobRequest.planType == PlanTypes.Build)
                         {
                             var build = buildRepository.GetBuild(poolJobRequest.owner.id);
                             if (build != null)
-                                queueJob.LaunchedBy = build.Creator;
-                            queueJob.StartedTime = build.StartedDate;
-                            queueJob.FinishedTime = build.FinishedDate;
-                            queueJob.BuildFolder = build.Folder;
-
-                            switch (build.BuildStatus)
                             {
-                                case BuildStatus.NotStarted:
-                                    queueJob.QueueJobStatus = QueueJobStatus.Queued;
-                                    break;
-                                case BuildStatus.Abandonded:
-                                    queueJob.QueueJobStatus = QueueJobStatus.Abandonded;
-                                    break;
-                                case BuildStatus.Building:
-                                    queueJob.QueueJobStatus = QueueJobStatus.Building;
-                                    break;
-                                case BuildStatus.Cancelled:
-                                    queueJob.QueueJobStatus = QueueJobStatus.Cancelled;
-                                    break;
-                                case BuildStatus.Expired:
-                                case BuildStatus.Failed:
-                                    queueJob.QueueJobStatus = QueueJobStatus.Failed;
-                                    break;
-                                case BuildStatus.Succeeded:
-                                    queueJob.QueueJobStatus = QueueJobStatus.Succeeded;
-                                    break;
+                                queueJob.LaunchedBy = build.Creator;
+                                queueJob.StartedTime = build.StartedDate;
+                                queueJob.FinishedTime = build.FinishedDate;
+                                queueJob.BuildFolder = build.Folder;
+
+                                switch (build.BuildStatus)
+                                {
+                                    case BuildStatus.NotStarted:
+                                        queueJob.QueueJobStatus = QueueJobStatus.Queued;
+                                        break;
+                                    case BuildStatus.Abandonded:
+                                        queueJob.QueueJobStatus = QueueJobStatus.Abandonded;
+                                        break;
+                                    case BuildStatus.Building:
+                                        queueJob.QueueJobStatus = QueueJobStatus.Building;
+                                        break;
+                                    case BuildStatus.Cancelled:
+                                        queueJob.QueueJobStatus = QueueJobStatus.Cancelled;
+                                        break;
+                                    case BuildStatus.Expired:
+                                    case BuildStatus.Failed:
+                                        queueJob.QueueJobStatus = QueueJobStatus.Failed;
+                                        break;
+                                    case BuildStatus.Succeeded:
+                                        queueJob.QueueJobStatus = QueueJobStatus.Succeeded;
+                                        break;
+                                }
+
                             }
-
-
                             var buildDefinition = buildDefinitionRepository.GetBuildDefinition(poolJobRequest.definition.id);
                             if (buildDefinition != null)
                             {
@@ -171,10 +172,8 @@ namespace TfsAdvanced.Updater.Tasks
                 }
             });
 
-            DateTime yesterday = DateTime.Now.Date.AddDays(-1);
-            var jobRequestsLists = jobRequests.Where(x => !x.StartedTime.HasValue || x.StartedTime.Value >= yesterday).ToList();
-            jobRequestRepository.Update(jobRequestsLists);
-            updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = jobRequestsLists.Count, UpdaterName = nameof(JobRequestUpdater)});
+           jobRequestRepository.Update(jobRequests);
+            updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = jobRequests.Count, UpdaterName = nameof(JobRequestUpdater)});
         }
     }
 }

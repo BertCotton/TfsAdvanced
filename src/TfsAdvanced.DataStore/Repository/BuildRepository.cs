@@ -14,9 +14,19 @@ namespace TfsAdvanced.DataStore.Repository
             return base.Get(b => b.Id == buildId);
         }
 
-        public Build GetBuildBySourceVersion(string commitId)
+        public Build GetBuildBySourceVersion(TFSAdvanced.Models.DTO.Repository repository, string commitId)
         {
-            return base.GetList(b => b.SourceCommit == commitId).OrderByDescending(b => b.Id).FirstOrDefault();
+            var build = base.GetList(b => b.SourceCommit == commitId).OrderByDescending(b => b.Id).FirstOrDefault();
+            if (build == null)
+            {
+                var repositoryBuilds = base.GetList(b => b.Repository.Id == repository.Id).ToList();
+                foreach (var repositoryBuild in repositoryBuilds)
+                {
+                    if (repositoryBuild.SourceCommit == commitId)
+                        build = repositoryBuild;
+                }
+            }
+            return build;
         }
 
         protected override int GetId(Build item)

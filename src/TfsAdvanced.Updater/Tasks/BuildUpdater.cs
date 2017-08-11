@@ -47,7 +47,7 @@ namespace TfsAdvanced.Updater.Tasks
 
 
                 // Current active builds
-                projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&statusFilter=inProgress&inProgress=notStarted").Result;
+                projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&statusFilter=inProgress&statusFilter=notStarted").Result;
                 if (projectBuilds != null && projectBuilds.Any())
                 {
                     builds.PushRange(projectBuilds.ToArray());

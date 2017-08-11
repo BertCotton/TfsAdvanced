@@ -60,7 +60,7 @@ namespace TfsAdvanced.Updater.Tasks
                             logger.LogWarning($"Unable to get the last commitID for the pull request ({pullRequest.pullRequestId}) {pullRequest.description}");
                             return;
                         }
-                        var build = buildRepository.GetBuildBySourceVersion(pullRequest.lastMergeCommit.commitId);
+                        var build = buildRepository.GetBuildBySourceVersion(repository, pullRequest.lastMergeCommit.commitId);
 
 
                         var pullRequestDto = BuildPullRequest(pullRequest, build);
