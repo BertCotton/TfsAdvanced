@@ -68,7 +68,7 @@
             });
             $("#pullRequests").html($("#pullRequestTemplate").tmpl(data));
             formatPage();
-            window.setTimeout(fetchData, 3000);
+            window.setTimeout(fetchData, 1000);
         });
     };
     
@@ -95,8 +95,8 @@
             <div>
                 <span >
                     
-                    {{if buildStatus == 'NoBuild'}}
-                    <span class="glyphicon glyphicon-remove" style="color: red"><span class="hidden-xs"> No Build Queued</span></span>
+                    {{if buildStatus == 'noBuild'}}
+                    <span class="glyphicon glyphicon-remove" style="color: red"><span class="hidden-xs"><a href="${buildUrl}" target="_blank" >No Build Queued</a></span></span>
                     {{else}}
                     <a href="${buildUrl}" target="_blank">
                         {{if buildStatus == 'notStarted'}}

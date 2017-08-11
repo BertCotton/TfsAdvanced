@@ -9,10 +9,7 @@
                 <th>Repository</th>
                 <th>Launched By</th>
                 <th>Result</th>
-                <th>Queued Time</th>
-                <th>Assigned Time</th>
-                <th>Started Time</th>
-                <th>Finished Time</th>
+                <th>Last Updated Time</th>
             </tr>
             </thead>
             
@@ -21,7 +18,7 @@
 </div>
 <script type="text/javascript">
     var longDateFormat = 'MM/dd/yyyy hh:mm:ss a';
-
+    var updating = false;
     $(document)
         .ready(function() {
             var dataTable = $("#jobRequestsTable").DataTable({
@@ -96,28 +93,20 @@
                             }
                                 
 
-                            if (jobRequest.queuedTime)
+                            if (jobRequest.finishTime)
+                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.finishedTime, longDateFormat) + "</span>";
+                            else if (jobRequest.startedTime)
+                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.startedTime, longDateFormat) + "</span>";
+                          
+                            else if (jobRequest.queuedTime)
                                 json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.queuedTime, longDateFormat) + "</span>";
+                            else if (jobRequest.assignedTime)
+                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.assignedTime, longDateFormat) + "</span>";
                             else 
                                 json[i][column++] = "---";
 
-                            if (jobRequest.assignedTime)
-                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.assignedTime, longDateFormat) + "</span>";
-                            else
-                                json[i][column++] = "---";
-                            if (jobRequest.jobType === 'release')
-                                json[i][column++] = "---";
-                            else if (jobRequest.startedTime)
-                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.startedTime, longDateFormat) + "</span>";
-                            else
-                                json[i][column++] = "---";
-
-                            if (jobRequest.finishTime)
-                                json[i][column++] = "<span class='datetime'>" + $.format.date(jobRequest.finishedTime, longDateFormat) + "</span>";
-                            else
-                                json[i][column++] = "---";
-
                         }
+                        updating = false;
                         return json;
                     }
                 }
@@ -125,8 +114,12 @@
             });
 
             setInterval(function () {
+                if (updating) {
+                    return;
+                }
+                updating = true;
                 dataTable.ajax.reload(null, false);
-            }, 2000);
+            }, 500);
 
         });
 </script>
