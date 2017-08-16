@@ -30,12 +30,12 @@ namespace TfsAdvanced.Updater.Tasks
             double stepSize = 1.0/8.0;
             double percentLoaded = 0.0;
             var hangFireStatusRepository = serviceProvider.GetService<HangFireStatusRepository>();
+            percentLoaded = RunUpdate<PoolUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<ProjectUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<RepositoryUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
-            percentLoaded = RunUpdate<BuildUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<BuildDefinitionUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
+            percentLoaded = RunUpdate<BuildUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<PullRequestUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
-            percentLoaded = RunUpdate<PoolUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<ReleaseDefinitionUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<JobRequestUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             hangFireStatusRepository.SetPercentLoaded(1);

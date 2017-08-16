@@ -11,8 +11,10 @@ using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
 using TFSAdvanced.Models.DTO;
 using TFSAdvanced.Updater.Models.PullRequests;
+using TFSAdvanced.Updater.Models.Repositories;
 using TFSAdvanced.Updater.Tasks;
 using PullRequest = TFSAdvanced.Models.DTO.PullRequest;
+using Repository = TFSAdvanced.Models.DTO.Repository;
 using Reviewer = TFSAdvanced.Models.DTO.Reviewer;
 
 namespace TfsAdvanced.Updater.Tasks
@@ -49,18 +51,24 @@ namespace TfsAdvanced.Updater.Tasks
                 {
                     try
                     {
-                        if (pullRequest.lastMergeCommit == null)
+                        CommitLink commitId = null;
+                        if (pullRequest.lastMergeCommit != null)
+                            commitId = pullRequest.lastMergeCommit;
+                        else if (pullRequest.lastMergeSourceCommit != null)
+                            commitId = pullRequest.lastMergeSourceCommit;
+
+                        if (commitId == null)
                         {
                             logger.LogWarning($"Unable to get last merge commit for the pullrequest ({pullRequest.pullRequestId}) {pullRequest.description}");
                             return;
                         }
 
-                        if (string.IsNullOrEmpty(pullRequest.lastMergeCommit.commitId))
+                        if (string.IsNullOrEmpty(commitId.commitId))
                         {
                             logger.LogWarning($"Unable to get the last commitID for the pull request ({pullRequest.pullRequestId}) {pullRequest.description}");
                             return;
                         }
-                        var build = buildRepository.GetBuildBySourceVersion(repository, pullRequest.lastMergeCommit.commitId);
+                        var build = buildRepository.GetBuildBySourceVersion(repository, commitId.commitId);
 
 
                         var pullRequestDto = BuildPullRequest(pullRequest, build);
