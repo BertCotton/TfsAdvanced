@@ -18,17 +18,16 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>NETCOREAPP1_1</DefineConstants>
-    <EnableDefaultContentItems>false</EnableDefaultContentItems>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <Content Include="wwwroot\js\buildDefinitions.js" />
     <Content Include="wwwroot\js\jobRequests.js" />
     <Content Include="wwwroot\js\pullRequests.js" />
     <Content Include="wwwroot\views\templates\buildDefinition.html" />
     <Content Include="wwwroot\views\templates\buildDefinition.js" />
     <Content Include="wwwroot\views\templates\buildDefinitionChart.html" />
-  </ItemGroup>
+  </ItemGroup>-->
 
   <ItemGroup>
     <None Update="wwwroot\**\*">
