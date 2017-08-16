@@ -22,14 +22,18 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly ProjectRepository projectRepository;
         private readonly RequestData requestData;
+        private readonly RepositoryRepository repositoryRepository;
+        private readonly BuildDefinitionRepository buildDefinitionRepository;
     
-        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, ILogger<BuildUpdater> logger)
+        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, ILogger<BuildUpdater> logger, RepositoryRepository repositoryRepository, BuildDefinitionRepository buildDefinitionRepository)
             :base(logger)
         {
             this.buildRepository = buildRepository;
             this.requestData = requestData;
             this.projectRepository = projectRepository;
             this.updateStatusRepository = updateStatusRepository;
+            this.repositoryRepository = repositoryRepository;
+            this.buildDefinitionRepository = buildDefinitionRepository;
         }
 
         protected override void Update()
@@ -90,6 +94,22 @@ namespace TfsAdvanced.Updater.Tasks
                     IconUrl = build.requestedFor.imageUrl
                 }
             };
+
+            Repository repository = null;
+
+            if (build.definition != null)
+            {
+                if (build.definition.repository == null)
+                {
+                    var buildDefinitionDto = buildDefinitionRepository.GetBuildDefinition(build.definition.id);
+                    buildDto.Repository = buildDefinitionDto.Repository;
+                }
+                else
+                {
+                    buildDto.Repository = repositoryRepository.GetById(build.definition.repository.id);
+                }
+            }
+
 
             switch (build.status)
             {
