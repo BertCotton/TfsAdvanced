@@ -51,7 +51,7 @@
                 <span >
                     
                     {{if buildStatus == 'noBuild'}}
-                    <span class="glyphicon glyphicon-remove" style="color: red"><span class="hidden-xs"><a href="${buildUrl}" target="_blank" >No Build Queued</a></span></span>
+                        <span style="color:gray"><i class="glyphicon glyphicon-warning"></i> <span class="hidden-xs"> No Build Queued</span></span>
                     {{else}}
                     <a href="${buildUrl}" target="_blank">
                         {{if buildStatus == 'notStarted'}}
@@ -72,7 +72,7 @@
                 </span>
                 <span >
                     |
-                    {{if HasEnoughReviewers}}
+                    {{if hasEnoughReviewers}}
                     <i class="glyphicon glyphicon-check" style="color: green"></i>
                     {{else}}
                     <i class="glyphicon glyphicon-remove" style="color: red"></i>
@@ -116,14 +116,14 @@
             <div class="media-body hidden-xs">
                 ${name} | 
                 <span>
-                    {{if reviewStatus == 'NoResponse'}}<span style="color: green"><b>Approved</b></span>
-                    {{else reviewStatus == 'Approved'}}
+                    {{if reviewStatus == 'noResponse'}}<span style="color: green"><b>Approved</b></span>
+                    {{else reviewStatus == 'approved'}}
                         <span style="color: orange"><b>Approved With Suggestions</b></span>
-                    {{else reviewStatus == 'ApprovedWithSuggestions'}}
+                    {{else reviewStatus == 'approvedWithSuggestions'}}
                         <span style="color: gray"><b>No Response</b></span>
-                    {{else reviewStatus == 'WaitingForAuthor'}}
+                    {{else reviewStatus == 'waitingForAuthor'}}
                         <span style="color: orangered"><b>Waiting For Author</b></span>
-                    {{else reviewStatus == 'Rejected'}}
+                    {{else reviewStatus == 'rejected'}}
                         <span style="color: red"><b>Rejected</b></span>
                     {{/if}}
                 </span>

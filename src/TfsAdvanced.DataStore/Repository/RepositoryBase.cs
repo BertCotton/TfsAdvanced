@@ -79,6 +79,8 @@ namespace TFSAdvanced.DataStore.Repository
 
                     foreach (T update in updates)
                     {
+                        if (update == null)
+                            continue;
                         var id = GetId(update);
                         if (data.ContainsKey(id))
                             data[id] = update;
