@@ -43,6 +43,7 @@ namespace TfsAdvanced.Updater.Tasks
                 Parallel.ForEach(definitions, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, definition =>
                 {
                     var populatedDefinition = GetAsync.Fetch<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, definition.url).Result;
+                    var repository = repositoryRepository.GetById(populatedDefinition.repository.id);
 
                     buildDefinitions.Add(new BuildDefinition
                     {
@@ -51,7 +52,7 @@ namespace TfsAdvanced.Updater.Tasks
                         Id = populatedDefinition.id,
                         Name = populatedDefinition.name,
                         Url = populatedDefinition._links.web.href,
-                        Repository = repositoryRepository.GetById(populatedDefinition.repository.id)
+                        Repository = repository
                     });
                 });
             });

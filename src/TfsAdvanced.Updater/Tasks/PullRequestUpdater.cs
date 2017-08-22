@@ -135,6 +135,10 @@ namespace TfsAdvanced.Updater.Tasks
                 {
                     if (reviewer.isContainer)
                         continue;
+                    
+                    // Only ignore the review of the creator if the vote is approved or noresponse
+                    if (reviewer.id == x.createdBy.id && (reviewer.vote == (int)Vote.Approved || reviewer.vote == (int)Vote.NoResponse))
+                        continue;
                     var reviewerDto = new Reviewer
                     {
                         Name = reviewer.displayName,

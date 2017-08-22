@@ -98,7 +98,7 @@ namespace TfsAdvanced.Updater.Tasks
 
                             }
                             var buildDefinition = buildDefinitionRepository.GetBuildDefinition(poolJobRequest.definition.id);
-                            if (buildDefinition != null)
+                            if (buildDefinition != null && buildDefinition.Repository != null)
                             {
                                 var project = projectRepository.GetProject(buildDefinition.Repository.Project.Id);
                                 if (project != null)
