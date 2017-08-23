@@ -27,8 +27,8 @@ function fetchData() {
             $("#pullRequests").show();
             $("#NoPullRequests").hide();
             data.sort(function (a, b) {
-                var aDate = new Date(a.creationDate).getTime();
-                var bDate = new Date(b.creationDate).getTime();
+                var aDate = new Date(a.createdDate).getTime();
+                var bDate = new Date(b.createdDate).getTime();
                 if (aDate === bDate)
                     return 0;
                 if (aDate > bDate)
