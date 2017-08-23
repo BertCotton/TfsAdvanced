@@ -116,10 +116,11 @@
             <div class="media-body hidden-xs">
                 ${name} | 
                 <span>
-                    {{if reviewStatus == 'noResponse'}}<span style="color: green"><b>Approved</b></span>
-                    {{else reviewStatus == 'approved'}}
-                        <span style="color: orange"><b>Approved With Suggestions</b></span>
+                    {{if reviewStatus == 'approved'}}
+                        <span style="color: green"><b>Approved</b></span>
                     {{else reviewStatus == 'approvedWithSuggestions'}}
+                        <span style="color: orange"><b>Approved With Suggestions</b></span>
+                    {{else reviewStatus == 'noResponse'}}
                         <span style="color: gray"><b>No Response</b></span>
                     {{else reviewStatus == 'waitingForAuthor'}}
                         <span style="color: orangered"><b>Waiting For Author</b></span>
