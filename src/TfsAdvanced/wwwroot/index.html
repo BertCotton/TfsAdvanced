@@ -36,6 +36,9 @@
                 </li>
             </ul>
         </li>
+        <li>
+            <div id="socketStatus" ></div>
+        </li>
     </ul>
 </nav>
 <div style="margin-top: 52px" id="mainPage">
@@ -153,6 +156,7 @@
             });
     }
 
+    var socket;
     $(document)
         .ready(function () {
 
@@ -167,7 +171,52 @@
                 if ($("#navbar").is(":visible"))
                     $('.navbar-toggle').click();
             });
+
+            socket = new WebSocket("wss://" + window.location.host + "/ws");
+            socket.onopen = function (event) {
+                updateState();
+                
+            };
+            socket.onmessage  = function (event) {
+                console.log("Socket Message: ", event);
+                var message = htmlEscape(event.data);
+                console.log(message);
+                $("#socketMessage").html = message; 
+            };
+            
         });
+
+    function updateState() {
+        
+        if (socket) {
+            console.log("Update status: ", socket);
+            switch (socket.readyState) {
+                case WebSocket.CLOSED:
+                    $("#socketStatus").html = "Closed";
+                    break;
+                case WebSocket.CLOSING:
+                    $("#socketStatus").html = "Closing...";
+                    break;
+                case WebSocket.CONNECTING:
+                    $("#socketStatus").html = "Connecting...";
+                    break;
+                case WebSocket.OPEN:
+                    $("#socketStatus").html = "Open";
+                    break;
+                default:
+                    $("#socketStatus").html = "Unknown WebSocket State: " + htmlEscape(socket.readyState);
+                    break;
+            }
+        }
+    }
+    function htmlEscape(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
 </script>
 </body>
 </html>

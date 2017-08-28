@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Reflection;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,6 +33,8 @@ using Serilog.Core;
 using Serilog.Enrichers;
 using Serilog.Events;
 using Serilog.Exceptions;
+using TfsAdvanced.Web.SocketConnections;
+using TFSAdvanced.DataStore.Repository;
 
 namespace TfsAdvanced
 {
@@ -121,12 +129,49 @@ namespace TfsAdvanced
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
+                    .Enrich.WithExceptionDetails()
+                    .Enrich.With(new MachineNameEnricher())
+                    .Enrich.FromLogContext()
+                    .MinimumLevel.Is(LogEventLevel.Information)
+                    .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+                    .MinimumLevel.Override("System", LogEventLevel.Error)
+                    .WriteTo.ColoredConsole()
+                    .WriteTo.LiterateConsole()
+                ;
+            Log.Logger = loggerConfiguration.CreateLogger();
+
+
             app.UseDeveloperExceptionPage();
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseSession();
             app.UseAuthenticationMiddleware();
             app.UseMvc();
+            app.UseWebSockets();
+
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/ws")
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                        var pullRequestSocket = new PullRequestSocket(context.RequestServices.GetService<WebSocketClientRepository>());
+                        await pullRequestSocket.RegisterSocket(context, webSocket);
+                    }
+                    else
+                    {
+                        {
+                            context.Response.StatusCode = 400;
+                        }
+                    }
+                }
+                else
+                {
+                    await next();
+                }
+            });
 
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
@@ -134,18 +179,7 @@ namespace TfsAdvanced
             });
             app.UseHangfireServer();
 
-            LoggerConfiguration loggerConfiguration = new LoggerConfiguration()
-                .Enrich.WithExceptionDetails()
-                .Enrich.With(new MachineNameEnricher())
-                .Enrich.FromLogContext()
-                .MinimumLevel.Is(LogEventLevel.Information)
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
-                .MinimumLevel.Override("System", LogEventLevel.Error)
-                .WriteTo.ColoredConsole()
-                .WriteTo.LiterateConsole()
-                ;
-
-
+   
 
             var seqKey = Configuration["Logging:Seq:Key"];
             if(!string.IsNullOrEmpty(seqKey))
@@ -165,11 +199,25 @@ namespace TfsAdvanced
                 loggerConfiguration.WriteTo.Trace();
             }
 
-            Log.Logger = loggerConfiguration.CreateLogger();
+            
 
             GlobalJobFilters.Filters.Add(new HangfireJobFilter());
 
             BackgroundJob.Enqueue<Updater.Tasks.Updater>(updater => updater.Start());
+        }
+
+        private async Task Echo(HttpContext context, WebSocket webSocket)
+        {
+            while (webSocket.State == WebSocketState.Open)
+            {
+                var buffer = new byte[1024 * 4];
+
+                DateTime now = DateTime.Now;
+                var response = Encoding.UTF8.GetBytes(now.ToString());
+                await webSocket.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true, CancellationToken.None);
+                Thread.Sleep(1000);
+            }
+            
         }
     }
 }
