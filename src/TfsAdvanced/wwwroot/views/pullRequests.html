@@ -26,13 +26,13 @@
 </div>
 
 
-<script type="text/javascript" src="../js/pullRequests.js"></script>
+<script type="text/javascript" src="../js/pullRequests.js?cacheBuseter=123"></script>
 
 <script id="pullRequestTemplate" type="text/x-jQuery-tmpl">
     <div class="row striped">
         <div class="col-lg-4 col-md-12" style="padding: 5px">
             <h4>
-                <a style="color:darkslategray" href="${url}" target="_blank">${title}</a>
+                <a style="color:darkslategray" href="${Url}" target="_blank">${Title}</a>
             </h4>
             <h5>
                 <div>
@@ -42,7 +42,7 @@
                         {{/if}}
                     </span>
                    
-                    {{if mergeStatus == 'conflicts'}}
+                    {{if MergeStatus == 'conflicts'}}
                     <span style="color:red"><i class="glyphicon glyphicon-remove"></i><span class="hidden-xs"> Merge Conflicts</span></span>
                     {{/if}}
                 </div>
@@ -50,58 +50,58 @@
             <div>
                 <span >
                     
-                    {{if buildStatus == 'noBuild'}}
+                    {{if BuildStatus == 'noBuild'}}
                         <span style="color:gray"><i class="glyphicon glyphicon-warning"></i> <span class="hidden-xs"> No Build Queued</span></span>
                     {{else}}
-                    <a href="${buildUrl}" target="_blank">
-                        {{if buildStatus == 'notStarted'}}
+                    <a href="${BuildUrl}" target="_blank">
+                        {{if BuildStatus == 'notStarted'}}
                         <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Not Started</span></span>
-                        {{else buildStatus == 'building'}}
+                        {{else BuildStatus == 'building'}}
                         <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build In Progress</span></span>
-                        {{else buildStatus == 'expired'}}
+                        {{else BuildStatus == 'expired'}}
                         <span style="color:darkorange"><i class="glyphicon glyphicon-alert"></i> <span class="hidden-xs"> Build Expired</span></span>
-                        {{else buildStatus == 'succeeded'}}
+                        {{else BuildStatus == 'succeeded'}}
                         <span style="color:green"><i class="glyphicon glyphicon-check"></i> <span class="hidden-xs"> Build Succeeded</span></span>
-                        {{else buildStatus == 'failed'}}
+                        {{else BuildStatus == 'failed'}}
                         <span style="color:red"><i class="glyphicon glyphicon-remove"></i> <span class="hidden-xs"> Build Failed</span></span>
                         {{else}}
-                        <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${buildStatus}</span>
+                        <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${BuildStatus}</span>
                         {{/if}}
                     </a>
                     {{/if}}
                 </span>
                 <span >
                     |
-                    {{if hasEnoughReviewers}}
+                    {{if HasEnoughReviewers}}
                     <i class="glyphicon glyphicon-check" style="color: green"></i>
                     {{else}}
                     <i class="glyphicon glyphicon-remove" style="color: red"></i>
                     {{/if}}
-                </span><span class="hidden-xs">  ${acceptedReviewers} of ${requiredReviewers} Required Reviewers</span>
+                </span><span class="hidden-xs">  ${AcceptedReviewers} of ${RequiredReviewers} Required Reviewers</span>
             </div>
         </div>
         <div class="col-lg-2 hidden-xs">
-                <a href="${repository.project.url}" target="_blank">${repository.project.name}</a>
+                <a href="${Repository.Project.Url}" target="_blank">${Repository.Project.Name}</a>
                 <br/>
-                <a href="${repository.url}" target="_blank">${repository.name}</a>
+                <a href="${Repository.Url}" target="_blank">${Repository.Name}</a>
         </div>
         <div class="col-lg-2 padding col-md-12">
             <span class="visible-xs">Created By: </span>
             <div class="media">
                 <div class="media-left">
-                    <img class="media-object" src="${creator.iconUrl}" alt="User Photo" height="30" width="30">
+                    <img class="media-object" src="${Creator.IconUrl}" alt="User Photo" height="30" width="30">
                 </div>
                 <div class="media-body">
                     <h5 class="media-heading">
-                        ${creator.name}
-                        <br/>(<span class="datetime-pretty hidden-xs">${createdDate}</span>)
+                        ${Creator.Name}
+                        <br/>(<span class="datetime-pretty hidden-xs">${CreatedDate}</span>)
                     </h5>
                 </div>
             </div>
         </div>
         <div class="col-lg-4 col-md-12 padding reviewers">
             <span class="visible-xs">Reviewers: </span>
-        {{tmpl(reviewers) "#reviewersTemplate"}}
+        {{tmpl(Reviewers) "#reviewersTemplate"}}
     </div>
     </div>
 </script>
@@ -109,22 +109,22 @@
 <script id="reviewersTemplate" type="text/x-jQuery-tmpl">
     <div>
         <div class="media">
-            <div class="media-left"><img class="media-object" src="${iconUrl}" alt="User Photo" height="30" width="30">
+            <div class="media-left"><img class="media-object" src="${IconUrl}" alt="User Photo" height="30" width="30">
                 
             </div>
             
             <div class="media-body hidden-xs">
-                ${name} | 
+                ${Name} | 
                 <span>
-                    {{if reviewStatus == 'approved'}}
+                    {{if ReviewStatus == 'approved'}}
                         <span style="color: green"><b>Approved</b></span>
-                    {{else reviewStatus == 'approvedWithSuggestions'}}
+                    {{else ReviewStatus == 'approvedWithSuggestions'}}
                         <span style="color: orange"><b>Approved With Suggestions</b></span>
-                    {{else reviewStatus == 'noResponse'}}
+                    {{else ReviewStatus == 'noResponse'}}
                         <span style="color: gray"><b>No Response</b></span>
-                    {{else reviewStatus == 'waitingForAuthor'}}
+                    {{else ReviewStatus == 'waitingForAuthor'}}
                         <span style="color: orangered"><b>Waiting For Author</b></span>
-                    {{else reviewStatus == 'rejected'}}
+                    {{else ReviewStatus == 'rejected'}}
                         <span style="color: red"><b>Rejected</b></span>
                     {{/if}}
                 </span>

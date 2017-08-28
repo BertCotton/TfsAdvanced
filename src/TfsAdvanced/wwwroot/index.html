@@ -36,6 +36,9 @@
                 </li>
             </ul>
         </li>
+        <li>
+            <div id="socketStatus" ></div>
+        </li>
     </ul>
 </nav>
 <div style="margin-top: 52px" id="mainPage">
@@ -94,8 +97,8 @@
 
     function checkStatus() {
         $.get({
-            url : "/health/LoadedStatus",
-            success: function (data) {
+            url: "/health/LoadedStatus",
+            success: function(data) {
                 isLoaded = data.isLoaded;
                 if (!isLoaded) {
                     var loadedPercent = (data.loadedPercent * 100.0);
@@ -106,53 +109,16 @@
                     $(".progress").show();
                     $(".progress-bar").width(loadedPercent + "%");
                     window.setTimeout(checkStatus, 5000);
-                }
-                else
-                {
+                } else {
                     $("#pullRequestLink").click();
                     $("ul.nav").show();
-                    newPRCheck();
                 }
-                    
             }
-        })};
+        });
+    };
+
+
     
-    var latestPullRequestId = 0;
-    function newPRCheck() {
-        if (!isLoaded)
-            return;
-        $.get("/data/PullRequests/newCheck/" + latestPullRequestId,
-            function (data) {
-                
-                if (data == null)
-                    return;
-                var skipNotification = latestPullRequestId === 0;
-
-                $.each(data,
-                    function(index, pullRequest) {
-                        latestPullRequestId = Math.max(latestPullRequestId, pullRequest.id);
-                        if (skipNotification)
-                            return;
-
-                        var notification = new Notification('New Pull Request from ' + pullRequest.author,
-                        {
-                            icon: '/images/site.png',
-                            body: pullRequest.repository + " | " + pullRequest.title
-
-                        });
-
-                        notification.onclick = function (event) {
-                            event.preventDefault();
-                            window.open(pullRequest.url, '_blank');
-                            notification.close().bind(notification);
-                        };
-
-
-                    });
-                window.setTimeout(newPRCheck, 5000);
-            });
-    }
-
     $(document)
         .ready(function () {
 
@@ -167,7 +133,44 @@
                 if ($("#navbar").is(":visible"))
                     $('.navbar-toggle').click();
             });
+
+            let socket = new WebSocket("wss://" + window.location.host + "/ws");
+            socket.onmessage  = function (event) {
+                var data = JSON.parse(event.data);
+                
+                var messageType = data["Type"];
+                var pullRequests = data["List"];
+
+                console.log("Message Push.  Type :", messageType, ", Count: ", pullRequests.length);
+
+                if (messageType === "Updated")
+                    NotificationToast(pullRequests);
+                else
+                    localStorage.setItem("PullRequests", JSON.stringify(pullRequests));
+            };
+            
         });
+
+    function NotificationToast(pullRequests) {
+        $.each(pullRequests,
+            function(index, pullRequest) {
+                
+                var notification = new Notification('New Pull Request from ' + pullRequest.Creator.Name,
+                    {
+                        icon: '/images/site.png',
+                        body: pullRequest.Repository.Name + " | " + pullRequest.Title
+
+                    });
+
+                notification.onclick = function (event) {
+                    event.preventDefault();
+                    window.open(pullRequest.Url, '_blank');
+                    notification.close().bind(notification);
+                };
+
+
+            });
+    }
 </script>
 </body>
 </html>
