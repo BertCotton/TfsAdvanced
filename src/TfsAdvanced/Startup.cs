@@ -16,10 +16,12 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using TfsAdvanced.Data;
@@ -69,6 +71,8 @@ namespace TfsAdvanced
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            
+
             services.AddEntityFrameworkInMemoryDatabase()
                 .AddDbContext<TfsAdvancedDataContext>();
 
@@ -112,16 +116,18 @@ namespace TfsAdvanced
             builder.RegisterType<AuthorizationRequest>().AsSelf().SingleInstance();
             builder.RegisterType<BuildDefinitionRequest>().AsSelf().SingleInstance();
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
-
-
-            
-
-
+            builder.RegisterType<PullRequestUpdatesSocket>().AsSelf().InstancePerLifetimeScope();
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
 
-            
+            JsonConvert.DefaultSettings = () =>
+            {
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new StringEnumConverter { CamelCaseText = true});
+                return settings;
+            };
+
 
             return serviceProvider;
         }
@@ -157,7 +163,7 @@ namespace TfsAdvanced
                     if (context.WebSockets.IsWebSocketRequest)
                     {
                         WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        var pullRequestSocket = new PullRequestSocket(context.RequestServices.GetService<WebSocketClientRepository>());
+                        var pullRequestSocket = context.RequestServices.GetService<PullRequestUpdatesSocket>();
                         await pullRequestSocket.RegisterSocket(context, webSocket);
                     }
                     else

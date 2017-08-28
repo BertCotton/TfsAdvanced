@@ -18,12 +18,13 @@ namespace TfsAdvanced.DataStore.Repository
             return item.Id;
         }
 
-        public override void Update(IEnumerable<PullRequest> updates)
+        public override bool Update(IEnumerable<PullRequest> updates)
         {
-            base.Update(updates);
+            bool updated = base.Update(updates);
             // If an update was not received, then remove it
             var noUpdate = base.GetList(request => !updates.Select(x => x.Id).Contains(request.Id));
-            base.Remove(noUpdate);
+            bool removed = base.Remove(noUpdate);
+            return updated || removed;
 
         }
     }

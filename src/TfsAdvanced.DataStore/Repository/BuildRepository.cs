@@ -34,11 +34,12 @@ namespace TfsAdvanced.DataStore.Repository
             return item.Id;
         }
 
-        public override void Update(IEnumerable<Build> updates)
+        public override bool Update(IEnumerable<Build> updates)
         {
-            base.Update(updates);
+            var updated = base.Update(updates);
             DateTime yesterday = DateTime.Now.Date.AddDays(-2);
             base.Cleanup(x => x.QueuedDate < yesterday);
+            return updated;
         }
     }
     
