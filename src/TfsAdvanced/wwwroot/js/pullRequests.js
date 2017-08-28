@@ -2,7 +2,7 @@
 
 function fetchData() {
     var pullRequests = JSON.parse(localStorage.getItem("PullRequests"));
-    if (pullRequests.length === 0) {
+    if (!pullRequests || pullRequests.length === 0) {
         $("#pullRequestHeader").hide();
         $("#pullRequests").hide();
         $("#NoPullRequests").show();
