@@ -136,19 +136,19 @@
 
             let socket = new WebSocket("wss://" + window.location.host + "/ws");
             socket.onmessage  = function (event) {
-                var data = JSON.parse(event.data);
+                var message = JSON.parse(event.data);
                 
-                var messageType = data["Type"];
-                var data = data["Data"];
+                var messageType = message["Type"];
+                var data = message["Data"];
 
                 console.log("Message Push.  Type :", messageType, ", Count: ", data.length);
 
                 if (messageType === "newPullRequest")
                     NotificationToast(data);
-                if (messageType === "updatedCurrentUserPullRequest")
+                else if (messageType === "updatedCurrentUserPullRequest")
                     localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
-                else
-                    localStorage.setItem("PullRequests ", JSON.stringify(data));
+                else if (messageType === "updatedPullRequest") 
+                    localStorage.setItem("PullRequests", JSON.stringify(data));
             };
             
         });

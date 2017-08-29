@@ -23,7 +23,7 @@ function fetchData() {
         });
         $("#myPullRequests").html($("#myPullRequestTemplate").tmpl(myPullRequests));
     }
-
+    
     if (!pullRequests || pullRequests.length === 0) {
         $("#pullRequestHeader").hide();
         $("#pullRequests").hide();
