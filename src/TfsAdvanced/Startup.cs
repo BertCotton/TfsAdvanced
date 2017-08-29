@@ -116,7 +116,7 @@ namespace TfsAdvanced
             builder.RegisterType<AuthorizationRequest>().AsSelf().SingleInstance();
             builder.RegisterType<BuildDefinitionRequest>().AsSelf().SingleInstance();
             builder.RegisterType<RequestData>().AsSelf().InstancePerLifetimeScope();
-            builder.RegisterType<PullRequestUpdatesSocket>().AsSelf().InstancePerLifetimeScope();
+            builder.RegisterType<WebSocketUpdater>().AsSelf().InstancePerLifetimeScope();
 
             var container = builder.Build();
             var serviceProvider = container.Resolve<IServiceProvider>();
@@ -163,7 +163,7 @@ namespace TfsAdvanced
                     if (context.WebSockets.IsWebSocketRequest)
                     {
                         WebSocket webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                        var pullRequestSocket = context.RequestServices.GetService<PullRequestUpdatesSocket>();
+                        var pullRequestSocket = context.RequestServices.GetService<WebSocketUpdater>();
                         await pullRequestSocket.RegisterSocket(context, webSocket);
                     }
                     else
