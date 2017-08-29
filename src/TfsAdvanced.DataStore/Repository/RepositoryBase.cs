@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
+using TFSAdvanced.DataStore.Interfaces;
 
 namespace TFSAdvanced.DataStore.Repository
 {
-    public abstract class RepositoryBase<T>
+    public abstract class RepositoryBase<T> : IRepository<T>
     {
         protected readonly Dictionary<int, T> data;
         protected readonly Mutex mutex;

@@ -76,5 +76,7 @@ namespace TfsAdvanced.Updater.Tasks
             repositoryRepository.Update(repositoryList);
             updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = repositoryList.Count, UpdaterName = nameof(RepositoryUpdater)});
         }
+
+      
     }
 }

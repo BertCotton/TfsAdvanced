@@ -139,14 +139,16 @@
                 var data = JSON.parse(event.data);
                 
                 var messageType = data["Type"];
-                var pullRequests = data["List"];
+                var data = data["Data"];
 
-                console.log("Message Push.  Type :", messageType, ", Count: ", pullRequests.length);
+                console.log("Message Push.  Type :", messageType, ", Count: ", data.length);
 
-                if (messageType === "Updated")
-                    NotificationToast(pullRequests);
+                if (messageType === "newPullRequest")
+                    NotificationToast(data);
+                if (messageType === "updatedCurrentUserPullRequest")
+                    localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
                 else
-                    localStorage.setItem("PullRequests", JSON.stringify(pullRequests));
+                    localStorage.setItem("PullRequests ", JSON.stringify(data));
             };
             
         });

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using TFSAdvanced.DataStore.Interfaces;
 using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class PullRequestRepository : RepositoryBase<PullRequest>
+    public class PullRequestRepository : RepositoryBase<PullRequest>, IPullRequestRepository
     {
 
         public IEnumerable<PullRequest> GetPullRequestsAfter(int id)
