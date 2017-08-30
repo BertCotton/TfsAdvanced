@@ -38,7 +38,7 @@ namespace TfsAdvanced.DataStore.Repository
         {
             var updated = base.Update(updates);
             DateTime yesterday = DateTime.Now.Date.AddDays(-2);
-            base.Cleanup(x => x.QueuedDate < yesterday);
+            base.CleanupIfNeeded(x => x.QueuedDate < yesterday);
             return updated;
         }
     }

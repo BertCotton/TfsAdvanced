@@ -27,7 +27,7 @@ namespace TfsAdvanced.DataStore.Repository
             var noUpdate = base.GetList(request => !updates.Select(x => x.Id).Contains(request.Id));
             bool removed = base.Remove(noUpdate);
             DateTime yesterday = DateTime.Now.Date.AddDays(-2);
-            base.Cleanup(request => request.ClosedDate.HasValue && request.ClosedDate < yesterday );
+            base.CleanupIfNeeded(request => request.ClosedDate.HasValue && request.ClosedDate < yesterday );
             return updated || removed;
 
         }

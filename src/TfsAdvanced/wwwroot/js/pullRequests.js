@@ -21,7 +21,9 @@ function fetchData() {
 
 function HandlMyPullRequests(myPullRequests) {
 
-    if (!myPullRequests || myPullRequests.length === 0) {
+    if (!myPullRequests)
+        return;
+    else if (myPullRequests.length === 0) {
         $("#myPullRequests").hide();
     } else {
         $("#myPullRequests").show();
@@ -33,7 +35,9 @@ function HandlMyPullRequests(myPullRequests) {
 
 function HandleTeamPullRequests(pullRequests) {
 
-    if (!pullRequests || pullRequests.length === 0) {
+    if(!pullRequests)
+        return;
+    if (pullRequests.length === 0) {
         $("#pullRequestHeader").hide();
         $("#pullRequests").hide();
         $("#NoPullRequests").show();
@@ -63,7 +67,13 @@ function sortByDate(pullRequests, reverse = false) {
 }
 
 function HandleMyCompletedPullRequests(pullRequests) {
-    
-    sortByDate(pullRequests, true);
-    $("#myCompletedPullRequestsTable").html($("#completedPullRequestTemplate").tmpl(pullRequests));
+    if(!pullRequests)
+        return;
+    else if (pullRequests.length === 0) {
+        $("#myCompletedPullRequestsTable").hide();
+    } else {
+        $("#myCompletedPullRequestsTable").show();
+        sortByDate(pullRequests, true);
+        $("#myCompletedPullRequestsTable").html($("#completedPullRequestTemplate").tmpl(pullRequests));
+    }
 }
