@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using TFSAdvanced.DataStore.Interfaces;
 using TFSAdvanced.DataStore.Repository;
@@ -25,6 +26,8 @@ namespace TfsAdvanced.DataStore.Repository
             // If an update was not received, then remove it
             var noUpdate = base.GetList(request => !updates.Select(x => x.Id).Contains(request.Id));
             bool removed = base.Remove(noUpdate);
+            DateTime yesterday = DateTime.Now.Date.AddDays(-2);
+            base.Cleanup(request => request.ClosedDate.HasValue && request.ClosedDate < yesterday );
             return updated || removed;
 
         }
