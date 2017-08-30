@@ -19,6 +19,14 @@ namespace TfsAdvanced.DataStore.Repository
             return GetAll();
         }
 
+        public override bool Update(IEnumerable<QueueJob> updates)
+        {
+            var updated = base.Update(updates);
+            DateTime yesterday = DateTime.Now.Date.AddDays(-2);
+            base.Cleanup(x => x.QueuedTime < yesterday);
+            return updated;
+        }
+
         protected override int GetId(QueueJob item)
         {
             return item.RequestId;

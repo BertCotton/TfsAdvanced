@@ -4,6 +4,6 @@
     });
 
     $(".datetime-shorttime").each(function (idx, elem) {
-        $(elem).text($.format.date($(elem).text(), "MMMM dd HH:mm a"));
+        $(elem).text($.format.date($(elem).text(), "MMMM dd hh:mm a"));
     });
 }
