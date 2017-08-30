@@ -133,6 +133,8 @@
                 if ($("#navbar").is(":visible"))
                     $('.navbar-toggle').click();
             });
+            console.log("Clearing Storage");
+            localStorage.clear();
 
             let socket = new WebSocket("wss://" + window.location.host + "/ws");
             socket.onmessage  = function (event) {
@@ -143,12 +145,20 @@
 
                 console.log("Message Push.  Type :", messageType, ", Count: ", data.length);
 
-                if (messageType === "newPullRequest")
-                    NotificationToast(data);
-                else if (messageType === "updatedCurrentUserPullRequest")
-                    localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
-                else if (messageType === "updatedPullRequest") 
-                    localStorage.setItem("PullRequests", JSON.stringify(data));
+                switch (messageType) {
+                    case "newPullRequest":
+                        NotificationToast(data);
+                        break;
+                    case "updatedCurrentUserPullRequest":
+                        localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
+                        break;
+                    case "updatedPullRequest":
+                        localStorage.setItem("PullRequests", JSON.stringify(data));
+                        break;
+                    case "currentUserCompletedPullRequest":
+                        localStorage.setItem("CurrentUserCompletedPullRequests", JSON.stringify(data));
+                }
+                
             };
             
         });

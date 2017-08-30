@@ -1,29 +1,38 @@
 ﻿fetchData();
 
+$("#myCompletedPullRequestPanel").on("click",
+    function() {
+        $("#myCompletedPullRequestPanel").toggleClass("col-lg-8 col-lg-12");
+    });
+
 function fetchData() {
     var pullRequests = JSON.parse(localStorage.getItem("PullRequests"));
     var myPullRequests = JSON.parse(localStorage.getItem("CurrentUserPullRequests"));
+    var myCompletedPullRequests = JSON.parse(localStorage.getItem("CurrentUserCompletedPullRequests"));
+
+    HandlMyPullRequests(myPullRequests);
+    HandleTeamPullRequests(pullRequests);
+    HandleMyCompletedPullRequests(myCompletedPullRequests);
+    
+
+    formatPage();
+    window.setTimeout(fetchData, 1000);
+}
+
+function HandlMyPullRequests(myPullRequests) {
+
     if (!myPullRequests || myPullRequests.length === 0) {
-        $("#myPullRequestHeader").hide();
         $("#myPullRequests").hide();
     } else {
-        $("#myPullRequestHeader").show();
         $("#myPullRequests").show();
         $("#myPullRequestCount").html(myPullRequests.length);
-        myPullRequests.sort(function (a, b) {
-            var aDate = new Date(a.CreatedDate).getTime();
-            var bDate = new Date(b.CreatedDate).getTime();
-            if (aDate === bDate)
-                return 0;
-            if (aDate > bDate)
-                return 1;
-            else
-                return -1;
-
-        });
-        $("#myPullRequests").html($("#myPullRequestTemplate").tmpl(myPullRequests));
+        sortByDate(myPullRequests);
+        $("#myPullRequestsTable").html($("#myPullRequestTemplate").tmpl(myPullRequests));
     }
-    
+}
+
+function HandleTeamPullRequests(pullRequests) {
+
     if (!pullRequests || pullRequests.length === 0) {
         $("#pullRequestHeader").hide();
         $("#pullRequests").hide();
@@ -33,20 +42,28 @@ function fetchData() {
         $("#pullRequestHeader").show();
         $("#pullRequests").show();
         $("#NoPullRequests").hide();
-        pullRequests.sort(function(a, b) {
-            var aDate = new Date(a.CreatedDate).getTime();
-            var bDate = new Date(b.CreatedDate).getTime();
-            if (aDate === bDate)
-                return 0;
-            if (aDate > bDate)
-                return 1;
-            else
-                return -1;
-
-        });
+        sortByDate(pullRequests);
         $("#pullRequests").html($("#pullRequestTemplate").tmpl(pullRequests));
     }
+}
 
-    formatPage();
-    window.setTimeout(fetchData, 1000);
+function sortByDate(pullRequests, reverse = false) {
+    if (!pullRequests)
+        return;
+    pullRequests.sort(function (a, b) {
+        var aDate = new Date(a.CreatedDate).getTime();
+        var bDate = new Date(b.CreatedDate).getTime();
+        if (aDate === bDate)
+            return 0;
+        if (aDate > bDate)
+            return reverse ? -1 : 1;
+        else
+            return reverse ? 1 : -1;
+    });
+}
+
+function HandleMyCompletedPullRequests(pullRequests) {
+    
+    sortByDate(pullRequests, true);
+    $("#myCompletedPullRequestsTable").html($("#completedPullRequestTemplate").tmpl(pullRequests));
 }

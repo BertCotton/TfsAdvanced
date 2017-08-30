@@ -1,12 +1,23 @@
-<div class="container-fluid">
+<div class="container">
     <div class="row">
         <table class="table table-condensed" id="updateStatusTable" show-filter="true">
             <thead>
-                <tr>
-                    <th>Updater</th>
-                    <th>Last Updated</th>
-                    <th>Updated Record</th>
-                </tr>
+            <tr>
+                <th>Updater</th>
+                <th>Last Updated</th>
+                <th>Updated Record</th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="row">
+        <table class="table table-condensed" id="updateClientsTable" show-filter="true">
+            <thead>
+            <tr>
+                <th>Unique Name</th>
+                <th>IP Address</th>
+                <th>Last Updated</th>
+            </tr>
             </thead>
         </table>
     </div>
@@ -15,14 +26,14 @@
 <script>
     var longDateFormat = 'MM/dd/yyyy hh:mm:ss a';
 
+
     $(document)
         .ready(function() {
-            var dataTable = $("#updateStatusTable").DataTable({
+            var updaterTable = $("#updateStatusTable").DataTable({
                 "order": [0, "desc"],
                 "ajax": {
-                    "url": "/data/UpdateStatus",
+                    "url": "/UpdateStatus",
                     "dataSrc": function (json) {
-                        console.log(json);
                         for (var i = 0, ien = json.length; i < ien; i++) {
                             var updater = json[i];
                             json[i][0] = updater.updaterName;
@@ -33,5 +44,32 @@
                     }
                 }
             });
+
+            var webSocketClientsTable = $("#updateClientsTable").DataTable({
+                "order": [0, "desc"],
+                "ajax": {
+                    "url": "/WebSocketClient",
+                    "dataSrc": function (json) {
+                        for (var i = 0, ien = json.length; i < ien; i++) {
+                            var updater = json[i];
+                            json[i][0] = updater.uniqueName;
+                            json[i][1] = updater.ipAddress;
+                            json[i][2] = $.format.date(updater.lastSeen, longDateFormat);
+                        }
+                        return json;
+                    }
+                }
+            });
+
+            setInterval(function() {
+                    webSocketClientsTable.ajax.reload();
+                },
+                30000);
+
+            setInterval(function() {
+                    updaterTable.ajax.reload();
+                },
+                60000);
+
         });
 </script>

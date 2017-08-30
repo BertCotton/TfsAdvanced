@@ -22,13 +22,13 @@ namespace TfsAdvanced.Updater.Tasks
 {
     public abstract class PullRequestUpdaterBase : UpdaterBase
     {
-        private readonly RequestData requestData;
+        protected readonly RequestData requestData;
         private readonly IPullRequestRepository pullRequestRepository;
         private readonly RepositoryRepository repositoryRepository;
         private readonly UpdateStatusRepository updateStatusRepository;
         private readonly BuildRepository buildRepository;
         
-        public PullRequestUpdaterBase(IPullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, 
+        protected PullRequestUpdaterBase(IPullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, 
             UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository, ILogger<PullRequestUpdaterBase> logger) : base(logger)
         {
             this.requestData = requestData;
@@ -45,7 +45,7 @@ namespace TfsAdvanced.Updater.Tasks
             {
                 if (string.IsNullOrEmpty(repository.PullRequestUrl))
                     return;
-                var pullRequests = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(requestData, GetPullRequestUrl(repository)).Result;
+                var pullRequests = GetPullRequests(repository);
                 if (pullRequests == null)
                     return;
                 Parallel.ForEach(pullRequests, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pullRequest =>
@@ -95,14 +95,15 @@ namespace TfsAdvanced.Updater.Tasks
             });
             var pullRequestsList = allPullRequests.ToList();
             pullRequestRepository.Update(pullRequestsList);
-            updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pullRequestsList.Count, UpdaterName = nameof(PullRequestUpdater)});
+            updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pullRequestsList.Count, UpdaterName = GetType().Name});
 
         }
 
-        protected virtual string GetPullRequestUrl(Repository repository)
+        protected virtual IList<TFSAdvanced.Updater.Models.PullRequests.PullRequest> GetPullRequests(Repository repository)
         {
-            return repository.PullRequestUrl;
+            return GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(requestData, repository.PullRequestUrl).Result;
         }
+
 
         private PullRequest BuildPullRequest(TFSAdvanced.Updater.Models.PullRequests.PullRequest x, Build build)
         {
@@ -112,6 +113,7 @@ namespace TfsAdvanced.Updater.Tasks
                 Title = x.title,
                 Url = x.remoteUrl,
                 CreatedDate = x.creationDate,
+                ClosedDate = x.closedDate,
                 Creator = new User
                 {
                     Name = x.createdBy.displayName,
