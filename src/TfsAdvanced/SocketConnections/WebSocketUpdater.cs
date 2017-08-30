@@ -13,6 +13,7 @@ using Serilog;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models.Infrastructure;
 using TFSAdvanced.DataStore.Repository;
+using TFSAdvanced.Models;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.Web.SocketConnections
@@ -22,7 +23,8 @@ namespace TfsAdvanced.Web.SocketConnections
         private readonly WebSocketClientRepository webSocketClientRepository;
         private readonly PullRequestRepository pullRequestRepository;
         private readonly CompletedPullRequestRepository completedPullRequestRepository;
-
+        private readonly ILogger logger;
+        
         private int lastPullRequestId = 0;
         private DateTime lastPullRequestUpdated = DateTime.MinValue;
         DateTime lastCompletedPullRequestUpdated = DateTime.MinValue;
@@ -32,6 +34,7 @@ namespace TfsAdvanced.Web.SocketConnections
             this.webSocketClientRepository = webSocketClientRepository;
             this.pullRequestRepository = pullRequestRepository;
             this.completedPullRequestRepository = completedPullRequestRepository;
+            this.logger = Log.Logger;
         }
 
         public async Task RegisterSocket(HttpContext context, WebSocket webSocket)
@@ -41,11 +44,17 @@ namespace TfsAdvanced.Web.SocketConnections
             var jwtToken = new JwtSecurityToken(authToken.access_token);
 
             string currentUserUniqueName = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
-            
+            var ipAddress = context.Connection.RemoteIpAddress.ToString();
+
             while (webSocket.State == WebSocketState.Open)
             {
-                var ipAddress = context.Connection.RemoteIpAddress.ToString();
-                webSocketClientRepository.UpsertClient(ipAddress);
+                
+                webSocketClientRepository.UpsertClient(new WebSocketClient
+                {
+                    IpAddress = ipAddress,
+                    UniqueName = currentUserUniqueName,
+                    LastSeen = DateTime.Now
+                });
 
                 await HandleNewPullRequests(webSocket, currentUserUniqueName);
                 await HandleUpdatedPullRequests(webSocket, currentUserUniqueName);
@@ -53,6 +62,13 @@ namespace TfsAdvanced.Web.SocketConnections
                 
                 Thread.Sleep(1000);
             }
+
+            webSocketClientRepository.RemoveClient(new WebSocketClient
+            {
+                IpAddress = ipAddress,
+                UniqueName = currentUserUniqueName,
+                LastSeen = DateTime.Now
+            });
 
         }
 
@@ -74,6 +90,16 @@ namespace TfsAdvanced.Web.SocketConnections
             }
         }
 
+        private async Task SendNewPullRequests(WebSocket webSocket, IEnumerable<PullRequest> newPullRequests)
+        {
+            IDictionary<string, object> responseObject = new Dictionary<string, object>
+            {
+                {"Type", ResponseType.UpdatedPullRequest},
+                {"Data", newPullRequests}
+            };
+            await SendMessage(webSocket, responseObject);
+        }
+
         private async Task HandleUpdatedPullRequests(WebSocket webSocket, string currentUserUniqueName)
         {
             var repositoryLastUpdated = pullRequestRepository.GetLastUpdated();
@@ -87,88 +113,60 @@ namespace TfsAdvanced.Web.SocketConnections
             }
         }
 
+        private async Task SendCurrentUserPullRequests(WebSocket webSocket, IEnumerable<PullRequest> pullRequests)
+        {
+            IDictionary<string, object> responseObject = new Dictionary<string, object>
+            {
+                {"Type", ResponseType.UpdatedCurrentUserPullRequest},
+                {"Data", pullRequests}
+            };
+            await SendMessage(webSocket, responseObject);
+        }
+
+        private async Task SendPullRequestList(WebSocket webSocket, IEnumerable<PullRequest> pullRequests)
+        {
+            IDictionary<string, object> responseObject = new Dictionary<string, object>
+            {
+                {"Type", ResponseType.UpdatedPullRequest},
+                {"Data", pullRequests}
+            };
+            await SendMessage(webSocket, responseObject);
+        }
+
         private async Task HandleCompletedPullRequests(WebSocket webSocket, string currentUserUniqueName)
         {
             var repositoryLastUpdated = completedPullRequestRepository.GetLastUpdated();
 
             if (repositoryLastUpdated > lastCompletedPullRequestUpdated)
             {
-                await SendPullRequestList(webSocket, completedPullRequestRepository.GetAll());
+                var currentUserCompletedMessages = completedPullRequestRepository.GetAll().Where(x => x.Creator.UniqueName == currentUserUniqueName);
+                await SendCompletedPullRequests(webSocket, currentUserCompletedMessages);
                 lastCompletedPullRequestUpdated = repositoryLastUpdated;
             }
         }
 
-        private async Task SendCurrentUserPullRequests(WebSocket webSocket, IEnumerable<PullRequest> pullRequests)
+        private async Task SendMessage(WebSocket webSocket, IDictionary<string, object> message)
         {
             try
             {
-                IDictionary<string, object> responseObject = new Dictionary<string, object>
-                {
-                    {"Type", ResponseType.UpdatedCurrentUserPullRequest},
-                    {"Data", pullRequests}
-                };
-                var response = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(responseObject));
+                var response = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
                 await webSocket.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true, CancellationToken.None);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-
+                logger.Error("Error sending message to client", ex);
             }
         }
 
-        private async Task SendPullRequestList(WebSocket webSocket, IEnumerable<PullRequest> pullRequests)
-        {
-            try
-            {
-                IDictionary<string, object> responseObject = new Dictionary<string, object>
-                {
-                    {"Type", ResponseType.UpdatedPullRequest},
-                    {"Data", pullRequests}
-                };
-                var response = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(responseObject));
-                await webSocket.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true, CancellationToken.None);
-            }
-            catch (Exception e)
-            {
-                
-            }
-        }
-
-        private async Task SendNewPullRequests(WebSocket webSocket, IEnumerable<PullRequest> newPullRequests)
-        {
-            try
-            {
-                IDictionary<string, object> responseObject = new Dictionary<string, object>
-                {
-                    {"Type", ResponseType.UpdatedPullRequest},
-                    {"Data", newPullRequests}
-                };
-                var response = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(responseObject));
-                await webSocket.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true, CancellationToken.None);
-            }
-            catch (Exception e)
-            {
-
-            }
-        }
 
         private async Task SendCompletedPullRequests(WebSocket webSocket, IEnumerable<PullRequest> completedPullRequests)
         {
-            try
+            IDictionary<string, object> responseObject = new Dictionary<string, object>
             {
-                IDictionary<string, object> responseObject = new Dictionary<string, object>
-                {
-                    {"Type", ResponseType.CompletedPullRequest},
-                    {"Data", completedPullRequests}
-                };
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+                {"Type", ResponseType.CurrentUserCompletedPullRequest},
+                {"Data", completedPullRequests}
+            };
+            await SendMessage(webSocket, responseObject);
         }
-        
-        
     }
 }

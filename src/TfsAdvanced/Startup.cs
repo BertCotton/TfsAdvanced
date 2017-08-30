@@ -10,6 +10,7 @@ using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Hangfire;
 using Hangfire.MemoryStorage;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
@@ -205,7 +206,8 @@ namespace TfsAdvanced
                 loggerConfiguration.WriteTo.Trace();
             }
 
-            
+            TelemetryConfiguration.Active.DisableTelemetry = true;
+
 
             GlobalJobFilters.Filters.Add(new HangfireJobFilter());
 
