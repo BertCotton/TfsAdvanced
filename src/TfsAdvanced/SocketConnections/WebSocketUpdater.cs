@@ -94,7 +94,7 @@ namespace TfsAdvanced.Web.SocketConnections
         {
             IDictionary<string, object> responseObject = new Dictionary<string, object>
             {
-                {"Type", ResponseType.UpdatedPullRequest},
+                {"Type", ResponseType.NewPullRequest},
                 {"Data", newPullRequests}
             };
             await SendMessage(webSocket, responseObject);
@@ -134,17 +134,29 @@ namespace TfsAdvanced.Web.SocketConnections
         }
 
         private async Task HandleCompletedPullRequests(WebSocket webSocket, string currentUserUniqueName)
-        {
-            var repositoryLastUpdated = completedPullRequestRepository.GetLastUpdated();
+        {   
+            var currentUserCompletedMessages = completedPullRequestRepository.GetAll().Where(x => x.Creator.UniqueName == currentUserUniqueName).ToList();
+            if (!currentUserCompletedMessages.Any())
+                return;
+
+            var repositoryLastUpdated = currentUserCompletedMessages.OrderByDescending(x => x.ClosedDate).First().ClosedDate;
+            if (!repositoryLastUpdated.HasValue)
+                return;
 
             if (repositoryLastUpdated > lastCompletedPullRequestUpdated)
             {
-                var currentUserCompletedMessages = completedPullRequestRepository.GetAll().Where(x => x.Creator.UniqueName == currentUserUniqueName);
-                await SendCompletedPullRequests(webSocket, currentUserCompletedMessages);
-                lastCompletedPullRequestUpdated = repositoryLastUpdated;
+                await SendCompletedPullRequests(webSocket, currentUserCompletedMessages, ResponseType.CurrentUserCompletedPullRequest);
+                // If this is the first time loading, don't send all the completed ones
+                if (lastCompletedPullRequestUpdated > DateTime.MinValue)
+                {
+                    var newlyCompleted = currentUserCompletedMessages.Where(x => x.ClosedDate.HasValue && x.ClosedDate.Value > lastCompletedPullRequestUpdated);
+                    await SendCompletedPullRequests(webSocket, newlyCompleted, ResponseType.NewCurrentUserCompletedPullRequest);
+                }
+                lastCompletedPullRequestUpdated = repositoryLastUpdated.Value;
             }
         }
 
+        
         private async Task SendMessage(WebSocket webSocket, IDictionary<string, object> message)
         {
             try
@@ -159,14 +171,16 @@ namespace TfsAdvanced.Web.SocketConnections
         }
 
 
-        private async Task SendCompletedPullRequests(WebSocket webSocket, IEnumerable<PullRequest> completedPullRequests)
+        private async Task SendCompletedPullRequests(WebSocket webSocket, IEnumerable<PullRequest> completedPullRequests, ResponseType responseType)
         {
             IDictionary<string, object> responseObject = new Dictionary<string, object>
             {
-                {"Type", ResponseType.CurrentUserCompletedPullRequest},
+                {"Type", responseType},
                 {"Data", completedPullRequests}
             };
             await SendMessage(webSocket, responseObject);
         }
+
+
     }
 }
