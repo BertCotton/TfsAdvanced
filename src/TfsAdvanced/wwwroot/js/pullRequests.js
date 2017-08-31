@@ -6,20 +6,21 @@ $("#myCompletedPullRequestPanel").on("click",
     });
 
 function fetchData() {
-    var pullRequests = JSON.parse(localStorage.getItem("PullRequests"));
-    var myPullRequests = JSON.parse(localStorage.getItem("CurrentUserPullRequests"));
-    var myCompletedPullRequests = JSON.parse(localStorage.getItem("CurrentUserCompletedPullRequests"));
-
-    HandlMyPullRequests(myPullRequests);
-    HandleTeamPullRequests(pullRequests);
-    HandleMyCompletedPullRequests(myCompletedPullRequests);
     
-
+    HandlMyPullRequests();
+    HandleTeamPullRequests();
+    HandleMyCompletedPullRequests();
+    
     formatPage();
-    window.setTimeout(fetchData, 1000);
+
+    document.getElementById("mainPage").addEventListener(updatedPullRequestsEvent, HandleTeamPullRequests, false);
+    document.getElementById("mainPage").addEventListener(newCompletedPullRequestsEvent, HandleMyCompletedPullRequests, false);
+    document.getElementById("mainPage").addEventListener(newMyPullRequestsEvent, HandlMyPullRequests, false);
+    
 }
 
-function HandlMyPullRequests(myPullRequests) {
+function HandlMyPullRequests() {
+    var myPullRequests = JSON.parse(localStorage.getItem("CurrentUserPullRequests"));
 
     if (!myPullRequests)
         return;
@@ -33,8 +34,8 @@ function HandlMyPullRequests(myPullRequests) {
     }
 }
 
-function HandleTeamPullRequests(pullRequests) {
-
+function HandleTeamPullRequests() {
+    var pullRequests = JSON.parse(localStorage.getItem("PullRequests"));
     if(!pullRequests)
         return;
     if (pullRequests.length === 0) {
@@ -66,7 +67,8 @@ function sortByDate(pullRequests, reverse = false) {
     });
 }
 
-function HandleMyCompletedPullRequests(pullRequests) {
+function HandleMyCompletedPullRequests() {
+    var pullRequests = JSON.parse(localStorage.getItem("CurrentUserCompletedPullRequests"));
     if(!pullRequests)
         return;
     else if (pullRequests.length === 0) {

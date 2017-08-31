@@ -17,7 +17,7 @@
 </head>
 <body ng-controller="MainController">
 <nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
-    <span class="navbar-brand nav-link">TFS Advanced</span>
+    <span class="navbar-brand nav-link" id="brand">TFS Advanced</span>
     <ul class="nav navbar-nav hidden-xs" style="display: none">
         <li>
             <a id="pullRequestLink" class="nav-link" onclick="navigateTo(this, '/views/pullRequests.html')">Pull Requests</a>
@@ -35,9 +35,6 @@
                     <a class="nav-link" onclick="navigateTo(this, '/views/updateStatus.html')">Update Statuses</a>
                 </li>
             </ul>
-        </li>
-        <li>
-            <div id="socketStatus" ></div>
         </li>
     </ul>
 </nav>
@@ -144,19 +141,23 @@
                 var data = message["Data"];
 
                 console.log("Message Push.  Type :", messageType, ", Count: ", data.length);
-
+                $("#brand").attr('title', "Last Server Response: " + new Date());
                 switch (messageType) {
                     case "newPullRequest":
                         NotificationToast(data);
                         break;
                     case "updatedCurrentUserPullRequest":
                         localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
+                        document.getElementById('mainPage').dispatchEvent(newMyPullRequestsEvent);
                         break;
                     case "updatedPullRequest":
                         localStorage.setItem("PullRequests", JSON.stringify(data));
+                        document.getElementById('mainPage').dispatchEvent(newPullRequestsEvent);
                         break;
                     case "currentUserCompletedPullRequest":
                         localStorage.setItem("CurrentUserCompletedPullRequests", JSON.stringify(data));
+                        document.getElementById('mainPage').dispatchEvent(newCompletedPullRequestsEvent);
+                        break;
                 }
                 
             };
@@ -166,7 +167,7 @@
     function NotificationToast(pullRequests) {
         $.each(pullRequests,
             function(index, pullRequest) {
-                
+                console.log("New PullRequest: ", pullRequest);
                 var notification = new Notification('New Pull Request from ' + pullRequest.Creator.Name,
                     {
                         icon: '/images/site.png',
