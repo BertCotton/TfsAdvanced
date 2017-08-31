@@ -139,7 +139,7 @@
                 
                 var messageType = message["Type"];
                 var data = message["Data"];
-
+                localStorage.setItem("HasUpdate", "true");
                 console.log("Message Push.  Type :", messageType, ", Count: ", data.length);
                 $("#brand").attr('title', "Last Server Response: " + new Date());
                 switch (messageType) {
@@ -148,21 +148,45 @@
                         break;
                     case "updatedCurrentUserPullRequest":
                         localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
-                        document.getElementById('mainPage').dispatchEvent(newMyPullRequestsEvent);
+                        //window.dispatchEvent(newMyPullRequestsEvent);
                         break;
                     case "updatedPullRequest":
                         localStorage.setItem("PullRequests", JSON.stringify(data));
-                        document.getElementById('mainPage').dispatchEvent(newPullRequestsEvent);
+                        console.log("Updated pull requests");
+                        //window.dispatchEvent(updatedPullRequestsEvent);
                         break;
                     case "currentUserCompletedPullRequest":
                         localStorage.setItem("CurrentUserCompletedPullRequests", JSON.stringify(data));
-                        document.getElementById('mainPage').dispatchEvent(newCompletedPullRequestsEvent);
+                        //window.dispatchEvent(newCompletedPullRequestsEvent);
+                        break;
+                    case "newCurrentUserCompletedPullRequest":
+                        CurrentUserCompletedPullRequestNotificationToast(data);
                         break;
                 }
                 
             };
             
         });
+
+    function CurrentUserCompletedPullRequestNotificationToast(pullRequests) {
+        $.each(pullRequests,
+            function(index, pullRequest) {
+                var notification = new Notification('Your Pull Request Was Completed!',
+                    {
+                        icon: '/images/thumbs-up.png',
+                        body: pullRequest.Repository.Name + " | " + pullRequest.Title
+
+                    });
+
+                notification.onclick = function (event) {
+                    event.preventDefault();
+                    window.open(pullRequest.Url, '_blank');
+                    notification.close().bind(notification);
+                };
+
+
+            });
+    }
 
     function NotificationToast(pullRequests) {
         $.each(pullRequests,
