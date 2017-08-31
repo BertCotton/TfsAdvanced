@@ -10,6 +10,7 @@ namespace TfsAdvanced.Web.SocketConnections
         UpdatedCurrentUserPullRequest,
         UpdatedPullRequest,
         NewPullRequest,
-        CurrentUserCompletedPullRequest
+        CurrentUserCompletedPullRequest,
+        NewCurrentUserCompletedPullRequest
     }
 }

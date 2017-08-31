@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <AssemblyName>TfsAdvanced.MessageBus</AssemblyName>
+    <RootNamespace>TfsAdvanced.MessageBus</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.2.0" />
+    <PackageReference Include="ServiceConnect" Version="4.0.6" />
+  </ItemGroup>
+
+</Project>
