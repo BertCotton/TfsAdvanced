@@ -3,7 +3,7 @@ using TfsAdvanced.DataStore.Repository;
 
 namespace TfsAdvanced.Web.Controllers
 {
-    [Route("data/UpdateStatus")]
+    [Route("UpdateStatus")]
     public class UpdateStatusController : Controller
     {
         private readonly UpdateStatusRepository updateStatusRepository;

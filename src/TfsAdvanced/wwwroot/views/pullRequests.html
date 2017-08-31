@@ -1,34 +1,83 @@
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-lg-12 sub-nav">
-            <!--<select class="form-control projectSelector" ng-change="UpdateSelectedProject()">
-                <option value="-1">[All]</option>
-            </select>-->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h2>
+                Team Pull Requests (<span id="pullRequestCount">0</span>)
+            </h2>
+        </div>
+        <div class="panel-body">
+
+
+            <div class="row" id="pullRequestHeader">
+                <div class="col-lg-4 visible-lg"></div>
+                <div class="col-lg-2 visible-lg">
+                    <b>Project</b>
+                </div>
+                <div class="col-lg-2 visible-lg">
+                    <b>Developer</b>
+                </div>
+                <div class="col-lg-4 visible-lg">
+                    <b>Reviewers</b>
+                </div>
+            </div>
+            <div id="pullRequests"></div>
+            <div id="NoPullRequests" style="display: none" class="text-center">
+                <img src="/images/sunshine.png" width="300" />
+                <h2>No Pull Requests</h2>
+            </div>
+        </div>
+
+    </div>
+    <div class="panel panel-default" id="myPullRequestHeader">
+        <div class="panel-heading">
+            <h2>
+                My Active Pull Requests (<span id="myPullRequestCount">0</span>)
+            </h2>
+        </div>
+        <div class="panel-body">
+            <div class="myPullRequests">
+                <div class="col-lg-4 visible-lg"></div>
+                <div class="col-lg-2 visible-lg">
+                    <b>Project</b>
+                </div>
+                <div class="col-lg-2 visible-lg">
+                    <b>Created</b>
+                </div>
+                <div class="col-lg-4 visible-lg">
+                    <b>Reviewers</b>
+                </div>
+
+                <div id="myPullRequestsTable"></div>
+            </div>
+
         </div>
     </div>
-    <div class="row" id="pullRequestHeader">
-        <div class="col-lg-4 visible-lg"></div>
-        <div class="col-lg-2 visible-lg">
-            <b>Project</b>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h2>My Completed Pull Requests - Past 2 Days</h2>
         </div>
-        <div class="col-lg-2 visible-lg">
-            <b>Developer</b>
-        </div>
+        <div class="panel-body">
+            <div class="col-lg-4 visible-lg"></div>
+            <div class="col-lg-2 visible-lg">
+                <b>Project</b>
+            </div>
+            <div class="col-lg-2 visible-lg">
+                <b>Closed</b>
+            </div>
             <div class="col-lg-4 visible-lg">
                 <b>Reviewers</b>
             </div>
+
+            <div id="myCompletedPullRequestsTable"></div>
         </div>
-    <div id="pullRequests"></div>
-    <div id="NoPullRequests" style="display: none" class="text-center">
-        <img src="/images/sunshine.png" width="300"/>
-        <h2>No Pull Requests</h2>
+        
     </div>
 </div>
 
 
-<script type="text/javascript" src="../js/pullRequests.js?cacheBuseter=123"></script>
+<script type="text/javascript" src="../js/pullRequests.js?cacheBuseter=124"></script>
 
-<script id="pullRequestTemplate" type="text/x-jQuery-tmpl">
+<script id="myPullRequestTemplate" type="text/x-jQuery-tmpl">
     <div class="row striped">
         <div class="col-lg-4 col-md-12" style="padding: 5px">
             <h4>
@@ -51,7 +100,7 @@
                 <span >
                     
                     {{if BuildStatus == 'noBuild'}}
-                        <span style="color:gray"><i class="glyphicon glyphicon-warning"></i> <span class="hidden-xs"> No Build Queued</span></span>
+                    <span style="color:gray"><i class="glyphicon glyphicon-warning"></i> <span class="hidden-xs"> No Build Queued</span></span>
                     {{else}}
                     <a href="${BuildUrl}" target="_blank">
                         {{if BuildStatus == 'notStarted'}}
@@ -81,9 +130,76 @@
             </div>
         </div>
         <div class="col-lg-2 hidden-xs">
-                <a href="${Repository.Project.Url}" target="_blank">${Repository.Project.Name}</a>
-                <br/>
-                <a href="${Repository.Url}" target="_blank">${Repository.Name}</a>
+            <a href="${Repository.Project.Url}" target="_blank">${Repository.Project.Name}</a>
+            <br/>
+            <a href="${Repository.Url}" target="_blank">${Repository.Name}</a>
+        </div>
+        <div class="col-lg-2 hidden-xs">
+            <span class="datetime-pretty hidden-xs">${CreatedDate}</span>
+        </div>
+        <div class="col-lg-4 col-md-12 padding reviewers">
+            <span class="visible-xs">Reviewers: </span>
+            {{tmpl(Reviewers) "#reviewersTemplate"}}
+        </div>
+    </div>
+</script>
+
+<script id="pullRequestTemplate" type="text/x-jQuery-tmpl">
+    <div class="row striped">
+        <div class="col-lg-4 col-md-12" style="padding: 5px">
+            <h4>
+                <a style="color:darkslategray" href="${Url}" target="_blank">${Title}</a>
+            </h4>
+            <h5>
+                <div>
+                    <span class="hidden-xs">
+                        {{if isAutoCompleteSet}}
+                        <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up"></i><span class="hidden-xs"> AutoComplete Set</span></span><br/>
+                        {{/if}}
+                    </span>
+                   
+                    {{if MergeStatus == 'conflicts'}}
+                    <span style="color:red"><i class="glyphicon glyphicon-remove"></i><span class="hidden-xs"> Merge Conflicts</span></span>
+                    {{/if}}
+                </div>
+            </h5>
+            <div>
+                <span >
+                    
+                    {{if BuildStatus == 'noBuild'}}
+                    <span style="color:gray"><i class="glyphicon glyphicon-warning"></i> <span class="hidden-xs"> No Build Queued</span></span>
+                    {{else}}
+                    <a href="${BuildUrl}" target="_blank">
+                        {{if BuildStatus == 'notStarted'}}
+                        <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Not Started</span></span>
+                        {{else BuildStatus == 'building'}}
+                        <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build In Progress</span></span>
+                        {{else BuildStatus == 'expired'}}
+                        <span style="color:darkorange"><i class="glyphicon glyphicon-alert"></i> <span class="hidden-xs"> Build Expired</span></span>
+                        {{else BuildStatus == 'succeeded'}}
+                        <span style="color:green"><i class="glyphicon glyphicon-check"></i> <span class="hidden-xs"> Build Succeeded</span></span>
+                        {{else BuildStatus == 'failed'}}
+                        <span style="color:red"><i class="glyphicon glyphicon-remove"></i> <span class="hidden-xs"> Build Failed</span></span>
+                        {{else}}
+                        <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${BuildStatus}</span>
+                        {{/if}}
+                    </a>
+                    {{/if}}
+                </span>
+                <span >
+                    |
+                    {{if HasEnoughReviewers}}
+                    <i class="glyphicon glyphicon-check" style="color: green"></i>
+                    {{else}}
+                    <i class="glyphicon glyphicon-remove" style="color: red"></i>
+                    {{/if}}
+                </span><span class="hidden-xs">  ${AcceptedReviewers} of ${RequiredReviewers} Required Reviewers</span>
+            </div>
+        </div>
+        <div class="col-lg-2 hidden-xs">
+            <a href="${Repository.Project.Url}" target="_blank">${Repository.Project.Name}</a>
+            <br/>
+            <a href="${Repository.Url}" target="_blank">${Repository.Name}</a>
         </div>
         <div class="col-lg-2 padding col-md-12">
             <span class="visible-xs">Created By: </span>
@@ -101,8 +217,30 @@
         </div>
         <div class="col-lg-4 col-md-12 padding reviewers">
             <span class="visible-xs">Reviewers: </span>
-        {{tmpl(Reviewers) "#reviewersTemplate"}}
+            {{tmpl(Reviewers) "#reviewersTemplate"}}
+        </div>
     </div>
+</script>
+
+<script id="completedPullRequestTemplate" type="text/x-jQuery-tmpl">
+    <div class="row striped">
+    <div class="col-lg-4 col-md-12" style="padding: 5px">
+        <h4>
+            <a style="color:darkslategray" href="${Url}" target="_blank">${Title}</a>
+        </h4>
+        </div>
+        <div class="col-lg-2 hidden-xs">
+            <a href="${Repository.Project.Url}" target="_blank">${Repository.Project.Name}</a>
+            <br/>
+            <a href="${Repository.Url}" target="_blank">${Repository.Name}</a>
+        </div>
+        <div class="col-lg-2 padding col-md-12">
+            <span class="datetime-shorttime hidden-xs">${ClosedDate}</span>
+        </div>
+        <div class="col-lg-4 col-md-12 padding reviewers">
+            <span class="visible-xs">Reviewers: </span>
+            {{tmpl(Reviewers) "#reviewersTemplate"}}
+        </div>
     </div>
 </script>
 
@@ -117,18 +255,19 @@
                 ${Name} | 
                 <span>
                     {{if ReviewStatus == 'approved'}}
-                        <span style="color: green"><b>Approved</b></span>
+                    <span style="color: green"><b>Approved</b></span>
                     {{else ReviewStatus == 'approvedWithSuggestions'}}
-                        <span style="color: orange"><b>Approved With Suggestions</b></span>
+                    <span style="color: orange"><b>Approved With Suggestions</b></span>
                     {{else ReviewStatus == 'noResponse'}}
-                        <span style="color: gray"><b>No Response</b></span>
+                    <span style="color: gray"><b>No Response</b></span>
                     {{else ReviewStatus == 'waitingForAuthor'}}
-                        <span style="color: orangered"><b>Waiting For Author</b></span>
+                    <span style="color: orangered"><b>Waiting For Author</b></span>
                     {{else ReviewStatus == 'rejected'}}
-                        <span style="color: red"><b>Rejected</b></span>
+                    <span style="color: red"><b>Rejected</b></span>
                     {{/if}}
                 </span>
             </div>
         </div>
     </div>
 </script>
+

@@ -17,7 +17,7 @@
 </head>
 <body ng-controller="MainController">
 <nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
-    <span class="navbar-brand nav-link">TFS Advanced</span>
+    <span class="navbar-brand nav-link" id="brand">TFS Advanced</span>
     <ul class="nav navbar-nav hidden-xs" style="display: none">
         <li>
             <a id="pullRequestLink" class="nav-link" onclick="navigateTo(this, '/views/pullRequests.html')">Pull Requests</a>
@@ -35,9 +35,6 @@
                     <a class="nav-link" onclick="navigateTo(this, '/views/updateStatus.html')">Update Statuses</a>
                 </li>
             </ul>
-        </li>
-        <li>
-            <div id="socketStatus" ></div>
         </li>
     </ul>
 </nav>
@@ -133,20 +130,36 @@
                 if ($("#navbar").is(":visible"))
                     $('.navbar-toggle').click();
             });
+            console.log("Clearing Storage");
+            localStorage.clear();
 
             let socket = new WebSocket("wss://" + window.location.host + "/ws");
             socket.onmessage  = function (event) {
-                var data = JSON.parse(event.data);
+                var message = JSON.parse(event.data);
                 
-                var messageType = data["Type"];
-                var pullRequests = data["List"];
+                var messageType = message["Type"];
+                var data = message["Data"];
 
-                console.log("Message Push.  Type :", messageType, ", Count: ", pullRequests.length);
-
-                if (messageType === "Updated")
-                    NotificationToast(pullRequests);
-                else
-                    localStorage.setItem("PullRequests", JSON.stringify(pullRequests));
+                console.log("Message Push.  Type :", messageType, ", Count: ", data.length);
+                $("#brand").attr('title', "Last Server Response: " + new Date());
+                switch (messageType) {
+                    case "newPullRequest":
+                        NotificationToast(data);
+                        break;
+                    case "updatedCurrentUserPullRequest":
+                        localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
+                        document.getElementById('mainPage').dispatchEvent(newMyPullRequestsEvent);
+                        break;
+                    case "updatedPullRequest":
+                        localStorage.setItem("PullRequests", JSON.stringify(data));
+                        document.getElementById('mainPage').dispatchEvent(newPullRequestsEvent);
+                        break;
+                    case "currentUserCompletedPullRequest":
+                        localStorage.setItem("CurrentUserCompletedPullRequests", JSON.stringify(data));
+                        document.getElementById('mainPage').dispatchEvent(newCompletedPullRequestsEvent);
+                        break;
+                }
+                
             };
             
         });
@@ -154,7 +167,7 @@
     function NotificationToast(pullRequests) {
         $.each(pullRequests,
             function(index, pullRequest) {
-                
+                console.log("New PullRequest: ", pullRequest);
                 var notification = new Notification('New Pull Request from ' + pullRequest.Creator.Name,
                     {
                         icon: '/images/site.png',

@@ -9,6 +9,7 @@ namespace TFSAdvanced.Updater.Models.PullRequests
         public PullRequestLinks _links { get; set; }
         public Createdby createdBy { get; set; }
         public DateTime creationDate { get; set; }
+        public DateTime? closedDate { get; set; }
         public string description { get; set; }
         public CommitLink lastMergeCommit { get; set; }
         public CommitLink lastMergeSourceCommit { get; set; }

@@ -27,7 +27,7 @@ namespace TfsAdvanced.Updater.Tasks
             logger.LogInformation("Starting bootstrapping app");
             DateTime startTime = DateTime.Now;
             // Initialize the updaters in order
-            double stepSize = 1.0/8.0;
+            double stepSize = 1.0/9.0;
             double percentLoaded = 0.0;
             var hangFireStatusRepository = serviceProvider.GetService<HangFireStatusRepository>();
             percentLoaded = RunUpdate<PoolUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
@@ -36,6 +36,7 @@ namespace TfsAdvanced.Updater.Tasks
             percentLoaded = RunUpdate<BuildDefinitionUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<BuildUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<PullRequestUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
+            percentLoaded = RunUpdate<CompletedPullRequestUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<ReleaseDefinitionUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             percentLoaded = RunUpdate<JobRequestUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
             hangFireStatusRepository.SetPercentLoaded(1);
@@ -56,6 +57,7 @@ namespace TfsAdvanced.Updater.Tasks
             fiveSecondTimer = new Timer(state =>
             {
                 EnqueueJob<PullRequestUpdater>();
+                EnqueueJob<CompletedPullRequestUpdater>();
                 EnqueueJob<JobRequestUpdater>();
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
             

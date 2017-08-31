@@ -34,5 +34,7 @@ namespace TFSAdvanced.Models.DTO
         public int AcceptedReviewers { get; set; }
 
         public DateTime CreatedDate { get; set; }
+
+        public DateTime? ClosedDate { get; set; }
     }
 }
