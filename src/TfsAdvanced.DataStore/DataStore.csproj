@@ -1,24 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>TFSAdvanced.DataStore</AssemblyName>
     <RootNamespace>TFSAdvanced.DataStore</RootNamespace>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="1.1.2" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\TfsAdvanced.Models\Models.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Reference Include="Microsoft.EntityFrameworkCore">
       <HintPath>C:\Users\bertc\.nuget\packages\microsoft.entityframeworkcore\1.0.3\lib\netstandard1.3\Microsoft.EntityFrameworkCore.dll</HintPath>
     </Reference>
   </ItemGroup>
-
+  <ItemGroup>
+    <Folder Include="Comparitors" />
+  </ItemGroup>
 </Project>
