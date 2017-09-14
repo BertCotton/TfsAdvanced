@@ -65,6 +65,7 @@ namespace TfsAdvanced.Updater.Tasks
 
                         if (poolJobRequest.planType == PlanTypes.Build)
                         {
+                            queueJob.JobType = JobType.Build;
                             var build = buildRepository.GetBuild(poolJobRequest.owner.id);
                             if (build != null)
                             {
@@ -98,7 +99,7 @@ namespace TfsAdvanced.Updater.Tasks
 
                             }
                             var buildDefinition = buildDefinitionRepository.GetBuildDefinition(poolJobRequest.definition.id);
-                            if (buildDefinition != null && buildDefinition.Repository != null)
+                            if (buildDefinition?.Repository != null)
                             {
                                 var project = projectRepository.GetProject(buildDefinition.Repository.Project.Id);
                                 if (project != null)
@@ -129,6 +130,7 @@ namespace TfsAdvanced.Updater.Tasks
 
                         else if (poolJobRequest.planType == PlanTypes.Release)
                         {
+                            queueJob.JobType = JobType.Release;
                             if (poolJobRequest.finishTime.HasValue)
                             {
                                 switch (poolJobRequest.result)
@@ -149,7 +151,7 @@ namespace TfsAdvanced.Updater.Tasks
                                 }
                             }
 
-                            var releaseDefinition = releaseDefinitionRepository.GetReleaseDefinition(poolJobRequest.definition.id);
+                            var releaseDefinition = releaseDefinitionRepository.GetReleaseDefinition(poolJobRequest.scopeId.ToString(), poolJobRequest.definition.id);
                             if (releaseDefinition != null)
                             {
                                 queueJob.Project = releaseDefinition.Project;

@@ -21,6 +21,9 @@ function fetchData() {
 
 }
 
+// Every minute reformat so that the dates keep updated
+setTimeout(formatPage, 60000);
+
 function HandlMyPullRequests() {
 
     var myPullRequests = JSON.parse(localStorage.getItem("CurrentUserPullRequests"));

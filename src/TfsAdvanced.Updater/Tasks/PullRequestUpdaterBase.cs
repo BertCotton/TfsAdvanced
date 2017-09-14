@@ -86,6 +86,7 @@ namespace TfsAdvanced.Updater.Tasks
                                 pullRequestDto.AcceptedReviewers++;
                         }
                         allPullRequests.Add(pullRequestDto);
+                        
                     }
                     catch (Exception e)
                     {
@@ -135,6 +136,7 @@ namespace TfsAdvanced.Updater.Tasks
                 HasEnoughReviewers = x.hasEnoughReviewers,
                 AcceptedReviewers = x.acceptedReviewers,
                 RequiredReviewers = x.requiredReviewers,
+                LastCommit = x.lastMergeSourceCommit.commitId,
                 Reviewers = new List<Reviewer>()
             };
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TfsAdvanced.Data.Comparator;
 using TFSAdvanced.DataStore.Interfaces;
 using TFSAdvanced.DataStore.Repository;
+using TFSAdvanced.Models.ComparisonResults;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
@@ -20,8 +22,15 @@ namespace TfsAdvanced.DataStore.Repository
             return item.Id;
         }
 
+        public PullRequestComparison Update(PullRequest updatedPullRequest)
+        {
+            var existing = base.Get(request => request.Id == updatedPullRequest.Id);
+            return PullRequestComparator.Compare(existing, updatedPullRequest);
+        }
+
         public override bool Update(IEnumerable<PullRequest> updates)
         {
+            
             bool updated = base.Update(updates);
             // If an update was not received, then remove it
             var noUpdate = base.GetList(request => !updates.Select(x => x.Id).Contains(request.Id));

@@ -114,10 +114,19 @@
         });
     };
 
-
+    
+    function FullRefresh() {
+        console.log("Full Refresh");
+        window.location = "/";
+        // 10 Minutes
+        setTimeout(FullRefresh, 600000);
+    }
     
     $(document)
         .ready(function () {
+
+            // 10 Minutes
+            setTimeout(FullRefresh, 600000);
 
             $.fn.dataTable.ext.errMode = 'none';
 

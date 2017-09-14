@@ -16,6 +16,9 @@ $(document)
                             jobRequest.requestId +
                             "</a>";
 
+                        if (jobRequest.name === "Claimant Management Service")
+                            console.log(jobRequest);
+
                         if (jobRequest.jobType === 'release')
                             json[i][column++] = '<span class="glyphicon glyphicon-plane" style="color:blue"></span>' +
                                 jobRequest.jobType;

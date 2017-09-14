@@ -82,16 +82,15 @@
         <div class="col-lg-4 col-md-12" style="padding: 5px">
             <h4>
                 <a style="color:darkslategray" href="${Url}" target="_blank">${Title}</a>
+		<span class="hidden-xs">
+                        {{if IsAutoCompleteSet}}
+                        <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up" title="Autocomplete Set"></i><span class="hidden-xs"></span></span><br/>
+                        {{/if}}
+                </span>
             </h4>
             <h5>
                 <div>
-                    <span class="hidden-xs">
-                        {{if isAutoCompleteSet}}
-                        <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up"></i><span class="hidden-xs"> AutoComplete Set</span></span><br/>
-                        {{/if}}
-                    </span>
-                   
-                    {{if MergeStatus == 'conflicts'}}
+                    {{if MergeStatus == 'failed'}}
                     <span style="color:red"><i class="glyphicon glyphicon-remove"></i><span class="hidden-xs"> Merge Conflicts</span></span>
                     {{/if}}
                 </div>
@@ -157,8 +156,7 @@
                         <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up"></i><span class="hidden-xs"> AutoComplete Set</span></span><br/>
                         {{/if}}
                     </span>
-                   
-                    {{if MergeStatus == 'conflicts'}}
+                    {{if MergeStatus == 'Failed'}}
                     <span style="color:red"><i class="glyphicon glyphicon-remove"></i><span class="hidden-xs"> Merge Conflicts</span></span>
                     {{/if}}
                 </div>
