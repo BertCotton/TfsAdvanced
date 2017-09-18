@@ -5,7 +5,7 @@ using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class JobRequestRepository : RepositoryBase<QueueJob>
+    public class QueueJobRepository : SqlRepositoryBase<QueueJob>
     {
         public IEnumerable<QueueJob> GetJobRequests(DateTime? fromDate = null, DateTime? toDate = null)
         {
@@ -15,21 +15,16 @@ namespace TfsAdvanced.DataStore.Repository
                 return base.GetList(x => x.QueuedTime >= fromDate.Value);
             if(toDate.HasValue)
                 return base.GetList(x => x.QueuedTime <= toDate.Value);
-
             return GetAll();
         }
 
-        public override bool Update(IEnumerable<QueueJob> updates)
+        protected override void Map(QueueJob from, QueueJob to)
         {
-            var updated = base.Update(updates);
-            DateTime yesterday = DateTime.Now.Date.AddDays(-2);
-            base.CleanupIfNeeded(x => x.QueuedTime < yesterday);
-            return updated;
-        }
-
-        protected override int GetId(QueueJob item)
-        {
-            return item.RequestId;
+            from.AssignedTime = to.AssignedTime;
+            from.FinishedTime = to.FinishedTime;
+            from.QueueJobStatus = to.QueueJobStatus;
+            from.QueuedTime = to.QueuedTime;
+            from.StartedTime = to.StartedTime;
         }
     }
 }

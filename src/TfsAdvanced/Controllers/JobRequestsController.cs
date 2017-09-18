@@ -7,9 +7,9 @@ namespace TfsAdvanced.Web.Controllers
     [Route("data/JobRequests")]
     public class JobRequestsController : Controller
     {
-        private readonly JobRequestRepository jobRequestRepository;
+        private readonly QueueJobRepository jobRequestRepository;
 
-        public JobRequestsController(JobRequestRepository jobRequestRepository)
+        public JobRequestsController(QueueJobRepository jobRequestRepository)
         {
             this.jobRequestRepository = jobRequestRepository;
         }

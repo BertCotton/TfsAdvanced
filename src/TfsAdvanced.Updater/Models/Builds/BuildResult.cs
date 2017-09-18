@@ -5,6 +5,7 @@
         failed,
         succeeded,
         partiallySucceeded,
+        succeededWithIssues,
         canceled,
         abandoned,
         expired

@@ -37,7 +37,10 @@ using Serilog.Enrichers;
 using Serilog.Events;
 using Serilog.Exceptions;
 using TfsAdvanced.Web.SocketConnections;
+using TFSAdvanced.DataStore;
 using TFSAdvanced.DataStore.Repository;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace TfsAdvanced
 {
@@ -75,10 +78,20 @@ namespace TfsAdvanced
             
 
             services.AddEntityFrameworkInMemoryDatabase()
-                .AddDbContext<TfsAdvancedDataContext>();
+                .AddDbContext<TfsAdvancedInMemoryDataContext>();
+
+            var connectionString = Configuration.GetConnectionString("DefaultConnection");
+            services.AddEntityFrameworkSqlServer()
+                .AddDbContext<TfsAdvancedSqlDataContext>(options =>
+                {
+                    options.UseSqlServer(connectionString);
+                    
+                });
+
+            
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<TfsAdvancedDataContext>()
+                .AddEntityFrameworkStores<TfsAdvancedInMemoryDataContext>()
                 .AddDefaultTokenProviders();
 
             services.AddSession(options =>
