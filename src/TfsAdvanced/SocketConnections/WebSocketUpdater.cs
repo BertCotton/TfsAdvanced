@@ -23,17 +23,19 @@ namespace TfsAdvanced.Web.SocketConnections
         private readonly WebSocketClientRepository webSocketClientRepository;
         private readonly PullRequestRepository pullRequestRepository;
         private readonly CompletedPullRequestRepository completedPullRequestRepository;
+        private readonly HangFireStatusRepository hangFireStatusRepository;
         private readonly ILogger logger;
         
         private int lastPullRequestId = 0;
         private DateTime lastPullRequestUpdated = DateTime.MinValue;
         DateTime lastCompletedPullRequestUpdated = DateTime.MinValue;
 
-        public WebSocketUpdater(WebSocketClientRepository webSocketClientRepository, PullRequestRepository pullRequestRepository, CompletedPullRequestRepository completedPullRequestRepository)
+        public WebSocketUpdater(WebSocketClientRepository webSocketClientRepository, PullRequestRepository pullRequestRepository, CompletedPullRequestRepository completedPullRequestRepository, HangFireStatusRepository hangFireStatusRepository)
         {
             this.webSocketClientRepository = webSocketClientRepository;
             this.pullRequestRepository = pullRequestRepository;
             this.completedPullRequestRepository = completedPullRequestRepository;
+            this.hangFireStatusRepository = hangFireStatusRepository;
             this.logger = Log.Logger;
         }
 
@@ -56,10 +58,12 @@ namespace TfsAdvanced.Web.SocketConnections
                     LastSeen = DateTime.Now
                 });
 
-                await HandleNewPullRequests(webSocket, currentUserUniqueName);
-                await HandleUpdatedPullRequests(webSocket, currentUserUniqueName);
-                await HandleCompletedPullRequests(webSocket, currentUserUniqueName);
-                
+                if (hangFireStatusRepository.IsLoaded())
+                {
+                    await HandleNewPullRequests(webSocket, currentUserUniqueName);
+                    await HandleUpdatedPullRequests(webSocket, currentUserUniqueName);
+                    await HandleCompletedPullRequests(webSocket, currentUserUniqueName);
+                }
                 Thread.Sleep(1000);
             }
 
@@ -74,7 +78,7 @@ namespace TfsAdvanced.Web.SocketConnections
 
         private async Task HandleNewPullRequests(WebSocket webSocket, string currentUserUniqueName)
         {
-            IEnumerable<PullRequest> pullRequests = pullRequestRepository.GetPullRequestsAfter(lastPullRequestId).ToList();
+            IList<PullRequest> pullRequests = pullRequestRepository.GetPullRequestsAfter(lastPullRequestId);
             if (pullRequests != null && pullRequests.Any())
             {
 
@@ -82,7 +86,7 @@ namespace TfsAdvanced.Web.SocketConnections
                 if (lastPullRequestId > 0)
                 {
                     // do not send new pull requests if it was created by the current user
-                    await SendNewPullRequests(webSocket, pullRequests.Where(x => x.Creator.UniqueName != currentUserUniqueName).ToList());
+                    await SendNewPullRequests(webSocket, pullRequests.Where(x => x.Creator.UniqueName != currentUserUniqueName));
                 }
                     
                 lastPullRequestId = newLastId;
@@ -106,9 +110,10 @@ namespace TfsAdvanced.Web.SocketConnections
 
             if (repositoryLastUpdated > lastPullRequestUpdated)
             {
-                var allPullRequests = pullRequestRepository.GetAll().ToList();
-                await SendCurrentUserPullRequests(webSocket, allPullRequests.Where(x => x.Creator.UniqueName == currentUserUniqueName).ToList());
-                await SendPullRequestList(webSocket, allPullRequests.Where(x => x.Creator.UniqueName != currentUserUniqueName).ToList());
+                var allPullRequests = pullRequestRepository.GetAll();
+
+                await SendCurrentUserPullRequests(webSocket, allPullRequests.Where(x => x.Creator.UniqueName == currentUserUniqueName));
+                await SendPullRequestList(webSocket, allPullRequests.Where(x => x.Creator.UniqueName != currentUserUniqueName));
                 lastPullRequestUpdated = repositoryLastUpdated;
             }
         }
@@ -135,7 +140,7 @@ namespace TfsAdvanced.Web.SocketConnections
 
         private async Task HandleCompletedPullRequests(WebSocket webSocket, string currentUserUniqueName)
         {   
-            var currentUserCompletedMessages = completedPullRequestRepository.GetAll().Where(x => x.Creator.UniqueName == currentUserUniqueName).ToList();
+            var currentUserCompletedMessages = completedPullRequestRepository.GetForUser(currentUserUniqueName);
             if (!currentUserCompletedMessages.Any())
                 return;
 

@@ -37,7 +37,10 @@ using Serilog.Enrichers;
 using Serilog.Events;
 using Serilog.Exceptions;
 using TfsAdvanced.Web.SocketConnections;
+using TFSAdvanced.DataStore;
 using TFSAdvanced.DataStore.Repository;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace TfsAdvanced
 {
@@ -74,11 +77,13 @@ namespace TfsAdvanced
         {
             
 
-            services.AddEntityFrameworkInMemoryDatabase()
-                .AddDbContext<TfsAdvancedDataContext>();
+            services.AddEntityFrameworkInMemoryDatabase().AddDbContext<TfsAdvancedInMemoryDataContext>();
+            services.AddEntityFrameworkSqlServer().AddDbContext<TfsAdvancedSqlDataContext>();
+
+            services.AddSingleton<IConfiguration>(Configuration);
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<TfsAdvancedDataContext>()
+                .AddEntityFrameworkStores<TfsAdvancedInMemoryDataContext>()
                 .AddDefaultTokenProviders();
 
             services.AddSession(options =>
@@ -109,9 +114,11 @@ namespace TfsAdvanced
 
             builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
 
-            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Models"))).AsSelf().SingleInstance();
-            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Updater"))).AsSelf().SingleInstance();
-            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.DataStore"))).AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Models"))).AsSelf();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Updater"))).Where(x => x.Name.EndsWith("Updater")).AsSelf().SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Updater"))).Where(x => !x.Name.EndsWith("Updater")).AsSelf();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.DataStore"))).AsSelf().Where(x => x.Name.EndsWith("Repository")).SingleInstance();
+            builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.DataStore"))).AsSelf().Where(x => !x.Name.EndsWith("Repository"));
 
 
             builder.RegisterType<AuthorizationRequest>().AsSelf().SingleInstance();
@@ -129,7 +136,9 @@ namespace TfsAdvanced
                 return settings;
             };
 
-
+            var dataContext = serviceProvider.GetService<TfsAdvancedSqlDataContext>();
+            dataContext.Database.EnsureCreated();
+            
             return serviceProvider;
         }
 
@@ -144,7 +153,7 @@ namespace TfsAdvanced
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
                     .MinimumLevel.Override("System", LogEventLevel.Error)
                     .WriteTo.ColoredConsole()
-                    .WriteTo.LiterateConsole()
+                    .WriteTo.Trace() // For VS Output
                 ;
             Log.Logger = loggerConfiguration.CreateLogger();
 

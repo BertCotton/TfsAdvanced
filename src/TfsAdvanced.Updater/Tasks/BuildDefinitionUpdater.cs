@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.Extensions.Logging;
@@ -29,20 +31,24 @@ namespace TfsAdvanced.Updater.Tasks
             this.repositoryRepository = repositoryRepository;
         }
 
-        protected override void Update()
+        protected override async Task Update(bool initialize)
         {
-            var buildDefinitions = new ConcurrentBag<BuildDefinition>();
-            Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
+            if (initialize && !buildDefinitionRepository.IsEmpty())
+                return;
+
+
+            IList<BuildDefinition> buildDefinitions = new List<BuildDefinition>();
+            foreach (var project in projectRepository.GetAll())
             {
-                var definitions = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/definitions?api=2.2").Result;
+                var definitions = await GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/definitions?api=2.2");
                 if (definitions == null)
                 {
                     logger.LogInformation($"Unable to get the definitiosn for the project {project.Name}");
                     return;
                 }
-                Parallel.ForEach(definitions, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, definition =>
+                foreach (var definition in definitions)
                 {
-                    var populatedDefinition = GetAsync.Fetch<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, definition.url).Result;
+                    var populatedDefinition = await GetAsync.Fetch<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, definition.url);
                     var repository = repositoryRepository.GetById(populatedDefinition.repository.id);
 
                     buildDefinitions.Add(new BuildDefinition
@@ -54,10 +60,11 @@ namespace TfsAdvanced.Updater.Tasks
                         Url = populatedDefinition._links.web.href,
                         Repository = repository
                     });
-                });
-            });
 
-            buildDefinitionRepository.Update(buildDefinitions);
+                }
+            }
+
+            await buildDefinitionRepository.Update(buildDefinitions);
 
             updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = buildDefinitions.Count, UpdaterName = nameof(BuildDefinitionUpdater)});
         }
