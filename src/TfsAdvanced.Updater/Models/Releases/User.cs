@@ -10,7 +10,7 @@ namespace TFSAdvanced.Updater.Models.Releases
 
         public string displayName { get; set; }
 
-        public string uniqueuName { get; set; }
+        public string uniqueName { get; set; }
 
         public string imageUrl { get; set; }
         

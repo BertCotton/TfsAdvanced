@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace TFSAdvanced.DataStore.Interfaces
 {
     public interface IRepository<T>
     {
-        IEnumerable<T> GetAll();
+        IList<T> GetAll();
 
-        bool Update(IEnumerable<T> updates);
+        Task<bool> Update(T update);
 
-        bool Remove(IEnumerable<T> items);
+        Task<bool> Update(IList<T> updates);
+
+        Task<bool> Remove(IEnumerable<T> items);
 
         DateTime GetLastUpdated();
     }

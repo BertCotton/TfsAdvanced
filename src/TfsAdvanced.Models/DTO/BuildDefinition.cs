@@ -1,6 +1,9 @@
-﻿namespace TFSAdvanced.Models.DTO
+﻿using System;
+using TFSAdvanced.Models.Interfaces;
+
+namespace TFSAdvanced.Models.DTO
 {
-    public class BuildDefinition
+    public class BuildDefinition : IIdentity, IUpdateTracked
     {
         public int Id { get; set; }
 
@@ -15,5 +18,7 @@
         public string Folder { get; set; }
 
         public string DefaultBranch { get; set; }
+
+        public DateTime LastUpdated { get; set; }
     }
 }
