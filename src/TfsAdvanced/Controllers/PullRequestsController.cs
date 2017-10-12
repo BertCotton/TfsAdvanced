@@ -29,7 +29,7 @@ namespace TfsAdvanced.Web.Controllers
             return pullRequests.Select(pullRequest => new Dictionary<string, string>
             {
                 {"author", pullRequest.Creator.Name },
-                {"Id", pullRequest.Id.ToString()},
+                {"id", pullRequest.Id.ToString()},
                 {"repository", pullRequest.Repository.Name},
                 {"title", pullRequest.Title},
                 {"url", pullRequest.Url}

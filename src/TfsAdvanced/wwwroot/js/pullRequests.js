@@ -1,12 +1,12 @@
-﻿fetchData(true);
+﻿fetchData();
 
 $("#myCompletedPullRequestPanel").on("click",
     function() {
         $("#myCompletedPullRequestPanel").toggleClass("col-lg-8 col-lg-12");
     });
 
-function fetchData(init) {
-    if (localStorage.getItem("HasUpdate") === "true" || init) {
+function fetchData() {
+    if (localStorage.getItem("HasUpdate") === "true") {
         HandlMyPullRequests();
         HandleTeamPullRequests();
         HandleMyCompletedPullRequests();
@@ -73,6 +73,22 @@ function sortByDate(pullRequests, reverse = false) {
     });
 }
 
+function sortByClosedDate(pullRequests, reverse = false) {
+    if (!pullRequests)
+        return;
+    pullRequests.sort(function (a, b) {
+        var aDate = new Date(a.ClosedDate).getTime();
+        var bDate = new Date(b.ClosedDate).getTime();
+        if (aDate === bDate)
+            return 0;
+        if (aDate > bDate)
+            return reverse ? -1 : 1;
+        else
+            return reverse ? 1 : -1;
+    });
+}
+
+
 function HandleMyCompletedPullRequests() {
     var pullRequests = JSON.parse(localStorage.getItem("CurrentUserCompletedPullRequests"));
     if(!pullRequests)
@@ -81,7 +97,7 @@ function HandleMyCompletedPullRequests() {
         $("#myCompletedPullRequestsTable").hide();
     } else {
         $("#myCompletedPullRequestsTable").show();
-        sortByDate(pullRequests, true);
+        sortByClosedDate(pullRequests, true);
         $("#myCompletedPullRequestsTable").html($("#completedPullRequestTemplate").tmpl(pullRequests));
     }
 }

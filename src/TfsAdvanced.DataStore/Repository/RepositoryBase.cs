@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using TFSAdvanced.DataStore.Interfaces;
 
 namespace TFSAdvanced.DataStore.Repository
@@ -26,13 +25,13 @@ namespace TFSAdvanced.DataStore.Repository
 
         protected abstract int GetId(T item);
 
-        public IList<T> GetAll()
+        public IEnumerable<T> GetAll()
         {
             if (mutex.WaitOne(TimeSpan.FromSeconds(5)))
             {
                 try
                 {
-                    return data.Values.ToList();
+                    return data.Values;
                 }
                 finally
                 {
@@ -40,11 +39,6 @@ namespace TFSAdvanced.DataStore.Repository
                 }
             }
             return new List<T>();
-        }
-
-        public async Task<bool> Update(T update)
-        {
-            return await Update(new List<T> {update});
         }
 
         protected T Get(Predicate<T> d)
@@ -82,7 +76,7 @@ namespace TFSAdvanced.DataStore.Repository
         }
 
 
-        public virtual async Task<bool> Update(IList<T> updates)
+        public virtual bool Update(IEnumerable<T> updates)
         {
             var updated = false;
             if (mutex.WaitOne(TimeSpan.FromSeconds(60)))
@@ -122,10 +116,10 @@ namespace TFSAdvanced.DataStore.Repository
                     mutex.ReleaseMutex();
                 }
             }
-            return await Task.FromResult(updated);
+            return updated;
         }
 
-        public async Task<bool> Remove(IEnumerable<T> items)
+        public bool Remove(IEnumerable<T> items)
         {
             var removed = false;
             if (mutex.WaitOne(60))
@@ -152,7 +146,7 @@ namespace TFSAdvanced.DataStore.Repository
                     mutex.ReleaseMutex();
                 }
             }
-            return await Task.FromResult(removed);
+            return removed;
         }
 
         public DateTime GetLastUpdated()

@@ -18,7 +18,7 @@ namespace TfsAdvanced.Updater
             return await JsonDeserializer.Deserialize<T>(response);
         }
 
-        public static async Task<IEnumerable<T>> FetchResponseList<T>(RequestData requestData, string url)
+        public static async Task<List<T>> FetchResponseList<T>(RequestData requestData, string url)
         {
             var response = await requestData.HttpClient.GetAsync(url);
             if (!response.IsSuccessStatusCode)
@@ -29,7 +29,7 @@ namespace TfsAdvanced.Updater
             {
                 DateTimeZoneHandling = DateTimeZoneHandling.Local
             });
-            return items.value;
+            return items.value.ToList();
         }
     }
 }

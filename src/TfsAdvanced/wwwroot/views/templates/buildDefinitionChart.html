@@ -1,7 +1,7 @@
 ﻿<canvas id="chart-${project.id}" width="130" height="20">
     <a href="${build._links.web.href}" target="_blank">
         <g ng:attr:class="bar ${build.result}">
-            <rect wIdth="12" ng:attr:height="{{getHeight(latestBuilds, build)}}" ng:attr:x="{{$index * 13}}" ng:attr:y="{{20 - getHeight(latestBuilds, build)}}"></rect>
+            <rect width="12" ng:attr:height="{{getHeight(latestBuilds, build)}}" ng:attr:x="{{$index * 13}}" ng:attr:y="{{20 - getHeight(latestBuilds, build)}}"></rect>
         </g>
     </a>
 </canvas>

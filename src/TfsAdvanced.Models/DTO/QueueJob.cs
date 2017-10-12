@@ -1,14 +1,9 @@
 ﻿using System;
-using TFSAdvanced.Models.Interfaces;
 
 namespace TFSAdvanced.Models.DTO
 {
-    public class QueueJob : IIdentity, IUpdateTracked
+    public class QueueJob
     {
-        public int Id { get; set; }
-
-        public DateTime LastUpdated { get; set; }
-
         public int RequestId { get; set; }
 
         public string Url { get; set; }
