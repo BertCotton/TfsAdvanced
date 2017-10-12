@@ -39,30 +39,30 @@ namespace TfsAdvanced.Web.Controllers
             return Redirect("/");
         }
 
-        [HttpGet("LoginVSOAuth")]
-        [AllowAnonymous]
-        public async Task<IActionResult> LoginAuth(string code = null, string state = null, bool Admin_consent = false, string Session_state = null)
-        {
-            var tokenString = await authorizationRequest.GetVSOAccessToken(GetBaseURL(), code, state);
+        //[HttpGet("LoginVSOAuth")]
+        //[AllowAnonymous]
+        //public async Task<IActionResult> LoginAuth(string code = null, string state = null, bool Admin_consent = false, string Session_state = null)
+        //{
+        //    var tokenString = await authorizationRequest.GetVSOAccessToken(GetBaseURL(), code, state);
 
-            var token = JsonConvert.DeserializeObject<AuthenticationToken>(tokenString);
+        //    var token = JsonConvert.DeserializeObject<AuthenticationToken>(tokenString);
 
-            if (String.IsNullOrEmpty(token.access_token))
-                throw new Exception("The access token is null");
+        //    if (String.IsNullOrEmpty(token.access_token))
+        //        throw new Exception("The access token is null");
 
-            var cookieValue = JsonConvert.SerializeObject(token);
-            HttpContext.Session.Set("AuthToken", ASCIIEncoding.ASCII.GetBytes(JsonConvert.SerializeObject(token)));
-            HttpContext.Response.Cookies.Append("Auth", cookieValue, new CookieOptions
-            {
-                Secure = true,
-                Expires = DateTime.Now.AddYears(1),
-                HttpOnly = true,
-                Path = "/",
-                Domain = HttpContext.Request.Host.ToString()
-            });
+        //    var cookieValue = JsonConvert.SerializeObject(token);
+        //    HttpContext.Session.Set("AuthToken", ASCIIEncoding.ASCII.GetBytes(JsonConvert.SerializeObject(token)));
+        //    HttpContext.Response.Cookies.Append("Auth", cookieValue, new CookieOptions
+        //    {
+        //        Secure = true,
+        //        Expires = DateTime.Now.AddYears(1),
+        //        HttpOnly = true,
+        //        Path = "/",
+        //        Domain = HttpContext.Request.Host.ToString()
+        //    });
             
-            return Redirect("/");
-        }
+        //    return Redirect("/");
+        //}
 
         private string GetBaseURL()
         {
