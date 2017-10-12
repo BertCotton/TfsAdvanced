@@ -2,6 +2,7 @@
 var updating = false;
 $(document)
     .ready(function() {
+               
         var dataTable = $("#jobRequestsTable").DataTable({
             "order": [0, "desc"],
             "ajax": {
@@ -106,19 +107,15 @@ $(document)
 
                     }
                     updating = false;
+	            setTimeout(function() {
+	                dataTable.ajax.reload(null, false);
+        	    }, 2000);
                     return json;
                 }
             }
 
         });
 
-        setInterval(function() {
-                if (updating) {
-                    return;
-                }
-                updating = true;
-                dataTable.ajax.reload(null, false);
-            },
-            500);
+      
 
     });
