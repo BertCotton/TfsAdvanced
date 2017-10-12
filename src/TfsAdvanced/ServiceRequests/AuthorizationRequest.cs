@@ -19,40 +19,40 @@ namespace TfsAdvanced.ServiceRequests
             this.appSettings = appSettings.Value;
         }
 
-        public string GetVSOChallengeUrl(string baseURL)
-        {
-            return
-                $"https://app.vssps.visualstudio.com/oauth2/authorize?" +
-                $"client_id={appSettings.authorization.AppId}&response_type=Assertion" + 
-                $"&state={appSettings.authorization.State}&scope={appSettings.authorization.Scope}" +
-                $"&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}";
-        }
+        //public string GetVSOChallengeUrl(string baseURL)
+        //{
+        //    return
+        //        $"https://app.vssps.visualstudio.com/oauth2/authorize?" +
+        //        $"client_id={appSettings.authorization.AppId}&response_type=Assertion" + 
+        //        $"&state={appSettings.authorization.State}&scope={appSettings.authorization.Scope}" +
+        //        $"&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}";
+        //}
 
 
-        public async Task<string> GetVSOAccessToken(string baseURL, string code, string state)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Post, "https://app.vssps.visualstudio.com/oauth2/token");
-            request.Content = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
-                new KeyValuePair<string, string>("client_assertion", appSettings.authorization.AppSecret),
-                new KeyValuePair<string, string>("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer"),
-                new KeyValuePair<string, string>("assertion", code),
-                new KeyValuePair<string, string>("redirect_uri", baseURL + appSettings.authorization.RedirectURI)
-            });
-            HttpClientHandler handler = new HttpClientHandler()
-            {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-            };
+        //public async Task<string> GetVSOAccessToken(string baseURL, string code, string state)
+        //{
+        //    var request = new HttpRequestMessage(HttpMethod.Post, "https://app.vssps.visualstudio.com/oauth2/token");
+        //    request.Content = new FormUrlEncodedContent(new[]
+        //    {
+        //        new KeyValuePair<string, string>("client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer"),
+        //        new KeyValuePair<string, string>("client_assertion", appSettings.authorization.AppSecret),
+        //        new KeyValuePair<string, string>("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer"),
+        //        new KeyValuePair<string, string>("assertion", code),
+        //        new KeyValuePair<string, string>("redirect_uri", baseURL + appSettings.authorization.RedirectURI)
+        //    });
+        //    HttpClientHandler handler = new HttpClientHandler()
+        //    {
+        //        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+        //    };
             
-            var saveResponse = await new HttpClient(handler).SendAsync(request);
+        //    var saveResponse = await new HttpClient(handler).SendAsync(request);
 
-            var responseText = await saveResponse.Content.ReadAsStringAsync();
-            return responseText;
+        //    var responseText = await saveResponse.Content.ReadAsStringAsync();
+        //    return responseText;
 
-            //AuthenticationToken token = JsonConvert.DeserializeObject<AuthenticationToken>(responseText);
-            //return token;
-        }
+        //    //AuthenticationToken token = JsonConvert.DeserializeObject<AuthenticationToken>(responseText);
+        //    //return token;
+        //}
 
         public string GetADChallengeUrl(string baseURL)
         {
@@ -66,12 +66,15 @@ namespace TfsAdvanced.ServiceRequests
         public async Task<AuthenticationToken> GetADAccessToken(string baseURL, string code, string state)
         {
 
-            var content = new StringContent($"grant_type=authorization_code&client_id={appSettings.authorization.ClientId}"+
-                $"&code={code}&redirect_uri={baseURL}{appSettings.authorization.RedirectURI}" + 
-                $"&resource=https://graph.windows.net"+
-                $"&client_secret={appSettings.authorization.ClientSecret}",
-                Encoding.UTF8,
-                "application/x-www-form-urlencoded");
+            var content = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("grant_type", "authorization_code"),
+                new KeyValuePair<string, string>("client_id", appSettings.authorization.ClientId),
+                new KeyValuePair<string, string>("code", code),
+                new KeyValuePair<string, string>("client_secret", appSettings.authorization.ClientSecret),
+                new KeyValuePair<string, string>("redirect_uri", $"{baseURL}{appSettings.authorization.RedirectURI}" )
+            };
+
 
             HttpClientHandler handler = new HttpClientHandler()
             {
@@ -79,7 +82,7 @@ namespace TfsAdvanced.ServiceRequests
             };
             var client = new HttpClient(handler);
             
-            var saveResponse = await client.PostAsync($"https://login.microsoftonline.com/{appSettings.authorization.TenantId}/oauth2/token", content);
+            var saveResponse = await client.PostAsync($"https://login.microsoftonline.com/{appSettings.authorization.TenantId}/oauth2/token", new FormUrlEncodedContent(content));
 
             var responseText = await saveResponse.Content.ReadAsStringAsync();
 
