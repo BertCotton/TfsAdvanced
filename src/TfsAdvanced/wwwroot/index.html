@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <title>TFS Advanced</title>
     <meta name="description" content="">
-    <meta name="viewport" content="wIdth=device-wIdth">
+    <meta name="viewport" content="width=device-width">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
     <link rel="stylesheet" href="/css/site.css" />
@@ -18,7 +18,7 @@
 <body ng-controller="MainController">
 <nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
     <span class="navbar-brand nav-link" id="brand">TFS Advanced</span>
-    <ul class="nav navbar-nav hIdden-xs" style="display: none">
+    <ul class="nav navbar-nav hidden-xs" style="display: none">
         <li>
             <a id="pullRequestLink" class="nav-link" onclick="navigateTo(this, '/views/pullRequests.html')">Pull Requests</a>
         </li>
@@ -145,6 +145,7 @@
             let socket = new WebSocket("wss://" + window.location.host + "/ws");
             socket.onmessage  = function (event) {
                 var message = JSON.parse(event.data);
+                
                 var messageType = message["Type"];
                 var data = message["Data"];
                 localStorage.setItem("HasUpdate", "true");
@@ -160,6 +161,7 @@
                         break;
                     case "updatedPullRequest":
                         localStorage.setItem("PullRequests", JSON.stringify(data));
+                        console.log("Updated pull requests");
                         //window.dispatchEvent(updatedPullRequestsEvent);
                         break;
                     case "currentUserCompletedPullRequest":

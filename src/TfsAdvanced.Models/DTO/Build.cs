@@ -1,9 +1,8 @@
 ﻿using System;
-using TFSAdvanced.Models.Interfaces;
 
 namespace TFSAdvanced.Models.DTO
 {
-    public class Build : IIdentity, IUpdateTracked
+    public class Build
     {
         public int Id { get; set; }
 
@@ -26,6 +25,5 @@ namespace TFSAdvanced.Models.DTO
         public DateTime? StartedDate { get; set; }
 
         public DateTime? FinishedDate { get; set; }
-        public DateTime LastUpdated { get; set; }
     }
 }

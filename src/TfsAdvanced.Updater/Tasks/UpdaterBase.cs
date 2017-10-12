@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.Extensions.Logging;
 
@@ -18,7 +17,7 @@ namespace TFSAdvanced.Updater.Tasks
         }
 
         [AutomaticRetry(Attempts = 0)]
-        public async Task Run(bool initialize = false)
+        public void Run()
         {
             var className = GetType().Name;
 
@@ -34,7 +33,7 @@ namespace TFSAdvanced.Updater.Tasks
             var start = DateTime.Now;
             try
             {
-                await Update(initialize);
+                Update();
             }
             catch (Exception e)
             {
@@ -44,9 +43,8 @@ namespace TFSAdvanced.Updater.Tasks
 
             isRunning = false;
         }
-        
 
 
-        protected abstract Task Update(bool initialize);
+        protected abstract void Update();
     }
 }

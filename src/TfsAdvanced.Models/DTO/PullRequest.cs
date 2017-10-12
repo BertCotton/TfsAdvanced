@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using TFSAdvanced.Models.Interfaces;
 
 namespace TFSAdvanced.Models.DTO
 {
-    public class PullRequest : IIdentity, IUpdateTracked
+    public class PullRequest
     {
         public int Id { get; set; }
 
@@ -39,6 +38,5 @@ namespace TFSAdvanced.Models.DTO
         public DateTime? ClosedDate { get; set; }
         
         public string LastCommit { get; set; }
-        public DateTime LastUpdated { get; set; }
     }
 }

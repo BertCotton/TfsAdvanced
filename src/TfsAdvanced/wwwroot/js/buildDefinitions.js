@@ -11,6 +11,7 @@ $(document)
                 "dataSrc": function (json) {
                     for (var i = 0, ien = json.length; i < ien; i++) {
                         var buildDefinition = json[i];
+                        console.log(buildDefinition);
                         json[i][0] = '<input type="checkbox" name="definitionIds" value="' +
                             buildDefinition.id +
                             '" id="checkbox-' +
@@ -19,6 +20,7 @@ $(document)
                         json[i][1] = buildDefinition.name;
                         json[i][2] = buildDefinition.path;
                         json[i][3] = '<a href="' + buildDefinition.url + '" target="_blank">' + buildDefinition.name + "</a>";
+                        json[i][4] = buildDefinition.repository.defaultBranch;
                     }
 
 

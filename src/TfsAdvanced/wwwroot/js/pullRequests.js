@@ -1,12 +1,12 @@
-﻿fetchData(true);
+﻿fetchData();
 
 $("#myCompletedPullRequestPanel").on("click",
     function() {
         $("#myCompletedPullRequestPanel").toggleClass("col-lg-8 col-lg-12");
     });
 
-function fetchData(init) {
-    if (localStorage.getItem("HasUpdate") === "true" || init) {
+function fetchData() {
+    if (localStorage.getItem("HasUpdate") === "true") {
         HandlMyPullRequests();
         HandleTeamPullRequests();
         HandleMyCompletedPullRequests();

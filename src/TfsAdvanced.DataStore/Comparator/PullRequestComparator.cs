@@ -43,26 +43,26 @@ namespace TfsAdvanced.Data.Comparator
 
             foreach (var reviewer in original.Reviewers)
             {
-                var updatedReviewer = updated.Reviewers.FirstOrDefault(x => x.User.UniqueName == reviewer.User.UniqueName);
+                var updatedReviewer = updated.Reviewers.FirstOrDefault(x => x.UniqueName == reviewer.UniqueName);
                 if (updatedReviewer == null)
                 {
                     comparison.ReviewersUpdated = true;
-                    comparison.Messages.Add($"{reviewer.User.Name} removed as a reviewer");
+                    comparison.Messages.Add($"{reviewer.Name} removed as a reviewer");
                 }
                 else if (reviewer.ReviewStatus != updatedReviewer.ReviewStatus)
                 {
                     comparison.ReviewersUpdated = true;
-                    comparison.Messages.Add($"{reviewer.User.Name} changed review status from {reviewer.ReviewStatus} to {updatedReviewer.ReviewStatus}");
+                    comparison.Messages.Add($"{reviewer.Name} changed review status from {reviewer.ReviewStatus} to {updatedReviewer.ReviewStatus}");
                 }
 
             }
             foreach (var updatedReviewer in updated.Reviewers)
             {
-                if (original.Reviewers.Any(x => x.User.UniqueName == updatedReviewer.User.UniqueName))
+                if (original.Reviewers.Any(x => x.UniqueName == updatedReviewer.UniqueName))
                     continue;
 
                 comparison.ReviewersUpdated = true;
-                comparison.Messages.Add($"{updatedReviewer.User.Name} added as reviewer with status {updatedReviewer.ReviewStatus}");
+                comparison.Messages.Add($"{updatedReviewer.Name} added as reviewer with status {updatedReviewer.ReviewStatus}");
             }
 
             return comparison;

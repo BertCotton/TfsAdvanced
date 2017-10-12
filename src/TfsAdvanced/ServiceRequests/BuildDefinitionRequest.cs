@@ -42,7 +42,7 @@ namespace TfsAdvanced.ServiceRequests
                     {
                         queue = new Id {id = definition.QueueId},
                         definition = new Id { id = definition.Id },
-                        project = new ProjectGuid { id = definition.Repository.Project.ProjectId },
+                        project = new ProjectGuid { id = definition.Repository.Project.Id },
                         sourceBranch = definition.DefaultBranch
                     }), Encoding.UTF8,
                     "application/json");

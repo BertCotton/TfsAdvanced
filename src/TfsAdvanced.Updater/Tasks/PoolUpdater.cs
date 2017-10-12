@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Hangfire;
 using Hangfire.Logging;
 using Microsoft.Extensions.Logging;
@@ -24,16 +22,14 @@ namespace TfsAdvanced.Updater.Tasks
             this.poolRepository = poolRepository;
         }
 
-        protected override async Task Update(bool initialize)
+        protected override void Update()
         {
-            if (initialize && !poolRepository.IsEmpty())
-                return;
-
-
-            var pools = (await GetAsync.FetchResponseList<Pool>(requestData, $"{requestData.BaseAddress}/_apis/distributedtask/pools?api-version=1.0")).ToList();
-            await poolRepository.Update(pools);
-            updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pools.Count, UpdaterName = nameof(PoolUpdater)});
-
+            var pools = GetAsync.FetchResponseList<Pool>(requestData, $"{requestData.BaseAddress}/_apis/distributedtask/pools?api-version=1.0").Result;
+            if (pools != null)
+            {
+                poolRepository.Update(pools);
+                updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pools.Count, UpdaterName = nameof(PoolUpdater)});
+            }
         }
     }
 }
