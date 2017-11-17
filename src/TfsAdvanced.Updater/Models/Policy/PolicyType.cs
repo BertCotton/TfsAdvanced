@@ -3,5 +3,6 @@
     public class PolicyType
     {
         public string displayName { get; set; }
+        public string id { get; set; }
     }
 }
