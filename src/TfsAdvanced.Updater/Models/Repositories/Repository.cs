@@ -14,6 +14,5 @@ namespace TFSAdvanced.Updater.Models.Repositories
         public string remoteUrl { get; set; }
         public string url { get; set; }
         public ProjectLinks _links { get; set; }
-        public IEnumerable<PolicyConfiguration> policyConfigurations { get; set; }
     }
 }

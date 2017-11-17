@@ -15,6 +15,8 @@ namespace TfsAdvanced.Updater.Tasks
 {
     public class RepositoryUpdater : UpdaterBase
     {
+        private const string MinimumReviewerPolicyId = "FA4E907D-C16B-4A4C-9DFA-4906E5D171DD";
+
         private readonly ProjectRepository projectRepository;
         private readonly RepositoryRepository repositoryRepository;
         private readonly UpdateStatusRepository updateStatusRepository;
@@ -37,6 +39,10 @@ namespace TfsAdvanced.Updater.Tasks
                 IList<TFSAdvanced.Updater.Models.Repositories.Repository> repositories = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/git/repositories?api=1.0").Result;
                 if (repositories == null)
                     return;
+
+                // policies are project scoped, so we only need to request once per project
+                var policyConfigurations = GetAsync.FetchResponseList<PolicyConfiguration>(requestData, $"{requestData.BaseAddress}/defaultcollection/{project.Id}/_apis/policy/configurations?api-version=2.0-preview.1").Result;
+
                 Parallel.ForEach(repositories, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repo =>
                 {
                     try
@@ -56,13 +62,21 @@ namespace TfsAdvanced.Updater.Tasks
                                 Url = populatedRepository.project.url
                             }
                         };
-                        var policyConfigurations = GetAsync.FetchResponseList<PolicyConfiguration>(requestData, $"{requestData.BaseAddress}/defaultcollection/{project.Id}/_apis/policy/configurations?api-version=2.0-preview.1").Result;
-
+ 
                         foreach (var configuration in policyConfigurations)
                         {
-                            if (configuration.type.displayName == "Minimum number of reviewers")
+                            if (configuration.type.id == MinimumReviewerPolicyId)
                             {
-                                repositoryDto.MinimumApproverCount = configuration.settings.minimumApproverCount;
+                                foreach (var scope in configuration.settings.scope)
+                                {
+                                    if (scope.repositoryId == repositoryDto.Id)
+                                    {
+                                        // NOTE: there could be multiple reviewer policies in a repo (per branch)
+                                        // so this may not be the correct level to store this setting
+                                        repositoryDto.MinimumApproverCount = configuration.settings.minimumApproverCount;
+                                        break;
+                                    }
+                                }
                             }
                         }
                         populatedRepositories.Add(repositoryDto);
