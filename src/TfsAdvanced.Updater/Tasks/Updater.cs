@@ -50,18 +50,34 @@ namespace TfsAdvanced.Updater.Tasks
        
             thirtySecondTimer = new Timer(state =>
             {
+
                 EnqueueJob<BuildDefinitionUpdater>();
                 EnqueueJob<BuildUpdater>();
                 EnqueueJob<ReleaseDefinitionUpdater>();
+                EnqueueJob<BuildDefinitionUpdater>();
+                EnqueueJob<ReleaseDefinitionUpdater>();
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+
             fiveSecondTimer = new Timer(state =>
             {
-                EnqueueJob<PullRequestUpdater>();
-                EnqueueJob<CompletedPullRequestUpdater>();
-                EnqueueJob<JobRequestUpdater>();
+                logger.LogInformation("Updating information");
+                ExecuteJobs();
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
             
             logger.LogInformation($"Finished bootstrapping app in {DateTime.Now-startTime:g}");
+        }
+
+        private void ExecuteJobs()
+        {
+            ExecuteJob<BuildUpdater>();
+            ExecuteJob<PullRequestUpdater>();
+            ExecuteJob<CompletedPullRequestUpdater>();
+            ExecuteJob<JobRequestUpdater>();
+        }
+
+        private void ExecuteJob<T>() where T : UpdaterBase
+        {
+            serviceProvider.GetService<T>().Run();
         }
 
         private double RunUpdate<T>(HangFireStatusRepository hangFireStatusRepository, double percentLoaded, double stepSize) where T : UpdaterBase

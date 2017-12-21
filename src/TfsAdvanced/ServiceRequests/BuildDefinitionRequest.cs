@@ -40,9 +40,9 @@ namespace TfsAdvanced.ServiceRequests
                 new StringContent(
                     JsonConvert.SerializeObject(new BuildQueueRequest
                     {
-                        queue = new Id {id = definition.QueueId},
+                       // queue = new Id {id = definition.QueueId},
                         definition = new Id { id = definition.Id },
-                        project = new ProjectGuid { id = definition.Repository.Project.Id },
+                       // project = new ProjectGuid { id = definition.Repository.Project.Id },
                         sourceBranch = definition.DefaultBranch
                     }), Encoding.UTF8,
                     "application/json");

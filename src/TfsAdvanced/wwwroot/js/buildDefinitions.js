@@ -18,9 +18,9 @@ $(document)
                             buildDefinition.id +
                             '" />';
                         json[i][1] = buildDefinition.name;
-                        json[i][2] = buildDefinition.path;
+                        json[i][2] = buildDefinition.folder;
                         json[i][3] = '<a href="' + buildDefinition.url + '" target="_blank">' + buildDefinition.name + "</a>";
-                        json[i][4] = buildDefinition.repository.defaultBranch;
+                        json[i][4] = buildDefinition.defaultBranch;
                     }
 
 
