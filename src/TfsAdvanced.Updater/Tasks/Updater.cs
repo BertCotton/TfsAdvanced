@@ -11,7 +11,7 @@ namespace TfsAdvanced.Updater.Tasks
     public class Updater
     {
         private readonly ILogger<Updater> logger;
-        private Timer fiveSecondTimer;
+        private Timer quickUpdateTimer;
         private Timer thirtySecondTimer;
         private readonly IServiceProvider serviceProvider;
         
@@ -47,22 +47,15 @@ namespace TfsAdvanced.Updater.Tasks
             ScheduleJob<ProjectUpdater>(Cron.Hourly());
             ScheduleJob<RepositoryUpdater>(Cron.Hourly());
             ScheduleJob<PoolUpdater>(Cron.Hourly());
-       
-            thirtySecondTimer = new Timer(state =>
-            {
 
-                EnqueueJob<BuildDefinitionUpdater>();
-                EnqueueJob<BuildUpdater>();
-                EnqueueJob<ReleaseDefinitionUpdater>();
-                EnqueueJob<BuildDefinitionUpdater>();
-                EnqueueJob<ReleaseDefinitionUpdater>();
-            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(30));
-
-            fiveSecondTimer = new Timer(state =>
+            ScheduleJob<ReleaseDefinitionUpdater>(Cron.MinuteInterval(30));
+            ScheduleJob<BuildDefinitionUpdater>(Cron.MinuteInterval(30));
+            
+            quickUpdateTimer = new Timer(state =>
             {
                 logger.LogInformation("Updating information");
                 ExecuteJobs();
-            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
             
             logger.LogInformation($"Finished bootstrapping app in {DateTime.Now-startTime:g}");
         }
@@ -99,8 +92,7 @@ namespace TfsAdvanced.Updater.Tasks
 
         public void Stop()
         {
-            fiveSecondTimer?.Change(-1, -1);
-            thirtySecondTimer?.Change(-1, -1);
+            quickUpdateTimer?.Change(-1, -1);
         }
         
     }
