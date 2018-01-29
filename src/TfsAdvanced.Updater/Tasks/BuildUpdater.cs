@@ -24,6 +24,7 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly RequestData requestData;
         private readonly RepositoryRepository repositoryRepository;
         private readonly BuildDefinitionRepository buildDefinitionRepository;
+        private DateTime lastRequest;
     
         public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, ILogger<BuildUpdater> logger, RepositoryRepository repositoryRepository, BuildDefinitionRepository buildDefinitionRepository)
             :base(logger)
@@ -34,16 +35,17 @@ namespace TfsAdvanced.Updater.Tasks
             this.updateStatusRepository = updateStatusRepository;
             this.repositoryRepository = repositoryRepository;
             this.buildDefinitionRepository = buildDefinitionRepository;
+            lastRequest = DateTime.Now.AddDays(-3);
         }
 
         protected override void Update()
         {
-            DateTime yesterday = DateTime.Now.Date.AddDays(-1);
+            DateTime startTime = DateTime.Now;
             var builds = new ConcurrentStack<TFSAdvanced.Updater.Models.Builds.Build>();
             Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, project =>
             {
                 // Finished PR builds                    
-                var projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&minFinishTime={yesterday:O}").Result;
+                var projectBuilds = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.Build>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/builds?api-version=2.2&reasonFilter=validateShelveset&minFinishTime={lastRequest:O}").Result;
                 if (projectBuilds != null && projectBuilds.Any())
                 {
                     builds.PushRange(projectBuilds.ToArray());
@@ -74,6 +76,8 @@ namespace TfsAdvanced.Updater.Tasks
             var buildLists = builds.ToList();
             buildRepository.Update(buildLists.Select(CreateBuild));
             updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = buildLists.Count, UpdaterName = nameof(BuildUpdater)});
+            // Use the start time so that there is a small amount of overlap
+            lastRequest = startTime;   
         }
 
         private Build CreateBuild(TFSAdvanced.Updater.Models.Builds.Build build)
