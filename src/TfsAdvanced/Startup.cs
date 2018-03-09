@@ -43,37 +43,28 @@ namespace TfsAdvanced
 {
     public class Startup
     {
-        public static readonly int MAX_DEGREE_OF_PARALLELISM = -1;
-        private readonly string siteName = Environment.GetEnvironmentVariable("SiteName") ?? "ius";
-        public IConfigurationRoot Configuration { get; set; }
+        public IConfiguration Configuration { get; set; }
 
         public IList<Type> References;
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
-            // Set up configuration sources.
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{siteName}.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
-
+            Configuration = configuration;
             References = new List<Type>
             {
                 typeof(IdentityRole),
                 typeof(Options)
             };
-            
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
+        private void OnShutdown()
+        {
+        }
+
+        // This method gets called by the runtime. Use this method to add services to the container. For more information on how to configure your application,
+        // visit http://go.microsoft.com/fwlink/?LinkID=398940
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            
-
             services.AddEntityFrameworkInMemoryDatabase()
                 .AddDbContext<TfsAdvancedDataContext>();
 
@@ -83,8 +74,8 @@ namespace TfsAdvanced
 
             services.AddSession(options =>
             {
-                options.CookieHttpOnly = true;
-                options.CookieName = "TFSAdvanced";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.Name = "TFSAdvanced";
                 options.IdleTimeout = TimeSpan.FromHours(5);
             });
 
@@ -106,13 +97,11 @@ namespace TfsAdvanced
 
             builder.RegisterType<AuthenticationTokenProvider>();
 
-
             builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
 
             builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Models"))).AsSelf().SingleInstance();
             builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Updater"))).AsSelf().SingleInstance();
             builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.DataStore"))).AsSelf().SingleInstance();
-
 
             builder.RegisterType<AuthorizationRequest>().AsSelf().SingleInstance();
             builder.RegisterType<BuildDefinitionRequest>().AsSelf().SingleInstance();
@@ -125,10 +114,9 @@ namespace TfsAdvanced
             JsonConvert.DefaultSettings = () =>
             {
                 var settings = new JsonSerializerSettings();
-                settings.Converters.Add(new StringEnumConverter { CamelCaseText = true});
+                settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
                 return settings;
             };
-
 
             return serviceProvider;
         }
@@ -143,11 +131,23 @@ namespace TfsAdvanced
                     .MinimumLevel.Is(LogEventLevel.Information)
                     .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
                     .MinimumLevel.Override("System", LogEventLevel.Error)
-                    .WriteTo.ColoredConsole()
-                    .WriteTo.LiterateConsole()
-                ;
-            Log.Logger = loggerConfiguration.CreateLogger();
+                    .WriteTo.Console();
 
+            var seqUrl = Configuration["Logging:SeqUrl"];
+            var seqKey = Configuration["Logging:SeqKey"];
+            if (!string.IsNullOrEmpty(seqUrl))
+            {
+                loggerConfiguration.WriteTo.Seq(serverUrl: seqUrl, apiKey: seqKey);
+            }
+
+            if (env.IsDevelopment())
+            {
+                loggerConfiguration.WriteTo.Trace();
+            }
+
+            Log.Logger = loggerConfiguration.CreateLogger();
+            loggerFactory.AddDebug();
+            loggerFactory.AddSerilog();
 
             app.UseDeveloperExceptionPage();
             app.UseDefaultFiles();
@@ -182,32 +182,11 @@ namespace TfsAdvanced
 
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
-                Authorization = new []{new HangfireAuthorizationFilter()}
+                Authorization = new[] { new HangfireAuthorizationFilter() }
             });
             app.UseHangfireServer();
 
-   
-
-            var seqKey = Configuration["Logging:Seq:Key"];
-            if(!string.IsNullOrEmpty(seqKey))
-            {
-                var seqUrl = Configuration["Logging:Seq:Url"];
-                loggerConfiguration.WriteTo.Seq(serverUrl:seqUrl, apiKey:seqKey);
-            }
-
-            var applicationInsights = Configuration["Logging:ApplicationInsights:InstrumentationKey"];
-            if (!string.IsNullOrEmpty(applicationInsights))
-            {
-                loggerConfiguration.WriteTo.ApplicationInsightsTraces(instrumentationKey: applicationInsights);
-            }
-
-            if (env.IsDevelopment())
-            {
-                loggerConfiguration.WriteTo.Trace();
-            }
-
             TelemetryConfiguration.Active.DisableTelemetry = true;
-
 
             GlobalJobFilters.Filters.Add(new HangfireJobFilter());
 
@@ -225,7 +204,6 @@ namespace TfsAdvanced
                 await webSocket.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true, CancellationToken.None);
                 Thread.Sleep(1000);
             }
-            
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Timers;
 using Hangfire;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,10 +12,9 @@ namespace TfsAdvanced.Updater.Tasks
     public class Updater
     {
         private readonly ILogger<Updater> logger;
-        private Timer quickUpdateTimer;
-        private Timer thirtySecondTimer;
+        private System.Timers.Timer quickUpdateTimer;
         private readonly IServiceProvider serviceProvider;
-        
+
         public Updater(IServiceProvider serviceProvider, ILogger<Updater> logger)
         {
             this.logger = logger;
@@ -23,11 +23,10 @@ namespace TfsAdvanced.Updater.Tasks
 
         public void Start()
         {
-            
             logger.LogInformation("Starting bootstrapping app");
             DateTime startTime = DateTime.Now;
             // Initialize the updaters in order
-            double stepSize = 1.0/9.0;
+            double stepSize = 1.0 / 9.0;
             double percentLoaded = 0.0;
             var hangFireStatusRepository = serviceProvider.GetService<HangFireStatusRepository>();
             percentLoaded = RunUpdate<PoolUpdater>(hangFireStatusRepository, percentLoaded, stepSize);
@@ -50,22 +49,23 @@ namespace TfsAdvanced.Updater.Tasks
 
             ScheduleJob<ReleaseDefinitionUpdater>(Cron.MinuteInterval(30));
             ScheduleJob<BuildDefinitionUpdater>(Cron.MinuteInterval(30));
-            
-            quickUpdateTimer = new Timer(state =>
-            {
-                logger.LogInformation("Updating information");
-                ExecuteJobs();
-            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(10));
-            
-            logger.LogInformation($"Finished bootstrapping app in {DateTime.Now-startTime:g}");
+
+            quickUpdateTimer = new System.Timers.Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
+            quickUpdateTimer.Elapsed += ExecuteJobs;
+            quickUpdateTimer.AutoReset = true;
+            quickUpdateTimer.Enabled = true;
+
+            logger.LogInformation($"Finished bootstrapping app in {DateTime.Now - startTime:g}");
         }
 
-        private void ExecuteJobs()
+        private void ExecuteJobs(Object source, ElapsedEventArgs e)
         {
+            logger.LogInformation("Executing Update Jobs");
             ExecuteJob<BuildUpdater>();
             ExecuteJob<PullRequestUpdater>();
             ExecuteJob<CompletedPullRequestUpdater>();
             ExecuteJob<JobRequestUpdater>();
+            logger.LogInformation("Finished Update Jobs");
         }
 
         private void ExecuteJob<T>() where T : UpdaterBase
@@ -92,8 +92,6 @@ namespace TfsAdvanced.Updater.Tasks
 
         public void Stop()
         {
-            quickUpdateTimer?.Change(-1, -1);
         }
-        
     }
 }
