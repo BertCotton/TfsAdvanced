@@ -52,7 +52,7 @@
 
         </div>
     </div>
-    <div class="panel panel-default">
+    <div class="panel panel-default visible-lg">
         <div class="panel-heading">
             <h2>My Completed Pull Requests - Past 2 Days</h2>
         </div>
@@ -70,7 +70,7 @@
 
             <div id="myCompletedPullRequestsTable"></div>
         </div>
-        
+
     </div>
 </div>
 
@@ -82,11 +82,9 @@
         <div class="col-lg-4 col-md-12" style="padding: 5px">
             <h4>
                 <a style="color:darkslategray" href="${Url}" target="_blank">${Title}</a>
-		<span class="hidden-xs">
-                        {{if IsAutoCompleteSet}}
-                        <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up" title="Autocomplete Set"></i><span class="hidden-xs"></span></span><br/>
-                        {{/if}}
-                </span>
+                {{if IsAutoCompleteSet}}
+                <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up" title="Autocomplete Set"></i></span>
+                {{/if}}
             </h4>
             <h5>
                 <div>
@@ -96,8 +94,8 @@
                 </div>
             </h5>
             <div>
-                <span >
-                    
+                <span>
+
                     {{if BuildStatus == 'noBuild'}}
                     <span style="color:gray"><i class="glyphicon glyphicon-warning"></i> <span class="hidden-xs"> No Build Queued</span></span>
                     {{else}}
@@ -118,7 +116,7 @@
                     </a>
                     {{/if}}
                 </span>
-                <span >
+                <span>
                     |
                     {{if HasEnoughReviewers}}
                     <i class="glyphicon glyphicon-check" style="color: green"></i>
@@ -130,7 +128,7 @@
         </div>
         <div class="col-lg-2 hidden-xs">
             <a href="${Repository.Project.Url}" target="_blank">${Repository.Project.Name}</a>
-            <br/>
+            <br />
             <a href="${Repository.Url}" target="_blank">${Repository.Name}</a>
         </div>
         <div class="col-lg-2 hidden-xs">
@@ -148,59 +146,54 @@
         <div class="col-lg-4 col-md-12" style="padding: 5px">
             <h4>
                 <a style="color:darkslategray" href="${Url}" target="_blank">${Title}</a>
+                {{if IsAutoCompleteSet}}
+                <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up" title="Autocomplete Set"></i></span>
+                {{/if}}
             </h4>
             <h5>
-                <div>
-                    <span class="hidden-xs">
-                        {{if isAutoCompleteSet}}
-                        <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up"></i><span class="hidden-xs"> AutoComplete Set</span></span><br/>
-                        {{/if}}
-                    </span>
-                    {{if MergeStatus == 'Failed'}}
-                    <span style="color:red"><i class="glyphicon glyphicon-remove"></i><span class="hidden-xs"> Merge Conflicts</span></span>
-                    {{/if}}
-                </div>
+
+                {{if MergeStatus == 'Failed'}}
+                <span style="color:red"><i class="glyphicon glyphicon-remove"></i>Merge Conflicts</span>
+                {{/if}}
             </h5>
             <div>
-                <span >
-                    
+                <span>
                     {{if BuildStatus == 'noBuild'}}
-                    <span style="color:gray"><i class="glyphicon glyphicon-warning"></i> <span class="hidden-xs"> No Build Queued</span></span>
+                    <span style="color:gray"><i class="glyphicon glyphicon-warning"></i>No Build Queued</span>
                     {{else}}
                     <a href="${BuildUrl}" target="_blank">
                         {{if BuildStatus == 'notStarted'}}
-                        <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Not Started</span></span>
+                        <span style="color:gray"><i class="glyphicon glyphicon-fire"></i>Build Not Started</span>
                         {{else BuildStatus == 'building'}}
-                        <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build In Progress</span></span>
+                        <span style="color:blue"><i class="glyphicon glyphicon-fire"></i> Build In Progress</span>
                         {{else BuildStatus == 'expired'}}
-                        <span style="color:darkorange"><i class="glyphicon glyphicon-alert"></i> <span class="hidden-xs"> Build Expired</span></span>
+                        <span style="color:darkorange"><i class="glyphicon glyphicon-alert"></i> Build Expired</span>
                         {{else BuildStatus == 'succeeded'}}
-                        <span style="color:green"><i class="glyphicon glyphicon-check"></i> <span class="hidden-xs"> Build Succeeded</span></span>
+                        <span style="color:green"><i class="glyphicon glyphicon-check"></i>Build Succeeded</span>
                         {{else BuildStatus == 'failed'}}
-                        <span style="color:red"><i class="glyphicon glyphicon-remove"></i> <span class="hidden-xs"> Build Failed</span></span>
+                        <span style="color:red"><i class="glyphicon glyphicon-remove"></i>Build Failed</span>
                         {{else}}
                         <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${BuildStatus}</span>
                         {{/if}}
                     </a>
                     {{/if}}
                 </span>
-                <span >
+                <span>
                     |
                     {{if HasEnoughReviewers}}
                     <i class="glyphicon glyphicon-check" style="color: green"></i>
                     {{else}}
                     <i class="glyphicon glyphicon-remove" style="color: red"></i>
                     {{/if}}
-                </span><span class="hidden-xs">  ${AcceptedReviewers} of ${RequiredReviewers} Required Reviewers</span>
+                </span>${AcceptedReviewers} of ${RequiredReviewers} Required Reviewers
             </div>
         </div>
         <div class="col-lg-2 hidden-xs">
             <a href="${Repository.Project.Url}" target="_blank">${Repository.Project.Name}</a>
-            <br/>
+            <br />
             <a href="${Repository.Url}" target="_blank">${Repository.Name}</a>
         </div>
-        <div class="col-lg-2 padding col-md-12">
-            <span class="visible-xs">Created By: </span>
+        <div class="col-lg-2 padding col-md-12 hidden-xs">
             <div class="media">
                 <div class="media-left">
                     <img class="media-object" src="${Creator.IconUrl}" alt="User Photo" height="30" width="30">
@@ -208,12 +201,22 @@
                 <div class="media-body">
                     <h5 class="media-heading">
                         ${Creator.Name}
-                        <br/>(<span class="datetime-pretty hidden-xs">${CreatedDate}</span>)
+                        <br />(<span class="datetime-pretty hidden-xs">${CreatedDate}</span>)
                     </h5>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 col-md-12 padding reviewers">
+        <div class="col-lg-4 col-md-12 padding reviewers hidden-xs">
+            <span class="visible-xs">Reviewers: </span>
+            {{tmpl(Reviewers) "#reviewersTemplate"}}
+        </div>
+        <div class="col-xs-4 hidden-sm hidden-md hidden-lg">
+            Created By
+            <div class="media-left">
+                <img class="media-object" src="${Creator.IconUrl}" alt="User Photo" height="30" width="30">
+            </div>
+        </div>
+        <div class="col-xs-8  hidden-sm hidden-md hidden-lg">
             <span class="visible-xs">Reviewers: </span>
             {{tmpl(Reviewers) "#reviewersTemplate"}}
         </div>
@@ -222,14 +225,14 @@
 
 <script id="completedPullRequestTemplate" type="text/x-jQuery-tmpl">
     <div class="row striped">
-    <div class="col-lg-4 col-md-12" style="padding: 5px">
-        <h4>
-            <a style="color:darkslategray" href="${Url}" target="_blank">${Title}</a>
-        </h4>
+        <div class="col-lg-4 col-md-12" style="padding: 5px">
+            <h4>
+                <a style="color:darkslategray" href="${Url}" target="_blank">${Title}</a>
+            </h4>
         </div>
         <div class="col-lg-2 hidden-xs">
             <a href="${Repository.Project.Url}" target="_blank">${Repository.Project.Name}</a>
-            <br/>
+            <br />
             <a href="${Repository.Url}" target="_blank">${Repository.Name}</a>
         </div>
         <div class="col-lg-2 padding col-md-12">
@@ -245,12 +248,13 @@
 <script id="reviewersTemplate" type="text/x-jQuery-tmpl">
     <div>
         <div class="media">
-            <div class="media-left"><img class="media-object" src="${IconUrl}" alt="User Photo" height="30" width="30">
-                
+            <div class="media-left">
+                <img class="media-object" src="${IconUrl}" alt="User Photo" height="30" width="30">
+
             </div>
-            
-            <div class="media-body hidden-xs">
-                ${Name} | 
+
+            <div class="media-body">
+                <span class="visible-lg">${Name} |</span>
                 <span>
                     {{if ReviewStatus == 'approved'}}
                     <span style="color: green"><b>Approved</b></span>

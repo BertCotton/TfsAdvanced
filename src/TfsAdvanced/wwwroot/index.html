@@ -2,12 +2,12 @@
 <meta charset="utf-8">
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="utf-8">
     <title>TFS Advanced</title>
     <meta name="description" content="">
-    <meta name="viewport" content="width=device-width">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.13/css/jquery.dataTables.min.css" />
     <link rel="stylesheet" href="/css/site.css" />
     <style type="text/css">
         .nav li {
@@ -16,207 +16,222 @@
     </style>
 </head>
 <body ng-controller="MainController">
-<nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
-    <span class="navbar-brand nav-link" id="brand">TFS Advanced</span>
-    <ul class="nav navbar-nav hidden-xs" style="display: none">
-        <li>
-            <a id="pullRequestLink" class="nav-link" onclick="navigateTo(this, '/views/pullRequests.html')">Pull Requests</a>
-        </li>
-        <li>
-            <a class="nav-link" onclick="navigateTo(this, '/views/buildDefinitions.html')">Build Definitions</a>
-        </li>
-        <li>
-            <a class="nav-link" onclick="navigateTo(this, '/views/jobRequests.html')">Build & Release Jobs</a>
-        </li>
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Statistics <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-                <li ng-class="{active : isActive('/updateStatus')}">
-                    <a class="nav-link" onclick="navigateTo(this, '/views/updateStatus.html')">Update Statuses</a>
-                </li>
-            </ul>
-        </li>
-    </ul>
-</nav>
-<div style="margin-top: 52px" id="mainPage">
-    <div class="container">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h2 class="text-center">TFS Advanced is Loading</h2>
-            </div>
-            <div class="panel-body">
-                <div class="progress" style="display: none" >
-                    <span class="progress-value" style="color:black">
-                        Please wait while the app is finished loading. (<span id="loadPercent">0</span>%)
-                    </span>
-                    <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" >
-
-                    </div>
+    <nav class="navbar navbar-fixed-top navbar-dark bg-inverse" ng-controller="NavController">
+        <span class="navbar-brand nav-link" id="brand">TFS Advanced</span>
+        <ul class="nav navbar-nav hidden-xs" style="display: none">
+            <li>
+                <a id="pullRequestLink" class="nav-link" onclick="navigateTo(this, '/views/pullRequests.html')">Pull Requests</a>
+            </li>
+            <li>
+                <a class="nav-link" onclick="navigateTo(this, '/views/buildDefinitions.html')">Build Definitions</a>
+            </li>
+            <li>
+                <a class="nav-link" onclick="navigateTo(this, '/views/jobRequests.html')">Build & Release Jobs</a>
+            </li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Statistics <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li ng-class="{active : isActive('/updateStatus')}">
+                        <a class="nav-link" onclick="navigateTo(this, '/views/updateStatus.html')">Update Statuses</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div style="margin-top: 52px" id="mainPage">
+        <div class="container">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="text-center">TFS Advanced is Loading</h2>
                 </div>
-                
+                <div class="panel-body">
+                    <div class="progress" style="display: none">
+                        <span class="progress-value" style="color:black">
+                            Please wait while the app is finished loading. (<span id="loadPercent">0</span>%)
+                        </span>
+                        <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-dateFormat/1.0/jquery.dateFormat.min.js" ></script>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery.templates/beta1/jquery.tmpl.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.13/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-dateFormat/1.0/jquery.dateFormat.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
 
-<script>
-    google.charts.load('current', { packages: ['corechart', 'bar'] });
+    <script>
+        var notificationsAllowed = false;
+        google.charts.load('current', { packages: ['corechart', 'bar'] });
 
-    $.ajaxSetup({
-        error: function(xhr, status, error) {
-            var statusCode = xhr.status;
-            if (statusCode === 403 || statusCode === 401) {
-                console.log("Received response code " + statusCode + " from server.  Redirecting to login");
-                window.location = "/data/Login";
-                return;
-            }
-
-            console.log("Error response [" + status + "] from server.", error);
-        }
-    });
-
-    function navigateTo(caller, url) {
-        $("li.active").removeClass("active");
-        $("#mainPage").load(url);
-        $(caller).parent().addClass("active");
-    }
-
-    var isLoaded = false;
-
-    function checkStatus() {
-        $.get({
-            url: "/health/LoadedStatus",
-            success: function(data) {
-                isLoaded = data.isLoaded;
-                if (!isLoaded) {
-                    var loadedPercent = (data.loadedPercent * 100.0);
-                    if (loadedPercent > 100)
-                        loadedPercent = 100;
-
-                    $("#loadPercent").html(loadedPercent);
-                    $(".progress").show();
-                    $(".progress-bar").width(loadedPercent + "%");
-                    window.setTimeout(checkStatus, 5000);
-                } else {
-                    $("#pullRequestLink").click();
-                    $("ul.nav").show();
+        $.ajaxSetup({
+            error: function (xhr, status, error) {
+                var statusCode = xhr.status;
+                if (statusCode === 403 || statusCode === 401) {
+                    console.log("Received response code " + statusCode + " from server.  Redirecting to login");
+                    window.location = "/data/Login";
+                    return;
                 }
+
+                console.log("Error response [" + status + "] from server.", error);
             }
         });
-    };
 
-    
-    function FullRefresh() {
-        console.log("Full Refresh");
-        window.location = "/";
-        // 10 Minutes
-        setTimeout(FullRefresh, 600000);
-    }
-    
-    $(document)
-        .ready(function () {
+        function navigateTo(caller, url) {
+            $("li.active").removeClass("active");
+            $("#mainPage").load(url);
+            $(caller).parent().addClass("active");
+        }
 
+        var isLoaded = false;
+
+        function checkStatus() {
+            $.get({
+                url: "/health/LoadedStatus",
+                error: function (xhr) {
+                    var statusCode = xhr.status;
+                    if (statusCode === 403 || statusCode === 401) {
+                        console.log("Received response code " + statusCode + " from server.  Redirecting to login");
+                        window.location = "/data/Login";
+                        return;
+                    }
+                },
+                success: function (data) {
+                    isLoaded = data.isLoaded;
+                    if (!isLoaded) {
+                        var loadedPercent = (data.loadedPercent * 100.0);
+                        if (loadedPercent > 100)
+                            loadedPercent = 100;
+
+                        $("#loadPercent").html(loadedPercent);
+                        $(".progress").show();
+                        $(".progress-bar").width(loadedPercent + "%");
+                        window.setTimeout(checkStatus, 5000);
+                    } else {
+                        $("#pullRequestLink").click();
+                        $("ul.nav").show();
+                    }
+                }
+            });
+        };
+
+
+        function FullRefresh() {
+            console.log("Full Refresh");
+            window.location = "/";
             // 10 Minutes
             setTimeout(FullRefresh, 600000);
+        }
 
-            $.fn.dataTable.ext.errMode = 'none';
+        $(document)
+            .ready(function () {
 
+                // 10 Minutes
+                setTimeout(FullRefresh, 600000);
 
-            if (Notification.permission !== "granted")
-                Notification.requestPermission();
-            checkStatus();
+                $.fn.dataTable.ext.errMode = 'none';
 
-            $('.nav a').on('click', function () {
-                if ($("#navbar").is(":visible"))
-                    $('.navbar-toggle').click();
-            });
-            console.log("Clearing Storage");
-            localStorage.clear();
-
-            let socket = new WebSocket("wss://" + window.location.host + "/ws");
-            socket.onmessage  = function (event) {
-                var message = JSON.parse(event.data);
-                
-                var messageType = message["Type"];
-                var data = message["Data"];
-                localStorage.setItem("HasUpdate", "true");
-                console.log("Message Push.  Type :", messageType, ", Count: ", data.length);
-                $("#brand").attr('title', "Last Server Response: " + new Date());
-                switch (messageType) {
-                    case "newPullRequest":
-                        NotificationToast(data);
-                        break;
-                    case "updatedCurrentUserPullRequest":
-                        localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
-                        //window.dispatchEvent(newMyPullRequestsEvent);
-                        break;
-                    case "updatedPullRequest":
-                        localStorage.setItem("PullRequests", JSON.stringify(data));
-                        console.log("Updated pull requests");
-                        //window.dispatchEvent(updatedPullRequestsEvent);
-                        break;
-                    case "currentUserCompletedPullRequest":
-                        localStorage.setItem("CurrentUserCompletedPullRequests", JSON.stringify(data));
-                        //window.dispatchEvent(newCompletedPullRequestsEvent);
-                        break;
-                    case "newCurrentUserCompletedPullRequest":
-                        CurrentUserCompletedPullRequestNotificationToast(data);
-                        break;
+                if (window.Notification) {
+                    notificationsAllowed = true;
+                    if (Notification.permission !== "granted")
+                        Notification.requestPermission();
                 }
-                
-            };
-            
-        });
+                checkStatus();
 
-    function CurrentUserCompletedPullRequestNotificationToast(pullRequests) {
-        $.each(pullRequests,
-            function(index, pullRequest) {
-                var notification = new Notification('Your Pull Request Was Completed!',
-                    {
-                        icon: '/images/thumbs-up.png',
-                        body: pullRequest.Repository.Name + " | " + pullRequest.Title
+                $('.nav a').on('click', function () {
+                    if ($("#navbar").is(":visible"))
+                        $('.navbar-toggle').click();
+                });
+                console.log("Clearing Storage");
+                localStorage.clear();
 
-                    });
+                let socket = new WebSocket("wss://" + window.location.host + "/ws");
+                socket.onmessage = function (event) {
+                    var message = JSON.parse(event.data);
 
-                notification.onclick = function (event) {
-                    event.preventDefault();
-                    window.open(pullRequest.Url, '_blank');
-                    notification.close().bind(notification);
+                    var messageType = message["Type"];
+                    var data = message["Data"];
+                    localStorage.setItem("HasUpdate", "true");
+                    console.log("Message Push.  Type :", messageType, ", Count: ", data.length);
+                    $("#brand").attr('title', "Last Server Response: " + new Date());
+                    switch (messageType) {
+                        case "newPullRequest":
+                            NotificationToast(data);
+                            break;
+                        case "updatedCurrentUserPullRequest":
+                            localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
+                            //window.dispatchEvent(newMyPullRequestsEvent);
+                            break;
+                        case "updatedPullRequest":
+                            localStorage.setItem("PullRequests", JSON.stringify(data));
+                            console.log("Updated pull requests");
+                            //window.dispatchEvent(updatedPullRequestsEvent);
+                            break;
+                        case "currentUserCompletedPullRequest":
+                            localStorage.setItem("CurrentUserCompletedPullRequests", JSON.stringify(data));
+                            //window.dispatchEvent(newCompletedPullRequestsEvent);
+                            break;
+                        case "newCurrentUserCompletedPullRequest":
+                            CurrentUserCompletedPullRequestNotificationToast(data);
+                            break;
+                    }
+
                 };
 
-
             });
-    }
 
-    function NotificationToast(pullRequests) {
-        $.each(pullRequests,
-            function(index, pullRequest) {
-                console.log("New PullRequest: ", pullRequest);
-                var notification = new Notification('New Pull Request from ' + pullRequest.Creator.Name,
-                    {
-                        icon: '/images/site.png',
-                        body: pullRequest.Repository.Name + " | " + pullRequest.Title
+        function CurrentUserCompletedPullRequestNotificationToast(pullRequests) {
+            if (notificationsAllowed == false)
+                return;
+            $.each(pullRequests,
+                function (index, pullRequest) {
+                    var notification = new Notification('Your Pull Request Was Completed!',
+                        {
+                            icon: '/images/thumbs-up.png',
+                            body: pullRequest.Repository.Name + " | " + pullRequest.Title
 
-                    });
+                        });
 
-                notification.onclick = function (event) {
-                    event.preventDefault();
-                    window.open(pullRequest.Url, '_blank');
-                    notification.close().bind(notification);
-                };
+                    notification.onclick = function (event) {
+                        event.preventDefault();
+                        window.open(pullRequest.Url, '_blank');
+                        notification.close().bind(notification);
+                    };
 
 
-            });
-    }
-</script>
+                });
+        }
+
+        function NotificationToast(pullRequests) {
+            if (notificationsAllowed == false)
+                return;
+            $.each(pullRequests,
+                function (index, pullRequest) {
+                    console.log("New PullRequest: ", pullRequest);
+                    var notification = new Notification('New Pull Request from ' + pullRequest.Creator.Name,
+                        {
+                            icon: '/images/site.png',
+                            body: pullRequest.Repository.Name + " | " + pullRequest.Title
+
+                        });
+
+                    notification.onclick = function (event) {
+                        event.preventDefault();
+                        window.open(pullRequest.Url, '_blank');
+                        notification.close().bind(notification);
+                    };
+
+
+                });
+        }
+    </script>
 </body>
 </html>
