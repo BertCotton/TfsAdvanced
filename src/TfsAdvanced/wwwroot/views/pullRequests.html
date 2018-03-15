@@ -86,16 +86,15 @@
                 <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up" title="Autocomplete Set"></i></span>
                 {{/if}}
             </h4>
-            <h5>
-                <div>
-                    {{if MergeStatus == 'failed'}}
-                    <span style="color:red"><i class="glyphicon glyphicon-remove"></i><span class="hidden-xs"> Merge Conflicts</span></span>
-                    {{/if}}
-                </div>
-            </h5>
+            {{if MergeStatus == 'failed'}}
+                <h5>
+                    <div>
+                        <span style="color:red"><i class="glyphicon glyphicon-remove"></i><span class="hidden-xs"> Merge Conflicts</span></span>
+                    </div>
+                </h5>
+            {{/if}}
             <div>
                 <span>
-
                     {{if BuildStatus == 'noBuild'}}
                     <span style="color:gray"><i class="glyphicon glyphicon-warning"></i> <span class="hidden-xs"> No Build Queued</span></span>
                     {{else}}
@@ -110,6 +109,8 @@
                         <span style="color:green"><i class="glyphicon glyphicon-check"></i> <span class="hidden-xs"> Build Succeeded</span></span>
                         {{else BuildStatus == 'failed'}}
                         <span style="color:red"><i class="glyphicon glyphicon-remove"></i> <span class="hidden-xs"> Build Failed</span></span>
+                        {{else BuildStatus == 'cancelled'}}
+                        <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Canceled</span></span>
                         {{else}}
                         <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${BuildStatus}</span>
                         {{/if}}
@@ -150,12 +151,11 @@
                 <span style="color:goldenrod"><i class="glyphicon glyphicon-thumbs-up" title="Autocomplete Set"></i></span>
                 {{/if}}
             </h4>
+            {{if MergeStatus == 'Failed'}}
             <h5>
-
-                {{if MergeStatus == 'Failed'}}
                 <span style="color:red"><i class="glyphicon glyphicon-remove"></i>Merge Conflicts</span>
-                {{/if}}
             </h5>
+            {{/if}}
             <div>
                 <span>
                     {{if BuildStatus == 'noBuild'}}
@@ -172,6 +172,8 @@
                         <span style="color:green"><i class="glyphicon glyphicon-check"></i>Build Succeeded</span>
                         {{else BuildStatus == 'failed'}}
                         <span style="color:red"><i class="glyphicon glyphicon-remove"></i>Build Failed</span>
+                        {{else BuildStatus == 'cancelled'}}
+                        <span style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Canceled</span></span>
                         {{else}}
                         <span style="color:orange"><i class="glyphicon glyphicon-remove"></i> ${BuildStatus}</span>
                         {{/if}}
@@ -254,7 +256,7 @@
             </div>
 
             <div class="media-body">
-                <span class="visible-lg">${Name} |</span>
+                <span class="visible-lg">${Name}</span>
                 <span>
                     {{if ReviewStatus == 'approved'}}
                     <span style="color: green"><b>Approved</b></span>
