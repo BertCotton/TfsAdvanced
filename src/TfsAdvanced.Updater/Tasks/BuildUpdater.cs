@@ -26,7 +26,10 @@ namespace TfsAdvanced.Updater.Tasks
         private readonly BuildDefinitionRepository buildDefinitionRepository;
         private DateTime lastRequest;
 
-        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, ILogger<BuildUpdater> logger, RepositoryRepository repositoryRepository, BuildDefinitionRepository buildDefinitionRepository)
+        public BuildUpdater(BuildRepository buildRepository, RequestData requestData, ProjectRepository projectRepository,
+            UpdateStatusRepository updateStatusRepository,
+            RepositoryRepository repositoryRepository, BuildDefinitionRepository buildDefinitionRepository,
+            ILogger<BuildUpdater> logger)
             : base(logger)
         {
             this.buildRepository = buildRepository;

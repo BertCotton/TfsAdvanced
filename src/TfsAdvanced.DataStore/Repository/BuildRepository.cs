@@ -8,7 +8,6 @@ namespace TfsAdvanced.DataStore.Repository
 {
     public class BuildRepository : RepositoryBase<Build>
     {
-        
         public Build GetBuild(int buildId)
         {
             return base.Get(b => b.Id == buildId);
@@ -29,6 +28,11 @@ namespace TfsAdvanced.DataStore.Repository
             return build;
         }
 
+        public IList<Build> GetLatestPerRepository()
+        {
+            return base.GetAll().GroupBy(x => x.Repository).Select(x => x.OrderByDescending(y => y.QueuedDate).Where(z => z.BuildStatus != BuildStatus.Building && z.BuildStatus != BuildStatus.NotStarted).FirstOrDefault()).ToList();
+        }
+
         protected override int GetId(Build item)
         {
             return item.Id;
@@ -42,5 +46,4 @@ namespace TfsAdvanced.DataStore.Repository
             return updated;
         }
     }
-    
 }

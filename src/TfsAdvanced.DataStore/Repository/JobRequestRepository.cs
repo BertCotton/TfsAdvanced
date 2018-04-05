@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.DTO;
 
@@ -9,11 +10,11 @@ namespace TfsAdvanced.DataStore.Repository
     {
         public IEnumerable<QueueJob> GetJobRequests(DateTime? fromDate = null, DateTime? toDate = null)
         {
-            if(fromDate.HasValue && toDate.HasValue)
-              return base.GetList(x => x.QueuedTime >= fromDate.Value && x.QueuedTime <= toDate.Value);
+            if (fromDate.HasValue && toDate.HasValue)
+                return base.GetList(x => x.QueuedTime >= fromDate.Value && x.QueuedTime <= toDate.Value);
             if (fromDate.HasValue)
                 return base.GetList(x => x.QueuedTime >= fromDate.Value);
-            if(toDate.HasValue)
+            if (toDate.HasValue)
                 return base.GetList(x => x.QueuedTime <= toDate.Value);
 
             return GetAll();
@@ -30,6 +31,18 @@ namespace TfsAdvanced.DataStore.Repository
         protected override int GetId(QueueJob item)
         {
             return item.RequestId;
+        }
+
+        public IList<QueueJob> GetLatestPerRepository()
+        {
+            ISet<QueueJobStatus> filteredStatuses = new HashSet<QueueJobStatus>
+            {
+                QueueJobStatus.Assigned,
+                QueueJobStatus.Building,
+                QueueJobStatus.Queued,
+                QueueJobStatus.Deploying
+            };
+            return base.GetAll().GroupBy(x => x.Name).Select(x => x.OrderByDescending(y => y.QueuedTime).Where(z => !filteredStatuses.Contains(z.QueueJobStatus)).FirstOrDefault()).Where(x => x != null).ToList();
         }
     }
 }
