@@ -20,48 +20,55 @@
     }
 
 </style>
-<div class="container">
-    <div class="row">
-        <div class="panel">
-            <div class="panel-heading">
-                <h1>Failed Builds</h1>
-            </div>
-            <div class="panel-body">
-                <div data-bind="foreach:builds">
-                    <div class="col-lg-4">
-                        <div class=" panel panel-danger">
-                            <div class="panel-heading clearfix" data-bind="css : {
+<div class="container" id="dashboards">
+    <div class="row" data-bind="visible: false">
+        <div class="col-lg-6 col-lg-offset-3 text-center">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    <div class="container-fluid" style="display: none;" data-bind="visible: true">
+        <div class="row">
+            <div class="panel">
+                <div class="panel-heading">
+                    <h1>Failed Builds</h1>
+                </div>
+                <div class="panel-body">
+                    <div data-bind="foreach:builds">
+                        <div class="col-lg-4">
+                            <div class=" panel panel-danger">
+                                <div class="panel-heading clearfix" data-bind="css : {
                                     'pulse' : $root.isNewBuild($data)
                                  }">
-                                <a data-bind="attr: {href: url}, text: name" target="_blank"></a>
-                                <br /><span data-bind="text: repository.project.name"></span>
-                            </div>
-                            <div class="panel-body">
-                                <span data-bind="text: moment(finishedDate).format('MMMM Do YYYY, h:mm:ss a')"></span>
+                                    <a data-bind="attr: {href: url}, text: name" target="_blank"></a>
+                                    <br /><span data-bind="text: repository.project.name"></span>
+                                </div>
+                                <div class="panel-body">
+                                    <span data-bind="text: moment(finishedDate).format('MMMM Do YYYY, h:mm:ss a')"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row clearfix">
-        <div class="panel">
-            <div class="panel-heading">
-                <h1>Failed Releases</h1>
-            </div>
-            <div class="panel-body">
-                <div data-bind="foreach:releases">
-                    <div class="col-lg-4">
-                        <div class=" panel panel-danger">
-                            <div class="panel-heading clearfix" data-bind="css : {
+        <div class="row clearfix">
+            <div class="panel">
+                <div class="panel-heading">
+                    <h1>Failed Releases</h1>
+                </div>
+                <div class="panel-body">
+                    <div data-bind="foreach:releases">
+                        <div class="col-lg-4">
+                            <div class=" panel panel-danger">
+                                <div class="panel-heading clearfix" data-bind="css : {
                                     'pulse' : $root.isNewRelease($data)
                                  }">
-                                <a data-bind="attr: {href: url}, text: name" target="_blank"></a>
-                                <br /><span data-bind="text: project.name"></span>
-                            </div>
-                            <div class="panel-body">
-                                <span data-bind="text: moment(finishedTime).format('MMMM Do YYYY, h:mm:ss a')"></span>
+                                    <a data-bind="attr: {href: url}, text: name" target="_blank"></a>
+                                    <br /><span data-bind="text: project.name"></span>
+                                </div>
+                                <div class="panel-body">
+                                    <span data-bind="text: moment(finishedTime).format('MMMM Do YYYY, h:mm:ss a')"></span>
+                                </div>
                             </div>
                         </div>
                     </div>

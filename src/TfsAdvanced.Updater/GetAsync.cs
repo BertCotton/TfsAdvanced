@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -11,25 +12,47 @@ namespace TfsAdvanced.Updater
     {
         public static async Task<T> Fetch<T>(RequestData requestData, string url)
         {
-            var response = await requestData.HttpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-                throw new BadRequestException(url, response.StatusCode);
+            try
+            {
+                var response = await requestData.HttpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                    throw new BadRequestException(url, response.StatusCode);
 
-            return await JsonDeserializer.Deserialize<T>(response);
+                return await JsonDeserializer.Deserialize<T>(response);
+            }
+            catch (BadRequestException)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                return default(T);
+            }
         }
 
         public static async Task<List<T>> FetchResponseList<T>(RequestData requestData, string url)
         {
-            var response = await requestData.HttpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
-                throw new BadRequestException(url, response.StatusCode);
-
-            var responseContext = await response.Content.ReadAsStringAsync();
-            var items = JsonConvert.DeserializeObject<Response<IEnumerable<T>>>(responseContext, new JsonSerializerSettings
+            try
             {
-                DateTimeZoneHandling = DateTimeZoneHandling.Local
-            });
-            return items.value.ToList();
+                var response = await requestData.HttpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                    throw new BadRequestException(url, response.StatusCode);
+
+                var responseContext = await response.Content.ReadAsStringAsync();
+                var items = JsonConvert.DeserializeObject<Response<IEnumerable<T>>>(responseContext, new JsonSerializerSettings
+                {
+                    DateTimeZoneHandling = DateTimeZoneHandling.Local
+                });
+                return items.value.ToList();
+            }
+            catch (BadRequestException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                return new List<T>();
+            }
         }
     }
 }

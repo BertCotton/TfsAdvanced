@@ -1,4 +1,16 @@
-﻿fetchData();
+﻿
+
+var local = undefined;
+var isLoaded = false;
+
+$(function () {
+    local = {
+        viewModel: new viewModel()
+    };
+    
+    ko.applyBindings(local.viewModel, document.getElementById("pullRequests"));
+    fetchData();
+});
 
 $("#myCompletedPullRequestPanel").on("click",
     function() {
@@ -6,16 +18,15 @@ $("#myCompletedPullRequestPanel").on("click",
     });
 
 function fetchData() {
-    if (localStorage.getItem("HasUpdate") === "true") {
+
+    if (localStorage.getItem("HasUpdate") === "true" || isLoaded == false) {
         HandlMyPullRequests();
         HandleTeamPullRequests();
         HandleMyCompletedPullRequests();
 
         formatPage();
-        //window.addEventListener(updatedPullRequestsEvent, HandleTeamPullRequests, false);
-        //window.addEventListener(newCompletedPullRequestsEvent, HandleMyCompletedPullRequests, false);
-        //window.addEventListener(newMyPullRequestsEvent, HandlMyPullRequests, false);
         localStorage.setItem("HasUpdate", "false");
+        loaded = true;
     }
     window.setTimeout(fetchData, 500);
 
@@ -35,8 +46,9 @@ function HandlMyPullRequests() {
     } else {
         $("#myPullRequests").show();
         $("#myPullRequestCount").html(myPullRequests.length);
-        sortByDate(myPullRequests);
-        $("#myPullRequestsTable").html($("#myPullRequestTemplate").tmpl(myPullRequests));
+        var viewModel = local.viewModel;
+        UnionArrays(viewModel.myPullRequests, myPullRequests, "Id");
+        SortByKeyDesc(viewModel.myPullRequests, "CreatedDate");
     }
 }
 
@@ -53,51 +65,31 @@ function HandleTeamPullRequests(event) {
         $("#pullRequestHeader").show();
         $("#pullRequests").show();
         $("#NoPullRequests").hide();
-        sortByDate(pullRequests);
-        $("#pullRequests").html($("#pullRequestTemplate").tmpl(pullRequests));
+        var viewModel = local.viewModel;
+        UnionArrays(viewModel.teamPullRequests, pullRequests, "Id");
+        SortByKeyDesc(viewModel.teamPullRequests, "CreatedDate");
     }
 }
 
-function sortByDate(pullRequests, reverse = false) {
-    if (!pullRequests)
-        return;
-    pullRequests.sort(function (a, b) {
-        var aDate = new Date(a.CreatedDate).getTime();
-        var bDate = new Date(b.CreatedDate).getTime();
-        if (aDate === bDate)
-            return 0;
-        if (aDate > bDate)
-            return reverse ? -1 : 1;
-        else
-            return reverse ? 1 : -1;
-    });
-}
-
-function sortByClosedDate(pullRequests, reverse = false) {
-    if (!pullRequests)
-        return;
-    pullRequests.sort(function (a, b) {
-        var aDate = new Date(a.ClosedDate).getTime();
-        var bDate = new Date(b.ClosedDate).getTime();
-        if (aDate === bDate)
-            return 0;
-        if (aDate > bDate)
-            return reverse ? -1 : 1;
-        else
-            return reverse ? 1 : -1;
-    });
-}
-
-
 function HandleMyCompletedPullRequests() {
     var pullRequests = JSON.parse(localStorage.getItem("CurrentUserCompletedPullRequests"));
-    if(!pullRequests)
+    if (!pullRequests)
         return;
     else if (pullRequests.length === 0) {
         $("#myCompletedPullRequestsTable").hide();
     } else {
         $("#myCompletedPullRequestsTable").show();
-        sortByClosedDate(pullRequests, true);
-        $("#myCompletedPullRequestsTable").html($("#completedPullRequestTemplate").tmpl(pullRequests));
+        var viewModel = local.viewModel;
+        UnionArrays(viewModel.myCompletedPullRequests, pullRequests, "Id");
+        SortByKeyDesc(viewModel.myCompletedPullRequests, "ClosedDate");
     }
+}
+
+
+
+var viewModel = function () {
+    self = this;
+    self.teamPullRequests = ko.observableArray([]);
+    self.myPullRequests = ko.observableArray([]);
+    self.myCompletedPullRequests = ko.observableArray([]);
 }
