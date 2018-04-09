@@ -28,7 +28,7 @@ namespace TfsAdvanced.Web.Controllers
 
             var latestReleases = jobRequestRepository.GetLatestPerRepository();
 
-            var failedReleases = latestReleases.Where(x => x.QueueJobStatus != TFSAdvanced.Models.DTO.QueueJobStatus.Succeeded);
+            var failedReleases = latestReleases.Where(x => x.JobType == TFSAdvanced.Models.DTO.JobType.Release && x.QueueJobStatus != TFSAdvanced.Models.DTO.QueueJobStatus.Succeeded);
 
             return Ok(new Dictionary<string, object>
             {
