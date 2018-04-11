@@ -30,9 +30,15 @@
         <div class="row">
             <div class="panel">
                 <div class="panel-heading">
-                    <h1>Failed Builds</h1>
+                    <h1>Failed Builds (<span data-bind="text: builds().length"></span>)</h1>
                 </div>
                 <div class="panel-body">
+                    <!-- ko if: builds().length > 0-->
+                    <div id="NoPullRequests" style="display: none" class="text-center">
+                            <img src="/images/sunshine.png" width="300" />
+                            <h2>No Broken Builds</h2>
+                        </div>
+                    <!-- /ko -->
                     <div data-bind="foreach:builds">
                         <div class="col-lg-4">
                             <div class=" panel panel-danger">
@@ -54,9 +60,15 @@
         <div class="row clearfix">
             <div class="panel">
                 <div class="panel-heading">
-                    <h1>Failed Releases</h1>
+                    <h1>Failed Releases (<span data-bind="text: builds().length"></span>)</h1>
                 </div>
                 <div class="panel-body">
+                    <!-- ko if: releases().length > 0-->
+                    <div id="NoPullRequests" style="display: none" class="text-center">
+                            <img src="/images/sunshine.png" width="300" />
+                            <h2>No Broken Releases</h2>
+                        </div>
+                    <!-- /ko -->
                     <div data-bind="foreach:releases">
                         <div class="col-lg-4">
                             <div class=" panel panel-danger">

@@ -92,7 +92,6 @@
                                             <span data-bind="if : ReviewStatus == 'noResponse'" style="color: gray"><b>No Response</b></span>
                                             <span data-bind="if : ReviewStatus == 'waitingForAuthor'" style="color: orangered"><b>Waiting For Author</b></span>
                                             <span data-bind="if : ReviewStatus == 'rejected'" style="color: red"><b>Rejected</b></span>
-                                            <span data-bind="text: ReviewStatus"></span>
                                         </span>
                                     </div>
                                 </div>
@@ -165,20 +164,19 @@
                                     </div>
                                 </h5>
                                 <div>
-                                    <span data-bind="if: BuildStatus == 'noBuild'">
-                                        <span style="color:gray"><i class="glyphicon glyphicon-warning"></i> <span class="hidden-xs"> No Build Queued</span></span>
-
-                                        <a data-bind="if : BuildStatus != 'noBuild', attr: { href :BuildUrl}" target="_blank">
-                                            <span data-bind="if : BuildStatus == 'notStarted'" style="color:gray"><i class="glyphicon glyphicon-fire"></i>Build Not Started</span>
-                                            <span data-bind="if : BuildStatus == 'building'" style="color:blue"><i class="glyphicon glyphicon-fire"></i> Build In Progress</span>
-                                            <span data-bind="if : BuildStatus == 'expired'" style="color:darkorange"><i class="glyphicon glyphicon-alert"></i> Build Expired</span>
-                                            <span data-bind="if : BuildStatus == 'succeeded'" style="color:green"><i class="glyphicon glyphicon-check"></i>Build Succeeded</span>
-                                            <span data-bind="if : BuildStatus == 'failed'" style="color:red"><i class="glyphicon glyphicon-remove"></i>Build Failed</span>
-                                            <span data-bind="if : BuildStatus == 'cancelled'" style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Canceled</span></span>
-                                        </a>
-                                    </span>
                                     <span>
-                                        |
+                                        <span data-bind="if : BuildStatus == 'noBuild'" style="color:gray"><i class="glyphicon glyphicon-warning"></i>No Build Queued</span>
+                                            <a data-bind="if : BuildStatus != 'noBuild', attr: {href : BuildUrl}" target="_blank">
+                                                <span data-bind="if : BuildStatus == 'notStarted'" style="color:gray"><i class="glyphicon glyphicon-fire"></i>Build Not Started</span>
+                                                <span data-bind="if : BuildStatus == 'building'" style="color:blue"><i class="glyphicon glyphicon-fire"></i> Build In Progress</span>
+                                                <span data-bind="if : BuildStatus == 'expired'" style="color:darkorange"><i class="glyphicon glyphicon-alert"></i> Build Expired</span>
+                                                <span data-bind="if : BuildStatus == 'succeeded'" style="color:green"><i class="glyphicon glyphicon-check"></i>Build Succeeded</span>
+                                                <span data-bind="if : BuildStatus == 'failed'" style="color:red"><i class="glyphicon glyphicon-remove"></i>Build Failed</span>
+                                                <span data-bind="if : BuildStatus == 'cancelled'" style="color:gray"><i class="glyphicon glyphicon-fire"></i> <span class="hidden-xs"> Build Canceled</span></span>
+                                            </a>
+                                            |
+                                        </span>
+                                    <span>
                                         <!-- ko if: HasEnoughReviewers-->
                                         <i class="glyphicon glyphicon-check" style="color: green"></i>
                                         <!-- /ko-->
