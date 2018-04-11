@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Threading;
 using System.Threading.Tasks;
 using Hangfire;
 using Microsoft.Extensions.Logging;
@@ -23,12 +24,12 @@ namespace TfsAdvanced.Updater.Tasks
     public abstract class PullRequestUpdaterBase : UpdaterBase
     {
         protected readonly RequestData requestData;
-        private readonly IPullRequestRepository pullRequestRepository;
-        private readonly RepositoryRepository repositoryRepository;
-        private readonly UpdateStatusRepository updateStatusRepository;
-        private readonly BuildRepository buildRepository;
-        
-        protected PullRequestUpdaterBase(IPullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository, 
+        protected readonly IPullRequestRepository pullRequestRepository;
+        protected readonly RepositoryRepository repositoryRepository;
+        protected readonly UpdateStatusRepository updateStatusRepository;
+        protected readonly BuildRepository buildRepository;
+
+        protected PullRequestUpdaterBase(IPullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository,
             UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository, ILogger<PullRequestUpdaterBase> logger) : base(logger)
         {
             this.requestData = requestData;
@@ -40,71 +41,73 @@ namespace TfsAdvanced.Updater.Tasks
 
         protected override void Update()
         {
-            ConcurrentBag<PullRequest> allPullRequests = new ConcurrentBag<PullRequest>();
-            Parallel.ForEach(repositoryRepository.GetAll(), new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, repository =>
-            {
-                if (string.IsNullOrEmpty(repository.PullRequestUrl))
-                    return;
-                var pullRequests = GetPullRequests(repository);
-                if (pullRequests == null)
-                    return;
-                Parallel.ForEach(pullRequests, new ParallelOptions {MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM}, pullRequest =>
-                {
-                    try
-                    {
-                        CommitLink commitId = null;
-                        if (pullRequest.lastMergeCommit != null)
-                            commitId = pullRequest.lastMergeCommit;
-                        else if (pullRequest.lastMergeSourceCommit != null)
-                            commitId = pullRequest.lastMergeSourceCommit;
+            int pullRequestCount = 0;
 
-                        if (commitId == null)
-                        {
-                            logger.LogWarning($"Unable to get last merge commit for the pullrequest ({pullRequest.pullRequestId}) {pullRequest.description}");
-                            return;
-                        }
+            Parallel.ForEach(repositoryRepository.GetAll(), new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, repository =>
+              {
+                  ConcurrentBag<PullRequest> repositoryPullRequests = new ConcurrentBag<PullRequest>();
+                  if (string.IsNullOrEmpty(repository.PullRequestUrl))
+                      return;
+                  DateTime start = DateTime.Now;
+                  var pullRequests = GetPullRequests(repository);
+                  logger.LogWarning($"[{repository.Name}]\tPull Request Request Time\t{(DateTime.Now - start).TotalMilliseconds}");
+                  if (pullRequests == null)
+                      return;
+                  Parallel.ForEach(pullRequests, new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, pullRequest =>
+                  {
+                      try
+                      {
+                          CommitLink commitId = null;
+                          if (pullRequest.lastMergeCommit != null)
+                              commitId = pullRequest.lastMergeCommit;
+                          else if (pullRequest.lastMergeSourceCommit != null)
+                              commitId = pullRequest.lastMergeSourceCommit;
 
-                        if (string.IsNullOrEmpty(commitId.commitId))
-                        {
-                            logger.LogWarning($"Unable to get the last commitID for the pull request ({pullRequest.pullRequestId}) {pullRequest.description}");
-                            return;
-                        }
-                        var build = buildRepository.GetBuildBySourceVersion(repository, commitId.commitId);
+                          if (commitId == null)
+                          {
+                              logger.LogWarning($"Unable to get last merge commit for the pullrequest ({pullRequest.pullRequestId}) {pullRequest.description}");
+                              return;
+                          }
 
+                          if (string.IsNullOrEmpty(commitId.commitId))
+                          {
+                              logger.LogWarning($"Unable to get the last commitID for the pull request ({pullRequest.pullRequestId}) {pullRequest.description}");
+                              return;
+                          }
+                          var build = buildRepository.GetBuildBySourceVersion(repository, commitId.commitId);
 
-                        var pullRequestDto = BuildPullRequest(pullRequest, build);
-                        pullRequestDto.Repository = repository;
-                        pullRequestDto.Url = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
-                        pullRequestDto.RequiredReviewers = repository.MinimumApproverCount;
+                          var pullRequestDto = BuildPullRequest(pullRequest, build);
+                          pullRequestDto.Repository = repository;
+                          pullRequestDto.Url = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
+                          pullRequestDto.RequiredReviewers = repository.MinimumApproverCount;
 
-                        foreach (var reviewer in pullRequest.reviewers)
-                        {
-                            // Container reviewers do not count
-                            if (reviewer.isContainer)
-                                continue;
-                            if (reviewer.vote == (int) Vote.Approved)
-                                pullRequestDto.AcceptedReviewers++;
-                        }
-                        allPullRequests.Add(pullRequestDto);
-                        
-                    }
-                    catch (Exception e)
-                    {
-                        logger.LogError("Error parsing pull request", e);
-                    }
-                });
-            });
-            var pullRequestsList = allPullRequests.ToList();
-            pullRequestRepository.Update(pullRequestsList);
-            updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = pullRequestsList.Count, UpdaterName = GetType().Name});
-
+                          foreach (var reviewer in pullRequest.reviewers)
+                          {
+                              // Container reviewers do not count
+                              if (reviewer.isContainer)
+                                  continue;
+                              if (reviewer.vote == (int)Vote.Approved)
+                                  pullRequestDto.AcceptedReviewers++;
+                          }
+                          pullRequestDto.LastUpdated = DateTime.Now;
+                          repositoryPullRequests.Add(pullRequestDto);
+                          Interlocked.Increment(ref pullRequestCount);
+                      }
+                      catch (Exception e)
+                      {
+                          logger.LogError("Error parsing pull request", e);
+                      }
+                  });
+                  if (repositoryPullRequests.Any())
+                      pullRequestRepository.Update(repositoryPullRequests.ToList());
+              });
+            updateStatusRepository.UpdateStatus(new UpdateStatus { LastUpdate = DateTime.Now, UpdatedRecords = pullRequestCount, UpdaterName = GetType().Name });
         }
 
         protected virtual IList<TFSAdvanced.Updater.Models.PullRequests.PullRequest> GetPullRequests(Repository repository)
         {
-            return GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(requestData, repository.PullRequestUrl).Result;
+            return GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(requestData, repository.PullRequestUrl, logger).Result;
         }
-
 
         private PullRequest BuildPullRequest(TFSAdvanced.Updater.Models.PullRequests.PullRequest x, Build build)
         {
@@ -113,6 +116,7 @@ namespace TfsAdvanced.Updater.Tasks
                 Id = x.pullRequestId,
                 Title = x.title,
                 Url = x.remoteUrl,
+                ApiUrl = x.url,
                 CreatedDate = x.creationDate,
                 ClosedDate = x.closedDate,
                 Creator = new User
@@ -146,7 +150,7 @@ namespace TfsAdvanced.Updater.Tasks
                 {
                     if (reviewer.isContainer)
                         continue;
-                    
+
                     // Only ignore the review of the creator if the vote is approved or noresponse
                     if (reviewer.id == x.createdBy.id && (reviewer.vote == (int)Vote.Approved || reviewer.vote == (int)Vote.NoResponse))
                         continue;
@@ -154,22 +158,25 @@ namespace TfsAdvanced.Updater.Tasks
                     {
                         Name = reviewer.displayName,
                         IconUrl = reviewer.imageUrl
-
                     };
                     switch ((Vote)reviewer.vote)
                     {
                         case Vote.Approved:
                             reviewerDto.ReviewStatus = ReviewStatus.Approved;
                             break;
+
                         case Vote.ApprovedWithSuggestions:
                             reviewerDto.ReviewStatus = ReviewStatus.ApprovedWithSuggestions;
                             break;
+
                         case Vote.NoResponse:
                             reviewerDto.ReviewStatus = ReviewStatus.NoResponse;
                             break;
+
                         case Vote.Rejected:
                             reviewerDto.ReviewStatus = ReviewStatus.Rejected;
                             break;
+
                         case Vote.WaitingForAuthor:
                             reviewerDto.ReviewStatus = ReviewStatus.WaitingForAuthor;
                             break;

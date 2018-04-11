@@ -1,26 +1,31 @@
-﻿using System;
+﻿using Redbus.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using TFSAdvanced.DataStore.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TFSAdvanced.DataStore.Repository
 {
-    public abstract class RepositoryBase<T> : IRepository<T>
+    public abstract class RepositoryBase<T, TUpdateMessage> : IRepository<T> where TUpdateMessage : Redbus.Events.EventBase
     {
         protected readonly Dictionary<int, T> data;
         protected readonly Mutex mutex;
+        private readonly IServiceProvider serviceProvider;
         protected DateTime LastUpdated;
         protected DateTime LastCleanup;
-        
+        private readonly IEventBus eventBus;
 
-        protected RepositoryBase()
+        protected RepositoryBase(IServiceProvider serviceProvider, IEventBus eventBus)
         {
             this.data = new Dictionary<int, T>();
             this.mutex = new Mutex();
             this.LastUpdated = DateTime.Now;
             this.LastCleanup = DateTime.Now;
+            this.eventBus = eventBus;
+            this.serviceProvider = serviceProvider;
         }
 
         protected abstract int GetId(T item);
@@ -47,7 +52,6 @@ namespace TFSAdvanced.DataStore.Repository
             {
                 try
                 {
-
                     return data.Values.FirstOrDefault(x => d(x));
                 }
                 finally
@@ -64,7 +68,6 @@ namespace TFSAdvanced.DataStore.Repository
             {
                 try
                 {
-
                     return data.Values.Where(x => d(x));
                 }
                 finally
@@ -75,7 +78,6 @@ namespace TFSAdvanced.DataStore.Repository
             return new List<T>();
         }
 
-
         public virtual bool Update(IEnumerable<T> updates)
         {
             var updated = false;
@@ -83,7 +85,6 @@ namespace TFSAdvanced.DataStore.Repository
             {
                 try
                 {
-
                     foreach (T update in updates)
                     {
                         if (update == null)
@@ -97,9 +98,7 @@ namespace TFSAdvanced.DataStore.Repository
                                 data[id] = update;
                                 updated = true;
                             }
-                            
                         }
-
                         else
                         {
                             data.Add(id, update);
@@ -108,7 +107,9 @@ namespace TFSAdvanced.DataStore.Repository
                     }
 
                     if (updated)
+                    {
                         LastUpdated = DateTime.Now;
+                    }
                 }
                 finally
 
@@ -116,6 +117,12 @@ namespace TFSAdvanced.DataStore.Repository
                     mutex.ReleaseMutex();
                 }
             }
+
+            if (updated)
+            {
+                eventBus.Publish(serviceProvider.GetService<TUpdateMessage>());
+            }
+
             return updated;
         }
 
@@ -126,7 +133,6 @@ namespace TFSAdvanced.DataStore.Repository
             {
                 try
                 {
-
                     // ToList to prevent removing key if it is an enumeration of data
                     foreach (var item in items.ToList())
                     {
@@ -138,7 +144,7 @@ namespace TFSAdvanced.DataStore.Repository
                         }
                     }
 
-                    if(removed)
+                    if (removed)
                         LastUpdated = DateTime.Now;
                 }
                 finally

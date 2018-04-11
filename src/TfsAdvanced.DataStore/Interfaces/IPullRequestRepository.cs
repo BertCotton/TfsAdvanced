@@ -7,6 +7,6 @@ namespace TFSAdvanced.DataStore.Interfaces
 {
     public interface IPullRequestRepository : IRepository<PullRequest>
     {
-
+        IList<PullRequest> GetStale(DateTime update);
     }
 }

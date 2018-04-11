@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Redbus.Interfaces;
+using TFSAdvanced.DataStore.Messages;
 using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class JobRequestRepository : RepositoryBase<QueueJob>
+    public class JobRequestRepository : RepositoryBase<QueueJob, JobRequestUpdateMessage>
     {
+        public JobRequestRepository(IServiceProvider serviceProvider, IEventBus eventBus) : base(serviceProvider, eventBus)
+        {
+        }
+
         public IEnumerable<QueueJob> GetJobRequests(DateTime? fromDate = null, DateTime? toDate = null)
         {
             if (fromDate.HasValue && toDate.HasValue)

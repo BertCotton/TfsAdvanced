@@ -20,7 +20,7 @@ namespace TFSAdvanced.Models.DTO
         public MergeStatus MergeStatus { get; set; }
 
         public int buildId { get; set; }
-        
+
         public bool IsAutoCompleteSet { get; set; }
 
         public bool HasEnoughReviewers { get; set; }
@@ -36,7 +36,11 @@ namespace TFSAdvanced.Models.DTO
         public DateTime CreatedDate { get; set; }
 
         public DateTime? ClosedDate { get; set; }
-        
+
         public string LastCommit { get; set; }
+
+        public DateTime LastUpdated { get; set; }
+
+        public string ApiUrl { get; set; }
     }
 }

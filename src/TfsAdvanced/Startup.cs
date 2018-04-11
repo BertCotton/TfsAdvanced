@@ -38,6 +38,7 @@ using Serilog.Events;
 using Serilog.Exceptions;
 using TfsAdvanced.Web.SocketConnections;
 using TFSAdvanced.DataStore.Repository;
+using Redbus;
 
 namespace TfsAdvanced
 {
@@ -98,6 +99,7 @@ namespace TfsAdvanced
             builder.RegisterType<AuthenticationTokenProvider>();
 
             builder.RegisterType<SignInManager<ApplicationUser>>().AsSelf();
+            builder.RegisterType<EventBus>().SingleInstance().AsSelf().AsImplementedInterfaces();
 
             builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Models"))).AsSelf().SingleInstance();
             builder.RegisterAssemblyTypes(Assembly.Load(Assembly.GetEntryAssembly().GetReferencedAssemblies().First(t => t.Name == "TFSAdvanced.Updater"))).AsSelf().SingleInstance();

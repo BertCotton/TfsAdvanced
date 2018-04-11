@@ -1,16 +1,26 @@
-﻿using System;
+﻿using Redbus;
+using Redbus.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TfsAdvanced.Data.Comparator;
 using TFSAdvanced.DataStore.Interfaces;
+using TFSAdvanced.DataStore.Messages;
 using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.ComparisonResults;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class PullRequestRepository : RepositoryBase<PullRequest>, IPullRequestRepository
+    public class PullRequestRepository : RepositoryBase<PullRequest, PullRequestUpdateMessage>, IPullRequestRepository
     {
+        private DateTime lastCleanup;
+        private TimeSpan cleanupTimeSpan = TimeSpan.FromHours(4);
+
+        public PullRequestRepository(IServiceProvider serviceProvider, IEventBus eventBus) : base(serviceProvider, eventBus)
+        {
+            lastCleanup = DateTime.Now;
+        }
 
         public IEnumerable<PullRequest> GetPullRequestsAfter(int id)
         {
@@ -30,16 +40,19 @@ namespace TfsAdvanced.DataStore.Repository
 
         public override bool Update(IEnumerable<PullRequest> updates)
         {
-            
             bool updated = base.Update(updates);
-            // If an update was not received, then remove it
-            var noUpdate = base.GetList(request => !updates.Select(x => x.Id).Contains(request.Id));
-            bool removed = base.Remove(noUpdate);
-            DateTime yesterday = DateTime.Now.Date.AddDays(-2);
-            base.CleanupIfNeeded(request => request.ClosedDate.HasValue && request.ClosedDate < yesterday );
-            return updated || removed;
 
+            if (lastCleanup.Add(cleanupTimeSpan) < DateTime.Now)
+            {
+                DateTime yesterday = DateTime.Now.Date.AddDays(-4);
+                base.CleanupIfNeeded(request => request.ClosedDate.HasValue && request.ClosedDate < yesterday);
+            }
+            return updated;
+        }
+
+        public IList<PullRequest> GetStale(DateTime update)
+        {
+            return base.GetList(x => x.LastUpdated < update).ToList();
         }
     }
-    
 }

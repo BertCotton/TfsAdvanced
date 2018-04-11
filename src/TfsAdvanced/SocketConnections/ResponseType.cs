@@ -7,6 +7,7 @@ namespace TfsAdvanced.Web.SocketConnections
 {
     public enum ResponseType
     {
+        Heartbeat,
         UpdatedCurrentUserPullRequest,
         UpdatedPullRequest,
         NewPullRequest,

@@ -35,7 +35,7 @@ namespace TFSAdvanced.Updater.Tasks
                 var filteredPullRequests = updatedPullRequests.Where(x => x.creationDate >= past2Days).ToList();
                 if (!filteredPullRequests.Any())
                 {
-                    logger.LogInformation($"Finished fetching {pullRequests.Count} pull requests for repository {repository.Name}.");
+                    logger.LogDebug($"Finished fetching {pullRequests.Count} pull requests for repository {repository.Name}.");
                     return pullRequests;
                 }
 

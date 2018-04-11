@@ -2,6 +2,8 @@
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Debug;
 
 namespace TfsAdvanced
 {
@@ -11,6 +13,9 @@ namespace TfsAdvanced
         {
             var host = new WebHostBuilder()
                 .UseKestrel()
+                 .ConfigureLogging((ILoggingBuilder logging) =>
+                    logging.AddFilter<DebugLoggerProvider>("Microsoft", LogLevel.Warning)
+                )
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()

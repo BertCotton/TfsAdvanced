@@ -1,10 +1,16 @@
-﻿using TFSAdvanced.DataStore.Repository;
+﻿using System;
+using Redbus.Interfaces;
+using TFSAdvanced.DataStore.Messages;
+using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class ProjectRepository : RepositoryBase<Project>
+    public class ProjectRepository : RepositoryBase<Project, ProjectUpdateMessage>
     {
+        public ProjectRepository(IServiceProvider serviceProvider, IEventBus eventBus) : base(serviceProvider, eventBus)
+        {
+        }
 
         public Project GetProject(string projectId)
         {
@@ -16,5 +22,4 @@ namespace TfsAdvanced.DataStore.Repository
             return item.Id.GetHashCode();
         }
     }
-    
 }

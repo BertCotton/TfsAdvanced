@@ -49,7 +49,6 @@
             <li>
                 <a class="nav-link" onclick="navigateTo(this, '/views/jobRequests.html')">Build & Release Jobs</a>
             </li>
-            </li>
             <li>
                 <a class="nav-link" onclick="navigateTo(this, '/views/dashboard.html')">Dashboard</a>
             </li>
@@ -61,7 +60,11 @@
                     </li>
                 </ul>
             </li>
+            <li>
+                
+            </li>
         </ul>
+        <span class="navbar-brand pull-right" style="color:white" id="serverTime"></span>
     </nav>
     <div style="margin-top: 52px" id="mainPage">
         <div class="container">
@@ -157,6 +160,8 @@
             setTimeout(FullRefresh, 600000);
         }
 
+        var lastUpdate = new Date();
+
         $(document)
             .ready(function () {
 
@@ -178,6 +183,7 @@
                 });
                 console.log("Clearing Storage");
                 localStorage.clear();
+                localStorage.setItem("HasUpdate", "true");
 
                 let socket = new WebSocket("wss://" + window.location.host + "/ws");
                 socket.onmessage = function (event) {
@@ -185,21 +191,28 @@
 
                     var messageType = message["Type"];
                     var data = message["Data"];
-                    localStorage.setItem("HasUpdate", "true");
+
+                    if (messageType === "heartbeat") {
+                        Heartbeat(data);
+                        return;
+                    }
+                    
                     console.log("Message Push.  Type :", messageType, ", Count: ", data.length);
+                    localStorage.setItem("HasUpdate", "true");
+                    var stringified = JSON.stringify(data);
                     $("#brand").attr('title', "Last Server Response: " + new Date());
                     switch (messageType) {
                         case "newPullRequest":
                             NotificationToast(data);
                             break;
                         case "updatedCurrentUserPullRequest":
-                            localStorage.setItem("CurrentUserPullRequests", JSON.stringify(data));
+                            localStorage.setItem("CurrentUserPullRequests", stringified);
                             break;
                         case "updatedPullRequest":
-                            localStorage.setItem("PullRequests", JSON.stringify(data));
+                            localStorage.setItem("PullRequests", stringified);
                             break;
                         case "currentUserCompletedPullRequest":
-                            localStorage.setItem("CurrentUserCompletedPullRequests", JSON.stringify(data));
+                            localStorage.setItem("CurrentUserCompletedPullRequests", stringified);
                             break;
                         case "newCurrentUserCompletedPullRequest":
                             CurrentUserCompletedPullRequestNotificationToast(data);
@@ -207,7 +220,7 @@
                     }
 
                 };
-
+                setInterval(KeepAlive, 1000);
             });
 
         function CurrentUserCompletedPullRequestNotificationToast(pullRequests) {
@@ -230,6 +243,19 @@
 
 
                 });
+        }
+
+        function KeepAlive() {
+            if (lastUpdate.getTime() < (new Date()).getTime() - 600000) {
+                console.log("Stale App.  Refreshing Page");
+                window.location = "/";
+            }
+            
+        }
+
+        function Heartbeat(data) {
+            lastUpdate = new Date(data["ServerTime"]);
+            $("#serverTime").html(moment(data["ServerTime"]).format("H:mm A"));
         }
 
         function NotificationToast(pullRequests) {

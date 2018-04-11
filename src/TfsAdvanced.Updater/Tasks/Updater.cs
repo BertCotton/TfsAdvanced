@@ -12,7 +12,6 @@ namespace TfsAdvanced.Updater.Tasks
     public class Updater
     {
         private readonly ILogger<Updater> logger;
-        private System.Timers.Timer quickUpdateTimer;
         private readonly IServiceProvider serviceProvider;
 
         public Updater(IServiceProvider serviceProvider, ILogger<Updater> logger)
@@ -50,22 +49,34 @@ namespace TfsAdvanced.Updater.Tasks
             ScheduleJob<ReleaseDefinitionUpdater>(Cron.MinuteInterval(30));
             ScheduleJob<BuildDefinitionUpdater>(Cron.MinuteInterval(30));
 
-            quickUpdateTimer = new System.Timers.Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
+            var quickUpdateTimer = new System.Timers.Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
             quickUpdateTimer.Elapsed += ExecuteJobs;
             quickUpdateTimer.AutoReset = true;
             quickUpdateTimer.Enabled = true;
 
+            var pullRequestUpdateTime = new System.Timers.Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
+            pullRequestUpdateTime.Elapsed += ExecutePullRequestUpdate;
+            pullRequestUpdateTime.AutoReset = true;
+            pullRequestUpdateTime.Enabled = true;
+
             logger.LogInformation($"Finished bootstrapping app in {DateTime.Now - startTime:g}");
+        }
+
+        private void ExecutePullRequestUpdate(Object source, ElapsedEventArgs e)
+        {
+            DateTime startTime = DateTime.Now;
+            ExecuteJob<PullRequestUpdater>();
+            logger.LogInformation($"Finished Update PullRequests in {DateTime.Now - startTime}");
         }
 
         private void ExecuteJobs(Object source, ElapsedEventArgs e)
         {
-            logger.LogInformation("Executing Update Jobs");
+            DateTime startTime = DateTime.Now;
+            logger.LogDebug("Executing Update Jobs");
             ExecuteJob<BuildUpdater>();
-            ExecuteJob<PullRequestUpdater>();
             ExecuteJob<CompletedPullRequestUpdater>();
             ExecuteJob<JobRequestUpdater>();
-            logger.LogInformation("Finished Update Jobs");
+            logger.LogInformation($"Finished Update Jobs in {DateTime.Now - startTime}");
         }
 
         private void ExecuteJob<T>() where T : UpdaterBase

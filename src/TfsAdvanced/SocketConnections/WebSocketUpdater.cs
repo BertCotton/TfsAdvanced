@@ -9,9 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Redbus;
+using Redbus.Interfaces;
 using Serilog;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models.Infrastructure;
+using TFSAdvanced.DataStore.Messages;
 using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models;
 using TFSAdvanced.Models.DTO;
@@ -23,17 +26,19 @@ namespace TfsAdvanced.Web.SocketConnections
         private readonly WebSocketClientRepository webSocketClientRepository;
         private readonly PullRequestRepository pullRequestRepository;
         private readonly CompletedPullRequestRepository completedPullRequestRepository;
+        private readonly IEventBus eventBus;
         private readonly ILogger logger;
-        
+
         private int lastPullRequestId = 0;
         private DateTime lastPullRequestUpdated = DateTime.MinValue;
-        DateTime lastCompletedPullRequestUpdated = DateTime.MinValue;
+        private DateTime lastCompletedPullRequestUpdated = DateTime.MinValue;
 
-        public WebSocketUpdater(WebSocketClientRepository webSocketClientRepository, PullRequestRepository pullRequestRepository, CompletedPullRequestRepository completedPullRequestRepository)
+        public WebSocketUpdater(WebSocketClientRepository webSocketClientRepository, PullRequestRepository pullRequestRepository, CompletedPullRequestRepository completedPullRequestRepository, IEventBus eventBus)
         {
             this.webSocketClientRepository = webSocketClientRepository;
             this.pullRequestRepository = pullRequestRepository;
             this.completedPullRequestRepository = completedPullRequestRepository;
+            this.eventBus = eventBus;
             this.logger = Log.Logger;
         }
 
@@ -46,9 +51,25 @@ namespace TfsAdvanced.Web.SocketConnections
             string currentUserUniqueName = jwtToken.Claims.First(x => x.Type == "unique_name").Value;
             var ipAddress = context.Connection.RemoteIpAddress.ToString();
 
+            eventBus.Subscribe<PullRequestUpdateMessage>(message =>
+            {
+                if (webSocket.State == WebSocketState.Open)
+                {
+                    Task.WaitAll(new[] {
+                        HandleNewPullRequests(webSocket, currentUserUniqueName),
+                        HandleUpdatedPullRequests(webSocket, currentUserUniqueName),
+                        HandleCompletedPullRequests(webSocket, currentUserUniqueName)
+                    });
+                }
+            });
+
+            // Send an initial update
+            await HandleNewPullRequests(webSocket, currentUserUniqueName);
+            await HandleUpdatedPullRequests(webSocket, currentUserUniqueName);
+            await HandleCompletedPullRequests(webSocket, currentUserUniqueName);
+
             while (webSocket.State == WebSocketState.Open)
             {
-                
                 webSocketClientRepository.UpsertClient(new WebSocketClient
                 {
                     IpAddress = ipAddress,
@@ -56,10 +77,7 @@ namespace TfsAdvanced.Web.SocketConnections
                     LastSeen = DateTime.Now
                 });
 
-                await HandleNewPullRequests(webSocket, currentUserUniqueName);
-                await HandleUpdatedPullRequests(webSocket, currentUserUniqueName);
-                await HandleCompletedPullRequests(webSocket, currentUserUniqueName);
-                
+                await HandleHeartbeat(webSocket);
                 Thread.Sleep(1000);
             }
 
@@ -69,7 +87,20 @@ namespace TfsAdvanced.Web.SocketConnections
                 UniqueName = currentUserUniqueName,
                 LastSeen = DateTime.Now
             });
+        }
 
+        private async Task HandleHeartbeat(WebSocket webSocket)
+        {
+            IDictionary<string, object> responseObject = new Dictionary<string, object>
+            {
+                {"Type", ResponseType.Heartbeat },
+                {"Data", new Dictionary<string, object> {
+                    {
+                        "ServerTime", DateTime.UtcNow}
+                    }
+                }
+            };
+            await SendMessage(webSocket, responseObject);
         }
 
         private async Task HandleNewPullRequests(WebSocket webSocket, string currentUserUniqueName)
@@ -77,16 +108,16 @@ namespace TfsAdvanced.Web.SocketConnections
             IEnumerable<PullRequest> pullRequests = pullRequestRepository.GetPullRequestsAfter(lastPullRequestId).ToList();
             if (pullRequests != null && pullRequests.Any())
             {
-
                 var newLastId = pullRequests.OrderByDescending(x => x.Id).Select(x => x.Id).First();
                 if (lastPullRequestId > 0)
                 {
                     // do not send new pull requests if it was created by the current user
-                    await SendNewPullRequests(webSocket, pullRequests.Where(x => x.Creator.UniqueName != currentUserUniqueName).ToList());
+                    pullRequests = pullRequests.Where(x => x.Creator.UniqueName != currentUserUniqueName).ToList();
+                    if (pullRequests.Any())
+                        await SendNewPullRequests(webSocket, pullRequests);
                 }
-                    
-                lastPullRequestId = newLastId;
 
+                lastPullRequestId = newLastId;
             }
         }
 
@@ -107,8 +138,13 @@ namespace TfsAdvanced.Web.SocketConnections
             if (repositoryLastUpdated > lastPullRequestUpdated)
             {
                 var allPullRequests = pullRequestRepository.GetAll().ToList();
-                await SendCurrentUserPullRequests(webSocket, allPullRequests.Where(x => x.Creator.UniqueName == currentUserUniqueName).ToList());
-                await SendPullRequestList(webSocket, allPullRequests.Where(x => x.Creator.UniqueName != currentUserUniqueName).ToList());
+                var currentUserPRs = allPullRequests.Where(x => x.Creator.UniqueName == currentUserUniqueName).ToList();
+                var otherUserPRs = allPullRequests.Where(x => x.Creator.UniqueName != currentUserUniqueName).ToList();
+                if (currentUserPRs.Any())
+                    await SendCurrentUserPullRequests(webSocket, currentUserPRs);
+
+                if (otherUserPRs.Any())
+                    await SendPullRequestList(webSocket, otherUserPRs);
                 lastPullRequestUpdated = repositoryLastUpdated;
             }
         }
@@ -134,7 +170,7 @@ namespace TfsAdvanced.Web.SocketConnections
         }
 
         private async Task HandleCompletedPullRequests(WebSocket webSocket, string currentUserUniqueName)
-        {   
+        {
             var currentUserCompletedMessages = completedPullRequestRepository.GetAll().Where(x => x.Creator.UniqueName == currentUserUniqueName).ToList();
             if (!currentUserCompletedMessages.Any())
                 return;
@@ -150,13 +186,13 @@ namespace TfsAdvanced.Web.SocketConnections
                 if (lastCompletedPullRequestUpdated > DateTime.MinValue)
                 {
                     var newlyCompleted = currentUserCompletedMessages.Where(x => x.ClosedDate.HasValue && x.ClosedDate.Value > lastCompletedPullRequestUpdated);
-                    await SendCompletedPullRequests(webSocket, newlyCompleted, ResponseType.NewCurrentUserCompletedPullRequest);
+                    if (newlyCompleted.Any())
+                        await SendCompletedPullRequests(webSocket, newlyCompleted, ResponseType.NewCurrentUserCompletedPullRequest);
                 }
                 lastCompletedPullRequestUpdated = repositoryLastUpdated.Value;
             }
         }
 
-        
         private async Task SendMessage(WebSocket webSocket, IDictionary<string, object> message)
         {
             try
@@ -170,7 +206,6 @@ namespace TfsAdvanced.Web.SocketConnections
             }
         }
 
-
         private async Task SendCompletedPullRequests(WebSocket webSocket, IEnumerable<PullRequest> completedPullRequests, ResponseType responseType)
         {
             IDictionary<string, object> responseObject = new Dictionary<string, object>
@@ -180,7 +215,5 @@ namespace TfsAdvanced.Web.SocketConnections
             };
             await SendMessage(webSocket, responseObject);
         }
-
-
     }
 }

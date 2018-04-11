@@ -44,7 +44,7 @@ namespace TfsAdvanced.Updater.Tasks
         protected override void Update()
         {
             DateTime startTime = DateTime.Now;
-            logger.LogInformation($"Fetching Build Updates Since {lastRequest}");
+            logger.LogDebug($"Fetching Build Updates Since {lastRequest}");
             var builds = new ConcurrentStack<TFSAdvanced.Updater.Models.Builds.Build>();
             Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, project =>
               {

@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Redbus.Interfaces;
+using TFSAdvanced.DataStore.Messages;
 using TFSAdvanced.DataStore.Repository;
 using TFSAdvanced.Models.DTO;
 
 namespace TfsAdvanced.DataStore.Repository
 {
-    public class BuildRepository : RepositoryBase<Build>
+    public class BuildRepository : RepositoryBase<Build, BuildUpdateMessage>
     {
+        public BuildRepository(IServiceProvider serviceProvider, IEventBus eventBus) : base(serviceProvider, eventBus)
+        {
+        }
+
         public Build GetBuild(int buildId)
         {
             return base.Get(b => b.Id == buildId);

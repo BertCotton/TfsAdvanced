@@ -23,12 +23,12 @@ namespace TFSAdvanced.Updater.Tasks
 
             if (isRunning)
             {
-                logger.LogInformation($"Skipping scheduled run for {className} because it is currently running.");
+                logger.LogDebug($"Skipping scheduled run for {className} because it is currently running.");
                 return;
             }
 
             isRunning = true;
-            
+
             logger.LogInformation($"Starting {className}");
             var start = DateTime.Now;
             try
@@ -39,11 +39,10 @@ namespace TFSAdvanced.Updater.Tasks
             {
                 logger.LogError($"Error running update for {className}.", e);
             }
-            logger.LogInformation($"Finished Running {className} {DateTime.Now-start:g}");
+            logger.LogDebug($"Finished Running {className} {DateTime.Now - start:g}");
 
             isRunning = false;
         }
-
 
         protected abstract void Update();
     }
