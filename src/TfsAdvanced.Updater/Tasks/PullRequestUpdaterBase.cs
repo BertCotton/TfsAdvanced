@@ -48,9 +48,7 @@ namespace TfsAdvanced.Updater.Tasks
                   ConcurrentBag<PullRequest> repositoryPullRequests = new ConcurrentBag<PullRequest>();
                   if (string.IsNullOrEmpty(repository.PullRequestUrl))
                       return;
-                  DateTime start = DateTime.Now;
                   var pullRequests = GetPullRequests(repository);
-                  logger.LogWarning($"[{repository.Name}]\tPull Request Request Time\t{(DateTime.Now - start).TotalMilliseconds}");
                   if (pullRequests == null)
                       return;
                   Parallel.ForEach(pullRequests, new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, pullRequest =>
