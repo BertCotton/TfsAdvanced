@@ -255,7 +255,7 @@
 
         function Heartbeat(data) {
             lastUpdate = new Date(data["ServerTime"]);
-            $("#serverTime").html(moment(data["ServerTime"]).format("h:mm A"));
+            $("#serverTime").html(moment(data["ServerTime"]).format("h:mm a"));
         }
 
         function NotificationToast(pullRequests) {

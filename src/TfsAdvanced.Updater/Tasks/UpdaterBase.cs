@@ -37,7 +37,7 @@ namespace TFSAdvanced.Updater.Tasks
             }
             catch (Exception e)
             {
-                logger.LogError($"Error running update for {className}.", e);
+                logger.LogError(e, $"Error running update for {className}.");
             }
             logger.LogDebug($"Finished Running {className} {DateTime.Now - start:g}");
 

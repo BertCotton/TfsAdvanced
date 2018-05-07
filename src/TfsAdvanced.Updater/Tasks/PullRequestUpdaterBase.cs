@@ -93,7 +93,7 @@ namespace TfsAdvanced.Updater.Tasks
                       }
                       catch (Exception e)
                       {
-                          logger.LogError("Error parsing pull request", e);
+                          logger.LogError(e, "Error parsing pull request");
                       }
                   });
                   if (repositoryPullRequests.Any())
