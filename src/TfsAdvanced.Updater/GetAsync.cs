@@ -38,7 +38,7 @@ namespace TfsAdvanced.Updater
                 var log = $"[{url}]  ";
                 DateTime start = DateTime.Now;
                 var response = await requestData.HttpClient.GetAsync(url);
-                log += "Connetion Time: " + (DateTime.Now - start).TotalMilliseconds;
+                log += "Connection Time: " + (DateTime.Now - start).TotalMilliseconds;
                 if (!response.IsSuccessStatusCode)
                     throw new BadRequestException(url, response.StatusCode);
 
@@ -56,15 +56,17 @@ namespace TfsAdvanced.Updater
                 log += " List Time: " + (DateTime.Now - start).TotalMilliseconds;
 
                 if (logger != null)
-                    logger.LogWarning(log);
+                    logger.LogDebug(log);
                 return list;
             }
-            catch (BadRequestException)
+            catch (BadRequestException ex)
             {
+                logger.LogError(ex, $"Bad Request to {url}");
                 throw;
             }
             catch (Exception ex)
             {
+                logger.LogError(ex, $"Error making request to {url}");
                 return new List<T>();
             }
         }
