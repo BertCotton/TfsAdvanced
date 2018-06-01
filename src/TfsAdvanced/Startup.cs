@@ -188,7 +188,7 @@ namespace TfsAdvanced
             });
             app.UseHangfireServer();
 
-            TelemetryConfiguration.Active.DisableTelemetry = true;
+            //TelemetryConfiguration.Active.DisableTelemetry = true;
 
             GlobalJobFilters.Filters.Add(new HangfireJobFilter());
 
