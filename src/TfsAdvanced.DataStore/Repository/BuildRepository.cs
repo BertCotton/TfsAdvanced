@@ -24,7 +24,7 @@ namespace TfsAdvanced.DataStore.Repository
             var build = base.GetList(b => b.SourceCommit == commitId).OrderByDescending(b => b.Id).FirstOrDefault();
             if (build == null)
             {
-                var repositoryBuilds = base.GetList(b => b.Repository.Id == repository.Id).ToList();
+                var repositoryBuilds = base.GetList(b => b.Repository?.Id == repository.Id).ToList();
                 foreach (var repositoryBuild in repositoryBuilds)
                 {
                     if (repositoryBuild.SourceCommit == commitId)
@@ -47,6 +47,7 @@ namespace TfsAdvanced.DataStore.Repository
         public override bool Update(IEnumerable<Build> updates)
         {
             var updated = base.Update(updates);
+            var missingRepositoryId = updates.Where(x => x.Repository == null).ToList();
             DateTime yesterday = DateTime.Now.Date.AddDays(-2);
             base.CleanupIfNeeded(x => x.QueuedDate < yesterday);
             return updated;
