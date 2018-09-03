@@ -18,7 +18,7 @@ namespace TFSAdvanced.DataStore.Repository
 
         public ReleaseDefinition GetReleaseDefinition(string projectId, int id)
         {
-            return Get(definition => definition.Project.Id == projectId && definition.Id == id);
+            return Get(definition => definition.Project?.Id == projectId && definition.Id == id);
         }
     }
 }
