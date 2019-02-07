@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Redbus.Interfaces;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
 using TfsAdvanced.Models.Infrastructure;
@@ -20,37 +19,35 @@ namespace TfsAdvanced.Updater.Tasks
 
         private readonly ProjectRepository projectRepository;
         private readonly RepositoryRepository repositoryRepository;
-        private readonly UpdateStatusRepository updateStatusRepository;
-        private readonly IEventBus eventBus;
         private readonly RequestData requestData;
+        private readonly UpdateStatusRepository updateStatusRepository;
 
         public RepositoryUpdater(ProjectRepository projectRepository, RequestData requestData, RepositoryRepository repositoryRepository,
-            UpdateStatusRepository updateStatusRepository, ILogger<RepositoryUpdater> logger, IEventBus eventBus) : base(logger)
+            UpdateStatusRepository updateStatusRepository, ILogger<RepositoryUpdater> logger) : base(logger)
         {
             this.projectRepository = projectRepository;
             this.requestData = requestData;
             this.repositoryRepository = repositoryRepository;
             this.updateStatusRepository = updateStatusRepository;
-            this.eventBus = eventBus;
         }
 
         protected override void Update()
         {
-            ConcurrentBag<Repository> populatedRepositories = new ConcurrentBag<Repository>();
+            var populatedRepositories = new ConcurrentBag<Repository>();
             Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, project =>
               {
-                  IList<TFSAdvanced.Updater.Models.Repositories.Repository> repositories = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/git/repositories?api=1.0").Result;
+                  IList<TFSAdvanced.Updater.Models.Repositories.Repository> repositories = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/git/repositories?api=1.0", Logger).Result;
                   if (repositories == null)
                       return;
 
                   // policies are project scoped, so we only need to request once per project
-                  var policyConfigurations = GetAsync.FetchResponseList<PolicyConfiguration>(requestData, $"{requestData.BaseAddress}/defaultcollection/{project.Id}/_apis/policy/configurations?api-version=2.0-preview.1").Result;
+                  List<PolicyConfiguration> policyConfigurations = GetAsync.FetchResponseList<PolicyConfiguration>(requestData, $"{requestData.BaseAddress}/defaultcollection/{project.Id}/_apis/policy/configurations?api-version=2.0-preview.1", Logger).Result;
 
                   Parallel.ForEach(repositories, new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, repo =>
                   {
                       try
                       {
-                          var populatedRepository = GetAsync.Fetch<TFSAdvanced.Updater.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/git/repositories/{repo.name}?api=1.0").Result;
+                          TFSAdvanced.Updater.Models.Repositories.Repository populatedRepository = GetAsync.Fetch<TFSAdvanced.Updater.Models.Repositories.Repository>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/git/repositories/{repo.name}?api=1.0").Result;
 
                           var repositoryDto = new Repository
                           {
@@ -66,11 +63,11 @@ namespace TfsAdvanced.Updater.Tasks
                               }
                           };
 
-                          foreach (var configuration in policyConfigurations)
+                          foreach (PolicyConfiguration configuration in policyConfigurations)
                           {
                               if (configuration.type.id == MinimumReviewerPolicyId)
                               {
-                                  foreach (var scope in configuration.settings.scope)
+                                  foreach (PolicyScope scope in configuration.settings.scope)
                                   {
                                       if (scope.repositoryId == repositoryDto.Id)
                                       {
@@ -86,10 +83,11 @@ namespace TfsAdvanced.Updater.Tasks
                       }
                       catch (Exception)
                       {
+                          // ignored
                       }
                   });
               });
-            var repositoryList = populatedRepositories.ToList();
+            List<Repository> repositoryList = populatedRepositories.ToList();
             repositoryRepository.Update(repositoryList);
             updateStatusRepository.UpdateStatus(new UpdateStatus { LastUpdate = DateTime.Now, UpdatedRecords = repositoryList.Count, UpdaterName = nameof(RepositoryUpdater) });
         }

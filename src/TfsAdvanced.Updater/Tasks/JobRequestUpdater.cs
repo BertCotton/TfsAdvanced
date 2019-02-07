@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.Extensions.Logging;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
@@ -12,20 +11,22 @@ using TFSAdvanced.Models.DTO;
 using TFSAdvanced.Updater.Models.Builds;
 using TFSAdvanced.Updater.Models.JobRequests;
 using TFSAdvanced.Updater.Tasks;
+using Build = TFSAdvanced.Models.DTO.Build;
+using BuildDefinition = TFSAdvanced.Models.DTO.BuildDefinition;
 using BuildStatus = TFSAdvanced.Models.DTO.BuildStatus;
 
 namespace TfsAdvanced.Updater.Tasks
 {
     public class JobRequestUpdater : UpdaterBase
     {
-        private readonly JobRequestRepository jobRequestRepository;
-        private readonly UpdateStatusRepository updateStatusRepository;
-        private readonly PoolRepository poolRepository;
-        private readonly BuildRepository buildRepository;
         private readonly BuildDefinitionRepository buildDefinitionRepository;
+        private readonly BuildRepository buildRepository;
+        private readonly JobRequestRepository jobRequestRepository;
+        private readonly PoolRepository poolRepository;
         private readonly ProjectRepository projectRepository;
         private readonly ReleaseDefinitionRepository releaseDefinitionRepository;
         private readonly RequestData requestData;
+        private readonly UpdateStatusRepository updateStatusRepository;
 
         public JobRequestUpdater(JobRequestRepository jobRequestRepository, RequestData requestData, PoolRepository poolRepository, BuildRepository buildRepository, UpdateStatusRepository updateStatusRepository, BuildDefinitionRepository buildDefinitionRepository, ProjectRepository projectRepository, ReleaseDefinitionRepository releaseDefinitionRepository, ILogger<JobRequestUpdater> logger) : base(logger)
         {
@@ -41,16 +42,16 @@ namespace TfsAdvanced.Updater.Tasks
 
         protected override void Update()
         {
-            ConcurrentBag<QueueJob> jobRequests = new ConcurrentBag<QueueJob>();
+            var jobRequests = new ConcurrentBag<QueueJob>();
 
             Parallel.ForEach(poolRepository.GetAll(), new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, pool =>
               {
-                  var poolJobRequests = GetAsync.FetchResponseList<JobRequest>(requestData, $"{requestData.BaseAddress}/_apis/distributedtask/pools/{pool.id}/jobrequests?api-version=1.0").Result;
+                  List<JobRequest> poolJobRequests = GetAsync.FetchResponseList<JobRequest>(requestData, $"{requestData.BaseAddress}/_apis/distributedtask/pools/{pool.id}/jobrequests?api-version=1.0", Logger).Result;
                   if (poolJobRequests != null)
                   {
-                      foreach (var poolJobRequest in poolJobRequests)
+                      foreach (JobRequest poolJobRequest in poolJobRequests)
                       {
-                          QueueJob queueJob = new QueueJob
+                          var queueJob = new QueueJob
                           {
                               RequestId = poolJobRequest.requestId,
                               QueuedTime = poolJobRequest.queueTime,
@@ -63,7 +64,7 @@ namespace TfsAdvanced.Updater.Tasks
                           if (poolJobRequest.planType == PlanTypes.Build)
                           {
                               queueJob.JobType = JobType.Build;
-                              var build = buildRepository.GetBuild(poolJobRequest.owner.id);
+                              Build build = buildRepository.GetBuild(poolJobRequest.owner.id);
                               if (build != null)
                               {
                                   queueJob.LaunchedBy = build.Creator;
@@ -99,10 +100,10 @@ namespace TfsAdvanced.Updater.Tasks
                                           break;
                                   }
                               }
-                              var buildDefinition = buildDefinitionRepository.GetBuildDefinition(poolJobRequest.definition.id);
+                              BuildDefinition buildDefinition = buildDefinitionRepository.GetBuildDefinition(poolJobRequest.definition.id);
                               if (buildDefinition?.Repository != null)
                               {
-                                  var project = projectRepository.GetProject(buildDefinition.Repository.Project.Id);
+                                  Project project = projectRepository.GetProject(buildDefinition.Repository.Project.Id);
                                   if (project != null)
                                   {
                                       queueJob.Project = new Project
@@ -154,7 +155,7 @@ namespace TfsAdvanced.Updater.Tasks
                                   }
                               }
 
-                              var releaseDefinition = releaseDefinitionRepository.GetReleaseDefinition(poolJobRequest.scopeId.ToString(), poolJobRequest.definition.id);
+                              ReleaseDefinition releaseDefinition = releaseDefinitionRepository.GetReleaseDefinition(poolJobRequest.scopeId.ToString(), poolJobRequest.definition.id);
                               if (releaseDefinition != null)
                               {
                                   queueJob.Project = releaseDefinition.Project;

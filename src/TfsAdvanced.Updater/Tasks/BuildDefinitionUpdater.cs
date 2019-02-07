@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.Extensions.Logging;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
@@ -14,10 +14,10 @@ namespace TfsAdvanced.Updater.Tasks
     public class BuildDefinitionUpdater : UpdaterBase
     {
         private readonly BuildDefinitionRepository buildDefinitionRepository;
-        private readonly UpdateStatusRepository updateStatusRepository;
         private readonly ProjectRepository projectRepository;
         private readonly RepositoryRepository repositoryRepository;
         private readonly RequestData requestData;
+        private readonly UpdateStatusRepository updateStatusRepository;
 
         public BuildDefinitionUpdater(BuildDefinitionRepository buildDefinitionRepository, RequestData requestData, ProjectRepository projectRepository, UpdateStatusRepository updateStatusRepository, RepositoryRepository repositoryRepository, ILogger<BuildDefinitionUpdater> logger) :
             base(logger)
@@ -34,18 +34,18 @@ namespace TfsAdvanced.Updater.Tasks
             var buildDefinitions = new ConcurrentBag<BuildDefinition>();
             Parallel.ForEach(projectRepository.GetAll(), new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, project =>
               {
-                  var definitions = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/definitions?api=2.2").Result;
+                  List<TFSAdvanced.Updater.Models.Builds.BuildDefinition> definitions = GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, $"{requestData.BaseAddress}/{project.Name}/_apis/build/definitions?api=2.2", Logger).Result;
                   if (definitions == null)
                   {
-                      logger.LogInformation($"Unable to get the definitiosn for the project {project.Name}");
+                      Logger.LogInformation($"Unable to get the definition for the project {project.Name}");
                       return;
                   }
                   Parallel.ForEach(definitions, new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, definition =>
                   {
-                      var populatedDefinition = GetAsync.Fetch<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, definition.url).Result;
-                      var repository = repositoryRepository.GetById(populatedDefinition.repository.id);
+                      TFSAdvanced.Updater.Models.Builds.BuildDefinition populatedDefinition = GetAsync.Fetch<TFSAdvanced.Updater.Models.Builds.BuildDefinition>(requestData, definition.url).Result;
+                      Repository repository = repositoryRepository.GetById(populatedDefinition.repository.id);
                       if (repository == null)
-                          logger.LogDebug($"Repository no found for build deinition {populatedDefinition.name} and repository {populatedDefinition.repository.name}");
+                          Logger.LogDebug($"Repository no found for build definition {populatedDefinition.name} and repository {populatedDefinition.repository.name}");
 
                       buildDefinitions.Add(new BuildDefinition
                       {
