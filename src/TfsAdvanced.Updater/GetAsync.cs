@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -15,7 +16,7 @@ namespace TfsAdvanced.Updater
         {
             try
             {
-                var response = await requestData.HttpClient.GetAsync(url);
+                HttpResponseMessage response = await requestData.HttpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
                     throw new BadRequestException(url, response.StatusCode);
 
@@ -31,19 +32,19 @@ namespace TfsAdvanced.Updater
             }
         }
 
-        public static async Task<List<T>> FetchResponseList<T>(RequestData requestData, string url, ILogger logger = null)
+        public static async Task<List<T>> FetchResponseList<T>(RequestData requestData, string url, ILogger logger)
         {
             try
             {
-                var log = $"[{url}]  ";
+                string log = $"[{url}]  ";
                 DateTime start = DateTime.Now;
-                var response = await requestData.HttpClient.GetAsync(url);
+                HttpResponseMessage response = await requestData.HttpClient.GetAsync(url);
                 log += "Connection Time: " + (DateTime.Now - start).TotalMilliseconds;
                 if (!response.IsSuccessStatusCode)
                     throw new BadRequestException(url, response.StatusCode);
 
                 start = DateTime.Now;
-                var responseContext = await response.Content.ReadAsStringAsync();
+                string responseContext = await response.Content.ReadAsStringAsync();
                 log += "  Read Time: " + (DateTime.Now - start).TotalMilliseconds;
                 start = DateTime.Now;
                 var items = JsonConvert.DeserializeObject<Response<IEnumerable<T>>>(responseContext, new JsonSerializerSettings
@@ -52,11 +53,10 @@ namespace TfsAdvanced.Updater
                 });
                 log += " Deserialization Time: " + (DateTime.Now - start).TotalMilliseconds;
                 start = DateTime.Now;
-                var list = items.value.ToList();
+                List<T> list = items.value.ToList();
                 log += " List Time: " + (DateTime.Now - start).TotalMilliseconds;
 
-                if (logger != null)
-                    logger.LogDebug(log);
+                logger?.LogDebug(log);
                 return list;
             }
             catch (BadRequestException ex)

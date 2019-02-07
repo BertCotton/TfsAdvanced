@@ -2,10 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
-using Hangfire;
 using Microsoft.Extensions.Logging;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
@@ -23,32 +21,45 @@ namespace TfsAdvanced.Updater.Tasks
 {
     public abstract class PullRequestUpdaterBase : UpdaterBase
     {
-        protected readonly RequestData requestData;
-        protected readonly IPullRequestRepository pullRequestRepository;
-        protected readonly RepositoryRepository repositoryRepository;
-        protected readonly UpdateStatusRepository updateStatusRepository;
-        protected readonly BuildRepository buildRepository;
+        private readonly BuildRepository buildRepository;
+        private readonly RepositoryRepository repositoryRepository;
+        private readonly UpdateStatusRepository updateStatusRepository;
 
         protected PullRequestUpdaterBase(IPullRequestRepository pullRequestRepository, RequestData requestData, RepositoryRepository repositoryRepository,
             UpdateStatusRepository updateStatusRepository, BuildRepository buildRepository, ILogger<PullRequestUpdaterBase> logger) : base(logger)
         {
-            this.requestData = requestData;
+            RequestData = requestData;
             this.repositoryRepository = repositoryRepository;
             this.updateStatusRepository = updateStatusRepository;
             this.buildRepository = buildRepository;
-            this.pullRequestRepository = pullRequestRepository;
+            PullRequestRepository = pullRequestRepository;
+        }
+
+        protected IPullRequestRepository PullRequestRepository { get; }
+
+        protected RequestData RequestData { get; }
+
+        public string BuildPullRequestUrl(TFSAdvanced.Updater.Models.PullRequests.PullRequest pullRequest, string baseUrl)
+        {
+            return
+                $"{baseUrl}/{pullRequest.repository.project.name}/_git/{pullRequest.repository.name}/pullrequest/{pullRequest.pullRequestId}?view=files";
+        }
+
+        protected virtual IList<TFSAdvanced.Updater.Models.PullRequests.PullRequest> GetPullRequests(Repository repository)
+        {
+            return GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(RequestData, repository.PullRequestUrl, Logger).Result;
         }
 
         protected override void Update()
         {
-            int pullRequestCount = 0;
+            var pullRequestCount = 0;
 
             Parallel.ForEach(repositoryRepository.GetAll(), new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, repository =>
               {
-                  ConcurrentBag<PullRequest> repositoryPullRequests = new ConcurrentBag<PullRequest>();
+                  var repositoryPullRequests = new ConcurrentBag<PullRequest>();
                   if (string.IsNullOrEmpty(repository.PullRequestUrl))
                       return;
-                  var pullRequests = GetPullRequests(repository);
+                  IList<TFSAdvanced.Updater.Models.PullRequests.PullRequest> pullRequests = GetPullRequests(repository);
                   if (pullRequests == null)
                       return;
                   Parallel.ForEach(pullRequests, new ParallelOptions { MaxDegreeOfParallelism = AppSettings.MAX_DEGREE_OF_PARALLELISM }, pullRequest =>
@@ -63,23 +74,23 @@ namespace TfsAdvanced.Updater.Tasks
 
                           if (commitId == null)
                           {
-                              logger.LogWarning($"Unable to get last merge commit for the pullrequest ({pullRequest.pullRequestId}) {pullRequest.description}");
+                              Logger.LogWarning($"Unable to get last merge commit for the pullrequest ({pullRequest.pullRequestId}) {pullRequest.description}");
                               return;
                           }
 
                           if (string.IsNullOrEmpty(commitId.commitId))
                           {
-                              logger.LogWarning($"Unable to get the last commitID for the pull request ({pullRequest.pullRequestId}) {pullRequest.description}");
+                              Logger.LogWarning($"Unable to get the last commitID for the pull request ({pullRequest.pullRequestId}) {pullRequest.description}");
                               return;
                           }
-                          var build = buildRepository.GetBuildBySourceVersion(repository, commitId.commitId);
+                          Build build = buildRepository.GetBuildBySourceVersion(repository, commitId.commitId);
 
-                          var pullRequestDto = BuildPullRequest(pullRequest, build);
+                          PullRequest pullRequestDto = BuildPullRequest(pullRequest, build);
                           pullRequestDto.Repository = repository;
-                          pullRequestDto.Url = BuildPullRequestUrl(pullRequest, requestData.BaseAddress);
+                          pullRequestDto.Url = BuildPullRequestUrl(pullRequest, RequestData.BaseAddress);
                           pullRequestDto.RequiredReviewers = repository.MinimumApproverCount;
 
-                          foreach (var reviewer in pullRequest.reviewers)
+                          foreach (TFSAdvanced.Updater.Models.PullRequests.Reviewer reviewer in pullRequest.reviewers)
                           {
                               // Container reviewers do not count
                               if (reviewer.isContainer)
@@ -93,23 +104,18 @@ namespace TfsAdvanced.Updater.Tasks
                       }
                       catch (Exception e)
                       {
-                          logger.LogError(e, "Error parsing pull request");
+                          Logger.LogError(e, "Error parsing pull request");
                       }
                   });
                   if (repositoryPullRequests.Any())
-                      pullRequestRepository.Update(repositoryPullRequests.ToList());
+                      PullRequestRepository.Update(repositoryPullRequests.ToList());
               });
             updateStatusRepository.UpdateStatus(new UpdateStatus { LastUpdate = DateTime.Now, UpdatedRecords = pullRequestCount, UpdaterName = GetType().Name });
         }
 
-        protected virtual IList<TFSAdvanced.Updater.Models.PullRequests.PullRequest> GetPullRequests(Repository repository)
-        {
-            return GetAsync.FetchResponseList<TFSAdvanced.Updater.Models.PullRequests.PullRequest>(requestData, repository.PullRequestUrl, logger).Result;
-        }
-
         private PullRequest BuildPullRequest(TFSAdvanced.Updater.Models.PullRequests.PullRequest x, Build build)
         {
-            PullRequest pullRequestDto = new PullRequest
+            var pullRequestDto = new PullRequest
             {
                 Id = x.pullRequestId,
                 Title = x.title,
@@ -144,12 +150,12 @@ namespace TfsAdvanced.Updater.Tasks
 
             if (x.reviewers != null)
             {
-                foreach (var reviewer in x.reviewers)
+                foreach (TFSAdvanced.Updater.Models.PullRequests.Reviewer reviewer in x.reviewers)
                 {
                     if (reviewer.isContainer)
                         continue;
 
-                    // Only ignore the review of the creator if the vote is approved or noresponse
+                    // Only ignore the review of the creator if the vote is approved or no response
                     if (reviewer.id == x.createdBy.id && (reviewer.vote == (int)Vote.Approved || reviewer.vote == (int)Vote.NoResponse))
                         continue;
                     var reviewerDto = new Reviewer
@@ -195,12 +201,6 @@ namespace TfsAdvanced.Updater.Tasks
             }
 
             return pullRequestDto;
-        }
-
-        public string BuildPullRequestUrl(TFSAdvanced.Updater.Models.PullRequests.PullRequest pullRequest, string baseUrl)
-        {
-            return
-                $"{baseUrl}/{pullRequest.repository.project.name}/_git/{pullRequest.repository.name}/pullrequest/{pullRequest.pullRequestId}?view=files";
         }
     }
 }

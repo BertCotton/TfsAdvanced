@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using Hangfire;
 using Microsoft.Extensions.Logging;
 using TfsAdvanced.DataStore.Repository;
 using TfsAdvanced.Models;
@@ -11,10 +11,9 @@ namespace TfsAdvanced.Updater.Tasks
 {
     public class ProjectUpdater : UpdaterBase
     {
-
         private readonly ProjectRepository projectRepository;
-        private readonly UpdateStatusRepository updateStatusRepository;
         private readonly RequestData requestData;
+        private readonly UpdateStatusRepository updateStatusRepository;
 
         public ProjectUpdater(ProjectRepository projectRepository, RequestData requestData, UpdateStatusRepository updateStatusRepository, ILogger<ProjectUpdater> logger) : base(logger)
         {
@@ -25,7 +24,7 @@ namespace TfsAdvanced.Updater.Tasks
 
         protected override void Update()
         {
-            var projects = GetAsync.FetchResponseList<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects?api-version=1.0").Result;
+            List<Project> projects = GetAsync.FetchResponseList<Project>(requestData, $"{requestData.BaseAddress}/_apis/projects?api-version=1.0", Logger).Result;
             if (projects != null)
             {
                 projectRepository.Update(projects.Select(x => new TFSAdvanced.Models.DTO.Project
@@ -34,7 +33,7 @@ namespace TfsAdvanced.Updater.Tasks
                     Name = x.name,
                     Url = x.remoteUrl
                 }));
-                updateStatusRepository.UpdateStatus(new UpdateStatus {LastUpdate = DateTime.Now, UpdatedRecords = projects.Count, UpdaterName = nameof(ProjectUpdater)});
+                updateStatusRepository.UpdateStatus(new UpdateStatus { LastUpdate = DateTime.Now, UpdatedRecords = projects.Count, UpdaterName = nameof(ProjectUpdater) });
             }
         }
     }
