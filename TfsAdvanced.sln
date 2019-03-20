@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models", "src\TfsAdvanced.M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Updater", "src\TfsAdvanced.Updater\Updater.csproj", "{F88AE0D1-17B4-427E-8023-42A183EB05D3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aggregator", "src\Aggregator\Aggregator.csproj", "{8E37D683-A824-4C11-BA05-DF43560C2AD0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{F88AE0D1-17B4-427E-8023-42A183EB05D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F88AE0D1-17B4-427E-8023-42A183EB05D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F88AE0D1-17B4-427E-8023-42A183EB05D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E37D683-A824-4C11-BA05-DF43560C2AD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E37D683-A824-4C11-BA05-DF43560C2AD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E37D683-A824-4C11-BA05-DF43560C2AD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E37D683-A824-4C11-BA05-DF43560C2AD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,6 +58,7 @@ Global
 		{B91AC19E-9D65-416C-8B4D-47C7D7F41C63} = {28430696-29B7-46F4-9140-2EF000FB2D29}
 		{23D45B3D-C188-48F3-9078-35B61B1F293D} = {28430696-29B7-46F4-9140-2EF000FB2D29}
 		{F88AE0D1-17B4-427E-8023-42A183EB05D3} = {28430696-29B7-46F4-9140-2EF000FB2D29}
+		{8E37D683-A824-4C11-BA05-DF43560C2AD0} = {28430696-29B7-46F4-9140-2EF000FB2D29}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {26745B40-C9AB-4327-8314-D7E3F85B161E}
