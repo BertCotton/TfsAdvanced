@@ -48,13 +48,14 @@ namespace TfsAdvanced.Updater.Tasks
 
             ScheduleJob<ReleaseDefinitionUpdater>(Cron.MinuteInterval(30));
             ScheduleJob<BuildDefinitionUpdater>(Cron.MinuteInterval(30));
+            ScheduleJob<BuildUpdater>(Cron.MinuteInterval(3));
 
-            var quickUpdateTimer = new System.Timers.Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
-            quickUpdateTimer.Elapsed += ExecuteJobs;
+            var quickUpdateTimer = new System.Timers.Timer(TimeSpan.FromSeconds(30).TotalMilliseconds);
+            quickUpdateTimer.Elapsed += ExecuteJobRequestUpdater;
             quickUpdateTimer.AutoReset = true;
             quickUpdateTimer.Enabled = true;
-
-            var pullRequestUpdateTime = new System.Timers.Timer(TimeSpan.FromSeconds(10).TotalMilliseconds);
+            
+            var pullRequestUpdateTime = new System.Timers.Timer(TimeSpan.FromSeconds(30).TotalMilliseconds);
             pullRequestUpdateTime.Elapsed += ExecutePullRequestUpdate;
             pullRequestUpdateTime.AutoReset = true;
             pullRequestUpdateTime.Enabled = true;
@@ -66,19 +67,18 @@ namespace TfsAdvanced.Updater.Tasks
         {
             DateTime startTime = DateTime.Now;
             ExecuteJob<PullRequestUpdater>();
+            ExecuteJob<CompletedPullRequestUpdater>();
             logger.LogInformation($"Finished Update PullRequests in {DateTime.Now - startTime}");
         }
 
-        private void ExecuteJobs(Object source, ElapsedEventArgs e)
+        private void ExecuteJobRequestUpdater(Object source, ElapsedEventArgs e)
         {
             DateTime startTime = DateTime.Now;
             logger.LogDebug("Executing Update Jobs");
-            ExecuteJob<BuildUpdater>();
-            ExecuteJob<CompletedPullRequestUpdater>();
             ExecuteJob<JobRequestUpdater>();
             logger.LogInformation($"Finished Update Jobs in {DateTime.Now - startTime}");
         }
-
+        
         private void ExecuteJob<T>() where T : UpdaterBase
         {
             serviceProvider.GetService<T>().Run();
