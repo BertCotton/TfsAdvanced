@@ -33,6 +33,7 @@ namespace TfsAdvanced.Models
                 BaseReleaseManagerAddress = appSettings.BaseReleaseManagerAddress;
 
             HttpClient = new HttpClient(handler);
+            HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("TFSAdvanced");
             HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var authorization = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{appSettings.Security.Username}:{appSettings.Security.Password}"));
             HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authorization);
